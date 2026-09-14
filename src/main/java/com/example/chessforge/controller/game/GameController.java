@@ -103,6 +103,11 @@ public class GameController {
                 page.blackTimeRemainingMillis()
         );
 
+        model.addAttribute(
+                "currentUserId",
+                currentUser.getId()
+        );
+
         return "game/game";
     }
 }

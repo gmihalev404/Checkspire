@@ -103,7 +103,9 @@
         data-game-id=${game.gameId},
         data-fen=${game.currentFen},
         data-orientation=${viewerColor},
-        data-status=${game.status}">
+        data-status=${game.status},
+        data-result=${game.result},
+        data-termination=${game.termination}">
             </div>
 
 
@@ -225,24 +227,66 @@
 
                     <hr>
 
+                    <div id="game-result"
+                         class="alert alert-secondary text-center d-none mt-3"
+                         role="status">
 
-                    <div class="d-grid gap-2">
+                        <div id="game-result-score"
+                             class="fw-bold fs-4">
+                        </div>
 
-                        <button class="btn btn-outline-secondary"
-                                disabled>
-                            Offer Draw
-                        </button>
-
-                        <button class="btn btn-outline-danger"
-                                disabled>
-                            Resign
-                        </button>
+                        <div id="game-result-reason"
+                             class="small mt-1">
+                        </div>
 
                     </div>
 
-                    <p class="small text-body-secondary mt-3 mb-0">
-                        Live controls will be enabled in the next step.
-                    </p>
+
+                    <div id="game-actions"
+                         class="d-flex flex-column gap-2 mt-3"
+                         th:attr="data-viewer-user-id=${currentUserId},
+              data-draw-offer-by-user-id=${game.drawOfferByUserId}">
+
+                        <div id="draw-status"
+                             class="small text-body-secondary text-center"
+                             aria-live="polite">
+                        </div>
+
+                        <div id="draw-default-actions"
+                             class="d-flex gap-2">
+
+                            <button id="draw-button"
+                                    type="button"
+                                    class="btn btn-outline-secondary flex-fill">
+                                Offer Draw
+                            </button>
+
+                            <button id="resign-button"
+                                    type="button"
+                                    class="btn btn-outline-danger flex-fill">
+                                Resign
+                            </button>
+
+                        </div>
+
+                        <div id="draw-response-actions"
+                             class="d-none gap-2">
+
+                            <button id="accept-draw-button"
+                                    type="button"
+                                    class="btn btn-success flex-fill">
+                                Accept Draw
+                            </button>
+
+                            <button id="reject-draw-button"
+                                    type="button"
+                                    class="btn btn-outline-danger flex-fill">
+                                Decline
+                            </button>
+
+                        </div>
+
+                    </div>
 
                 </div>
 

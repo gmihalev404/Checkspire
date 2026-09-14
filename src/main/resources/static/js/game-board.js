@@ -4,6 +4,25 @@ let orientation;
 let gameId;
 let gameStatus;
 
+let gameResult;
+let gameTermination;
+
+let gameResultElement;
+let gameResultScore;
+let gameResultReason;
+
+let viewerUserId;
+let drawOfferByUserId = null;
+
+let drawButton;
+let resignButton;
+let acceptDrawButton;
+let rejectDrawButton;
+
+let drawStatus;
+let drawDefaultActions;
+let drawResponseActions;
+
 let selectedSquare = null;
 let stompClient = null;
 
@@ -56,6 +75,87 @@ document.addEventListener(
 
         gameStatus =
             boardElement.dataset.status;
+
+        gameResult =
+            boardElement.dataset.result || null;
+
+        gameTermination =
+            boardElement.dataset.termination || null;
+
+
+        gameResultElement =
+            document.getElementById(
+                "game-result"
+            );
+
+        gameResultScore =
+            document.getElementById(
+                "game-result-score"
+            );
+
+        gameResultReason =
+            document.getElementById(
+                "game-result-reason"
+            );
+
+        const gameActions =
+            document.getElementById(
+                "game-actions"
+            );
+
+        viewerUserId =
+            Number(
+                gameActions.dataset.viewerUserId
+            );
+
+        const initialDrawOffer =
+            gameActions.dataset.drawOfferByUserId;
+
+        drawOfferByUserId =
+            initialDrawOffer
+                ? Number(initialDrawOffer)
+                : null;
+
+
+        drawButton =
+            document.getElementById(
+                "draw-button"
+            );
+
+        resignButton =
+            document.getElementById(
+                "resign-button"
+            );
+
+        acceptDrawButton =
+            document.getElementById(
+                "accept-draw-button"
+            );
+
+        rejectDrawButton =
+            document.getElementById(
+                "reject-draw-button"
+            );
+
+        drawStatus =
+            document.getElementById(
+                "draw-status"
+            );
+
+        drawDefaultActions =
+            document.getElementById(
+                "draw-default-actions"
+            );
+
+        drawResponseActions =
+            document.getElementById(
+                "draw-response-actions"
+            );
+
+
+        initializeGameActions();
+        updateGameActions();
+        updateGameResult();
 
 
         renderBoard();
@@ -139,11 +239,40 @@ function handleGameState(
     gameState
 ) {
 
+    const previousFen =
+        currentFen;
+
+    const previousStatus =
+        gameStatus;
+
+
+    /*
+     * Before changing the status, preserve
+     * the currently displayed clock values.
+     *
+     * This is needed when the game finishes
+     * through resign/draw agreement because
+     * the stored server clock belongs to the
+     * beginning of the current turn.
+     */
+    const displayedClocks =
+        getDisplayedClockValues();
+
+
     currentFen =
         gameState.currentFen;
 
     gameStatus =
         gameState.status;
+
+    gameResult =
+        gameState.result;
+
+    gameTermination =
+        gameState.termination;
+
+    drawOfferByUserId =
+        gameState.drawOfferByUserId;
 
 
     boardElement.dataset.fen =
@@ -160,12 +289,97 @@ function handleGameState(
     renderBoard();
 
 
-    updateClocks(
-        gameState.whiteTimeRemainingMillis,
-        gameState.blackTimeRemainingMillis
-    );
+    const positionChanged =
+        previousFen !== currentFen;
+
+    const gameJustFinished =
+        previousStatus === "IN_PROGRESS"
+        && gameStatus !== "IN_PROGRESS";
+
+
+    if (positionChanged) {
+
+        /*
+         * A move was made.
+         * The server clock values are authoritative.
+         */
+        updateClocks(
+            gameState.whiteTimeRemainingMillis,
+            gameState.blackTimeRemainingMillis
+        );
+
+    } else if (gameJustFinished) {
+
+        /*
+         * Resign / accepted draw.
+         * Freeze the clocks exactly where
+         * they currently are on the client.
+         */
+        updateClocks(
+            displayedClocks.white,
+            displayedClocks.black
+        );
+    }
+
+
+    updateGameActions();
+    updateGameResult();
 }
 
+function getDisplayedClockValues() {
+
+    let displayedWhite =
+        whiteClockMillis;
+
+    let displayedBlack =
+        blackClockMillis;
+
+
+    if (
+        gameStatus
+        === "IN_PROGRESS"
+    ) {
+
+        const elapsed =
+            performance.now()
+            - clockAnchor;
+
+        const sideToMove =
+            getSideToMove(
+                currentFen
+            );
+
+
+        if (
+            sideToMove
+            === "WHITE"
+        ) {
+
+            displayedWhite -=
+                elapsed;
+
+        } else {
+
+            displayedBlack -=
+                elapsed;
+        }
+    }
+
+
+    return {
+        white:
+            Math.max(
+                0,
+                displayedWhite
+            ),
+
+        black:
+            Math.max(
+                0,
+                displayedBlack
+            )
+    };
+}
 
 function renderBoard() {
 
@@ -936,4 +1150,324 @@ function formatClock(
             2,
             "0"
         )}`;
+}
+
+function initializeGameActions() {
+
+    drawButton.addEventListener(
+        "click",
+        () => {
+
+            if (
+                gameStatus !== "IN_PROGRESS"
+                || drawOfferByUserId !== null
+            ) {
+                return;
+            }
+
+            publishGameAction(
+                `/app/games/${gameId}/draw/offer`
+            );
+        }
+    );
+
+
+    acceptDrawButton.addEventListener(
+        "click",
+        () => {
+
+            publishGameAction(
+                `/app/games/${gameId}/draw/accept`
+            );
+        }
+    );
+
+
+    rejectDrawButton.addEventListener(
+        "click",
+        () => {
+
+            publishGameAction(
+                `/app/games/${gameId}/draw/reject`
+            );
+        }
+    );
+
+
+    resignButton.addEventListener(
+        "click",
+        () => {
+
+            if (
+                gameStatus !== "IN_PROGRESS"
+            ) {
+                return;
+            }
+
+            const confirmed =
+                window.confirm(
+                    "Are you sure you want to resign?"
+                );
+
+            if (!confirmed) {
+                return;
+            }
+
+            publishGameAction(
+                `/app/games/${gameId}/resign`
+            );
+        }
+    );
+}
+
+function publishGameAction(
+    destination
+) {
+
+    if (
+        !stompClient
+        || !stompClient.connected
+    ) {
+
+        console.error(
+            "WebSocket is not connected."
+        );
+
+        return;
+    }
+
+
+    stompClient.publish({
+        destination:
+        destination
+    });
+}
+
+function updateGameActions() {
+
+    const gameInProgress =
+        gameStatus === "IN_PROGRESS";
+
+
+    resignButton.disabled =
+        !gameInProgress;
+
+
+    if (!gameInProgress) {
+
+        drawButton.disabled = true;
+
+        acceptDrawButton.disabled = true;
+        rejectDrawButton.disabled = true;
+
+        drawDefaultActions.classList.remove(
+            "d-none"
+        );
+
+        drawResponseActions.classList.remove(
+            "d-flex"
+        );
+
+        drawResponseActions.classList.add(
+            "d-none"
+        );
+
+        drawButton.classList.remove(
+            "d-none"
+        );
+
+        drawStatus.textContent =
+            "Game finished.";
+
+        return;
+    }
+
+
+    if (drawOfferByUserId === null) {
+
+        drawDefaultActions.classList.remove(
+            "d-none"
+        );
+
+        drawResponseActions.classList.remove(
+            "d-flex"
+        );
+
+        drawResponseActions.classList.add(
+            "d-none"
+        );
+
+        drawButton.classList.remove(
+            "d-none"
+        );
+
+        drawButton.disabled = false;
+
+        drawButton.textContent =
+            "Offer Draw";
+
+        drawStatus.textContent =
+            "";
+
+        return;
+    }
+
+
+    if (
+        drawOfferByUserId
+        === viewerUserId
+    ) {
+
+        drawDefaultActions.classList.remove(
+            "d-none"
+        );
+
+        drawResponseActions.classList.remove(
+            "d-flex"
+        );
+
+        drawResponseActions.classList.add(
+            "d-none"
+        );
+
+        drawButton.classList.remove(
+            "d-none"
+        );
+
+        drawButton.disabled = true;
+
+        drawButton.textContent =
+            "Draw Offered";
+
+        drawStatus.textContent =
+            "Waiting for opponent to respond.";
+
+        return;
+    }
+
+
+    drawDefaultActions.classList.remove(
+        "d-none"
+    );
+
+    drawButton.classList.add(
+        "d-none"
+    );
+
+    drawResponseActions.classList.remove(
+        "d-none"
+    );
+
+    drawResponseActions.classList.add(
+        "d-flex"
+    );
+
+    acceptDrawButton.disabled = false;
+    rejectDrawButton.disabled = false;
+
+    drawStatus.textContent =
+        "Opponent offered a draw.";
+}
+
+function updateGameResult() {
+
+    if (
+        gameStatus !== "FINISHED"
+        || !gameResult
+    ) {
+
+        gameResultElement.classList.add(
+            "d-none"
+        );
+
+        return;
+    }
+
+
+    gameResultElement.classList.remove(
+        "d-none"
+    );
+
+
+    switch (gameResult) {
+
+        case "WHITE_WIN":
+            gameResultScore.textContent =
+                "1–0";
+            break;
+
+        case "BLACK_WIN":
+            gameResultScore.textContent =
+                "0–1";
+            break;
+
+        case "DRAW":
+            gameResultScore.textContent =
+                "½–½";
+            break;
+
+        default:
+            gameResultScore.textContent =
+                "";
+    }
+
+
+    gameResultReason.textContent =
+        getTerminationText(
+            gameTermination
+        );
+}
+
+function getTerminationText(
+    termination
+) {
+
+    switch (termination) {
+
+        case "CHECKMATE":
+            return "Checkmate";
+
+        case "RESIGNATION":
+            return "Resignation";
+
+        case "AGREEMENT":
+            return "Draw by agreement";
+
+        case "STALEMATE":
+            return "Stalemate";
+
+        case "INSUFFICIENT_MATERIAL":
+            return "Draw by insufficient material";
+
+        case "THREEFOLD_REPETITION":
+            return "Draw by threefold repetition";
+
+        case "FIVEFOLD_REPETITION":
+            return "Draw by fivefold repetition";
+
+        case "FIFTY_MOVE_RULE":
+            return "Draw by fifty-move rule";
+
+        case "SEVENTY_FIVE_MOVE_RULE":
+            return "Draw by seventy-five-move rule";
+
+        case "TIMEOUT":
+            return "Time expired";
+
+        case "TIMEOUT_INSUFFICIENT_MATERIAL":
+            return "Draw on time due to insufficient mating material";
+
+        case "ABORTED":
+            return "Game aborted";
+
+        default:
+            return termination
+                ? termination
+                    .replaceAll(
+                        "_",
+                        " "
+                    )
+                    .toLowerCase()
+                : "";
+    }
 }
