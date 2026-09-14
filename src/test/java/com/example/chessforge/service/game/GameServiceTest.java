@@ -21,6 +21,7 @@ import com.example.chessforge.model.enums.tournament.TournamentParticipantStatus
 import com.example.chessforge.model.enums.user.UserStatus;
 import com.example.chessforge.repository.game.GameMoveRepository;
 import com.example.chessforge.repository.game.GameRepository;
+import com.example.chessforge.service.game.dto.GamePageResponse;
 import com.example.chessforge.service.game.dto.GameStateResponse;
 import com.example.chessforge.service.game.engine.GameEngine;
 import com.example.chessforge.service.game.engine.history.RepetitionTracker;
@@ -5628,6 +5629,192 @@ class GameServiceTest {
                         .finalizeTimeoutIfExpiredAndGetState(
                                 gameId
                         );
+
+        assertTrue(
+                result.isEmpty()
+        );
+
+        verifyNoInteractions(
+                gameStateMapper
+        );
+    }
+
+    @Test
+    void getGamePageForPlayerShouldReturnWhitePerspective() {
+
+        Long gameId = 10L;
+
+        Game game =
+                createWaitingGame(
+                        challenger,
+                        opponent,
+                        TimeControl.values()[0]
+                );
+
+        game.setWhiteTimeRemainingMillis(
+                600_000L
+        );
+
+        game.setBlackTimeRemainingMillis(
+                600_000L
+        );
+
+        GameStateResponse state =
+                mock(
+                        GameStateResponse.class
+                );
+
+        when(gameRepository.findById(
+                gameId
+        )).thenReturn(
+                Optional.of(game)
+        );
+
+        when(gameStateMapper.toResponse(
+                game
+        )).thenReturn(
+                state
+        );
+
+        Optional<GamePageResponse> result =
+                gameService.getGamePageForPlayer(
+                        gameId,
+                        challenger
+                );
+
+        assertTrue(
+                result.isPresent()
+        );
+
+        assertSame(
+                state,
+                result.get()
+                        .game()
+        );
+
+        assertEquals(
+                PieceColor.WHITE,
+                result.get()
+                        .viewerColor()
+        );
+    }
+
+
+    @Test
+    void getGamePageForPlayerShouldReturnBlackPerspective() {
+
+        Long gameId = 10L;
+
+        Game game =
+                createWaitingGame(
+                        challenger,
+                        opponent,
+                        TimeControl.values()[0]
+                );
+
+        game.setWhiteTimeRemainingMillis(
+                600_000L
+        );
+
+        game.setBlackTimeRemainingMillis(
+                600_000L
+        );
+
+        GameStateResponse state =
+                mock(
+                        GameStateResponse.class
+                );
+
+        when(gameRepository.findById(
+                gameId
+        )).thenReturn(
+                Optional.of(game)
+        );
+
+        when(gameStateMapper.toResponse(
+                game
+        )).thenReturn(
+                state
+        );
+
+        Optional<GamePageResponse> result =
+                gameService.getGamePageForPlayer(
+                        gameId,
+                        opponent
+                );
+
+        assertTrue(
+                result.isPresent()
+        );
+
+        assertEquals(
+                PieceColor.BLACK,
+                result.get()
+                        .viewerColor()
+        );
+    }
+
+
+    @Test
+    void getGamePageForPlayerShouldRejectOutsider() {
+
+        Long gameId = 10L;
+
+        User outsider =
+                createUser(
+                        99L,
+                        "outsider",
+                        400,
+                        400,
+                        400,
+                        400
+                );
+
+        Game game =
+                createWaitingGame(
+                        challenger,
+                        opponent,
+                        TimeControl.values()[0]
+                );
+
+        when(gameRepository.findById(
+                gameId
+        )).thenReturn(
+                Optional.of(game)
+        );
+
+        Optional<GamePageResponse> result =
+                gameService.getGamePageForPlayer(
+                        gameId,
+                        outsider
+                );
+
+        assertTrue(
+                result.isEmpty()
+        );
+
+        verifyNoInteractions(
+                gameStateMapper
+        );
+    }
+
+
+    @Test
+    void getGamePageForPlayerShouldReturnEmptyForUnknownGame() {
+
+        Long gameId = 999L;
+
+        when(gameRepository.findById(
+                gameId
+        )).thenReturn(
+                Optional.empty()
+        );
+
+        Optional<GamePageResponse> result =
+                gameService.getGamePageForPlayer(
+                        gameId,
+                        challenger
+                );
 
         assertTrue(
                 result.isEmpty()

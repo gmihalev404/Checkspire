@@ -2,20 +2,25 @@ package com.example.chessforge.controller.game;
 
 import com.example.chessforge.model.entity.user.User;
 import com.example.chessforge.service.game.GameService;
+import com.example.chessforge.service.game.dto.GamePageResponse;
 import com.example.chessforge.service.game.dto.GameSummaryResponse;
+import com.example.chessforge.service.game.engine.model.PieceColor;
 import com.example.chessforge.service.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.ui.Model;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -93,5 +98,121 @@ class GameControllerTest {
                         "username",
                         "testplayer"
                 );
+    }
+
+    @Test
+    void gameShouldLoadGameForAuthenticatedParticipant() {
+
+        Long gameId = 10L;
+
+        Principal principal =
+                () -> "testplayer";
+
+        GamePageResponse page =
+                new GamePageResponse(
+                        null,
+                        PieceColor.WHITE,
+                        540_000L,
+                        515_000L
+                );
+
+        when(userService.findByUsername(
+                "testplayer"
+        )).thenReturn(
+                Optional.of(user)
+        );
+
+        when(user.getUsername())
+                .thenReturn(
+                        "testplayer"
+                );
+
+        when(gameService.getGamePageForPlayer(
+                gameId,
+                user
+        )).thenReturn(
+                Optional.of(page)
+        );
+
+        String result =
+                controller.game(
+                        gameId,
+                        principal,
+                        model
+                );
+
+        assertEquals(
+                "game/game",
+                result
+        );
+
+        verify(model)
+                .addAttribute(
+                        "game",
+                        null
+                );
+
+        verify(model)
+                .addAttribute(
+                        "viewerColor",
+                        "WHITE"
+                );
+
+        verify(model)
+                .addAttribute(
+                        "whiteTimeRemainingMillis",
+                        540_000L
+                );
+
+        verify(model)
+                .addAttribute(
+                        "blackTimeRemainingMillis",
+                        515_000L
+                );
+
+        verify(model)
+                .addAttribute(
+                        "username",
+                        "testplayer"
+                );
+    }
+
+
+    @Test
+    void gameShouldReturnNotFoundWhenUserCannotAccessGame() {
+
+        Long gameId = 10L;
+
+        Principal principal =
+                () -> "testplayer";
+
+        when(userService.findByUsername(
+                "testplayer"
+        )).thenReturn(
+                Optional.of(user)
+        );
+
+        when(gameService.getGamePageForPlayer(
+                gameId,
+                user
+        )).thenReturn(
+                Optional.empty()
+        );
+
+        ResponseStatusException exception =
+                assertThrows(
+                        ResponseStatusException.class,
+                        () ->
+                                controller.game(
+                                        gameId,
+                                        principal,
+                                        model
+                                )
+                );
+
+        assertEquals(
+                HttpStatus.NOT_FOUND,
+                exception.getStatusCode()
+        );
     }
 }

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      data-bs-theme="dark">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>Challenges | ChessForge</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+</head>
+
+<body class="bg-body-tertiary">
+
+<nav class="navbar navbar-expand-lg bg-body border-bottom">
+
+    <div class="container">
+
+        <a class="navbar-brand fw-bold"
+           th:href="@{/}">
+            ChessForge
+        </a>
+
+        <div class="d-flex align-items-center gap-3">
+
+            <a th:href="@{/games}"
+               class="btn btn-outline-secondary btn-sm">
+                My Games
+            </a>
+
+            <a th:href="@{/challenges}"
+               class="btn btn-outline-primary btn-sm">
+                Challenges
+            </a>
+
+            <span th:text="${username}">
+                username
+            </span>
+
+        </div>
+
+    </div>
+
+</nav>
+
+
+<main class="container py-5">
+
+    <div class="d-flex justify-content-between
+                align-items-center mb-4">
+
+        <div>
+
+            <h1 class="fw-bold">
+                Challenges
+            </h1>
+
+            <p class="text-body-secondary mb-0">
+                Challenge another ChessForge player.
+            </p>
+
+        </div>
+
+
+        <a th:href="@{/challenges/new}"
+           class="btn btn-primary">
+            New Challenge
+        </a>
+
+    </div>
+
+
+    <div th:if="${success}"
+         class="alert alert-success"
+         th:text="${success}">
+    </div>
+
+    <div th:if="${error}"
+         class="alert alert-danger"
+         th:text="${error}">
+    </div>
+
+
+    <div class="row g-4">
+
+
+        <!-- ===================== -->
+        <!-- INCOMING -->
+        <!-- ===================== -->
+
+        <div class="col-12 col-lg-6">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <h4 class="mb-4">
+                        Incoming
+                    </h4>
+
+
+                    <div th:if="${#lists.isEmpty(incoming)}"
+                         class="text-body-secondary">
+
+                        No incoming challenges.
+
+                    </div>
+
+
+                    <div th:each="challenge : ${incoming}"
+                         class="border rounded p-3 mb-3">
+
+
+                        <div class="d-flex
+                                    justify-content-between
+                                    align-items-start mb-3">
+
+                            <div>
+
+                                <strong th:text="${challenge.otherUsername}">
+                                    player
+                                </strong>
+
+                                <div class="text-body-secondary small">
+
+                                    <span th:text="${challenge.timeControl}">
+                                        RAPID_10_0
+                                    </span>
+
+                                    ·
+
+                                    <span th:text="${challenge.rated
+                                                    ? 'Rated'
+                                                    : 'Casual'}">
+                                        Casual
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="small mb-3">
+
+                            Challenger wants:
+
+                            <strong th:text="${challenge.colorPreference}">
+                                RANDOM
+                            </strong>
+
+                        </div>
+
+
+                        <div class="d-flex gap-2">
+
+                            <form th:action="@{/challenges/{id}/accept(
+                                    id=${challenge.challengeId})}"
+                                  method="post">
+
+                                <button type="submit"
+                                        class="btn btn-success btn-sm">
+                                    Accept
+                                </button>
+
+                            </form>
+
+
+                            <form th:action="@{/challenges/{id}/decline(
+                                    id=${challenge.challengeId})}"
+                                  method="post">
+
+                                <button type="submit"
+                                        class="btn btn-outline-danger btn-sm">
+                                    Decline
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ===================== -->
+        <!-- OUTGOING -->
+        <!-- ===================== -->
+
+        <div class="col-12 col-lg-6">
+
+            <div class="card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <h4 class="mb-4">
+                        Outgoing
+                    </h4>
+
+
+                    <div th:if="${#lists.isEmpty(outgoing)}"
+                         class="text-body-secondary">
+
+                        No outgoing challenges.
+
+                    </div>
+
+
+                    <div th:each="challenge : ${outgoing}"
+                         class="border rounded p-3 mb-3">
+
+
+                        <div class="mb-3">
+
+                            <strong th:text="${challenge.otherUsername}">
+                                player
+                            </strong>
+
+                            <div class="text-body-secondary small">
+
+                                <span th:text="${challenge.timeControl}">
+                                    RAPID_10_0
+                                </span>
+
+                                ·
+
+                                <span th:text="${challenge.rated
+                                                ? 'Rated'
+                                                : 'Casual'}">
+                                    Casual
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="small mb-3">
+
+                            Your requested color:
+
+                            <strong th:text="${challenge.colorPreference}">
+                                RANDOM
+                            </strong>
+
+                        </div>
+
+
+                        <form th:action="@{/challenges/{id}/cancel(
+                                id=${challenge.challengeId})}"
+                              method="post">
+
+                            <button type="submit"
+                                    class="btn btn-outline-secondary btn-sm">
+                                Cancel
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.2.1/bundles/stomp.umd.min.js">
+</script>
+
+<script th:src="@{/js/challenges.js(v=2)}">
+</script>
+</body>
+
+</html>

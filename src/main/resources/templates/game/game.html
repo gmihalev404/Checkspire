@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      data-bs-theme="dark">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>Game | ChessForge</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <link th:href="@{/css/game.css}"
+          rel="stylesheet">
+
+</head>
+
+<body class="bg-body-tertiary">
+
+<nav class="navbar navbar-expand-lg bg-body border-bottom">
+
+    <div class="container">
+
+        <a class="navbar-brand fw-bold"
+           th:href="@{/}">
+            ChessForge
+        </a>
+
+        <div class="d-flex align-items-center gap-3">
+
+            <a th:href="@{/games}"
+               class="btn btn-outline-secondary btn-sm">
+                My Games
+            </a>
+
+            <span class="text-body-secondary"
+                  th:text="${username}">
+                username
+            </span>
+
+        </div>
+
+    </div>
+
+</nav>
+
+
+<main class="container py-4">
+
+    <div class="row g-4 justify-content-center">
+
+        <!-- ========================= -->
+        <!-- BOARD -->
+        <!-- ========================= -->
+
+        <div class="col-12 col-lg-8">
+
+            <div class="game-player-bar mb-2">
+
+                <div th:if="${viewerColor == 'WHITE'}">
+                    <strong th:text="${game.blackUsername}">
+                        Black
+                    </strong>
+
+                    <span class="text-body-secondary">
+                        Black
+                    </span>
+                </div>
+
+                <div th:if="${viewerColor == 'BLACK'}">
+                    <strong th:text="${game.whiteUsername}">
+                        White
+                    </strong>
+
+                    <span class="text-body-secondary">
+                        White
+                    </span>
+                </div>
+
+
+                <div class="game-clock">
+
+    <span id="top-clock"
+          th:attr="data-time=${viewerColor == 'WHITE'
+                  ? blackTimeRemainingMillis
+                  : whiteTimeRemainingMillis}">
+        --:--
+    </span>
+
+                </div>
+
+            </div>
+
+
+            <div id="chess-board"
+                 class="chess-board shadow-lg"
+                 th:attr="
+        data-game-id=${game.gameId},
+        data-fen=${game.currentFen},
+        data-orientation=${viewerColor},
+        data-status=${game.status}">
+            </div>
+
+
+            <div class="game-player-bar mt-2">
+
+                <div th:if="${viewerColor == 'WHITE'}">
+
+                    <strong th:text="${game.whiteUsername}">
+                        White
+                    </strong>
+
+                    <span class="text-body-secondary">
+                        White
+                    </span>
+
+                </div>
+
+                <div th:if="${viewerColor == 'BLACK'}">
+
+                    <strong th:text="${game.blackUsername}">
+                        Black
+                    </strong>
+
+                    <span class="text-body-secondary">
+                        Black
+                    </span>
+
+                </div>
+
+
+                <div class="game-clock">
+
+    <span id="bottom-clock"
+          th:attr="data-time=${viewerColor == 'WHITE'
+                  ? whiteTimeRemainingMillis
+                  : blackTimeRemainingMillis}">
+        --:--
+    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ========================= -->
+        <!-- GAME INFO -->
+        <!-- ========================= -->
+
+        <div class="col-12 col-lg-4">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body">
+
+                    <h4 class="card-title mb-4">
+                        Game
+                    </h4>
+
+
+                    <div class="mb-3">
+
+                        <div class="text-body-secondary small">
+                            Time control
+                        </div>
+
+                        <strong th:text="${game.timeControl}">
+                            RAPID
+                        </strong>
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <div class="text-body-secondary small">
+                            Type
+                        </div>
+
+                        <span th:if="${game.rated}"
+                              class="badge text-bg-warning">
+                            Rated
+                        </span>
+
+                        <span th:unless="${game.rated}"
+                              class="badge text-bg-secondary">
+                            Casual
+                        </span>
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <div class="text-body-secondary small">
+                            Status
+                        </div>
+
+                        <strong th:text="${game.status}">
+                            IN_PROGRESS
+                        </strong>
+
+                    </div>
+
+
+                    <div th:if="${game.result != null}"
+                         class="mb-3">
+
+                        <div class="text-body-secondary small">
+                            Result
+                        </div>
+
+                        <strong th:text="${game.result}">
+                        </strong>
+
+                    </div>
+
+
+                    <hr>
+
+
+                    <div class="d-grid gap-2">
+
+                        <button class="btn btn-outline-secondary"
+                                disabled>
+                            Offer Draw
+                        </button>
+
+                        <button class="btn btn-outline-danger"
+                                disabled>
+                            Resign
+                        </button>
+
+                    </div>
+
+                    <p class="small text-body-secondary mt-3 mb-0">
+                        Live controls will be enabled in the next step.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs/bundles/stomp.umd.min.js">
+</script>
+
+<script th:src="@{/js/game-board.js}">
+</script>
+
+</body>
+</html>

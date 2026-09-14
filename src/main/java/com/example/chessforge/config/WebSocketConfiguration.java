@@ -17,7 +17,8 @@ public class WebSocketConfiguration
     ) {
 
         registry.enableSimpleBroker(
-                "/topic"
+                "/topic",
+                "/queue"
         );
 
         registry.setApplicationDestinationPrefixes(
@@ -31,7 +32,12 @@ public class WebSocketConfiguration
     ) {
 
         registry.addEndpoint(
-                "/ws"
-        );
+                        "/ws"
+                )
+                .setAllowedOriginPatterns(
+                        "https://*.trycloudflare.com",
+                        "http://localhost:*",
+                        "http://127.0.0.1:*"
+                );
     }
 }

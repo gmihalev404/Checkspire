@@ -58,7 +58,7 @@ public class ChallengeService {
     }
 
     @Transactional
-    public Game acceptChallenge(
+    public void acceptChallenge(
             Challenge challenge,
             User opponent
     ) {
@@ -79,7 +79,13 @@ public class ChallengeService {
 
         challenge.setStatus(ChallengeStatus.ACCEPTED);
 
-        return gameService.createGameFromChallenge(challenge);
+        challenge.setStatus(
+                ChallengeStatus.ACCEPTED
+        );
+
+        challengeRepository.save(
+                challenge
+        );
     }
 
     @Transactional

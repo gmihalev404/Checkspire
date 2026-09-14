@@ -2,11 +2,15 @@ package com.example.chessforge.controller.game;
 
 import com.example.chessforge.model.entity.user.User;
 import com.example.chessforge.service.game.GameService;
+import com.example.chessforge.service.game.dto.GamePageResponse;
 import com.example.chessforge.service.user.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
 
@@ -45,5 +49,60 @@ public class GameController {
         );
 
         return "game/games";
+    }
+
+    @GetMapping("/games/{gameId}")
+    public String game(
+            @PathVariable Long gameId,
+            Principal principal,
+            Model model
+    ) {
+
+        User currentUser =
+                userService.findByUsername(
+                        principal.getName()
+                ).orElseThrow(() ->
+                        new IllegalStateException(
+                                "Authenticated user was not found."
+                        )
+                );
+
+        GamePageResponse page =
+                gameService.getGamePageForPlayer(
+                        gameId,
+                        currentUser
+                ).orElseThrow(() ->
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND
+                        )
+                );
+
+        model.addAttribute(
+                "game",
+                page.game()
+        );
+
+        model.addAttribute(
+                "viewerColor",
+                page.viewerColor()
+                        .name()
+        );
+
+        model.addAttribute(
+                "username",
+                currentUser.getUsername()
+        );
+
+        model.addAttribute(
+                "whiteTimeRemainingMillis",
+                page.whiteTimeRemainingMillis()
+        );
+
+        model.addAttribute(
+                "blackTimeRemainingMillis",
+                page.blackTimeRemainingMillis()
+        );
+
+        return "game/game";
     }
 }

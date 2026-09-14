@@ -15,6 +15,7 @@ import com.example.chessforge.model.enums.timeControl.TimeControlType;
 import com.example.chessforge.model.enums.tournament.TournamentMatchStatus;
 import com.example.chessforge.repository.game.GameMoveRepository;
 import com.example.chessforge.repository.game.GameRepository;
+import com.example.chessforge.service.game.dto.GamePageResponse;
 import com.example.chessforge.service.game.dto.GameStateResponse;
 import com.example.chessforge.service.game.dto.GameSummaryResponse;
 import com.example.chessforge.service.game.engine.GameEngine;
@@ -865,9 +866,65 @@ public class GameService {
         );
     }
 
+    public Optional<GamePageResponse> getGamePageForPlayer(
+            Long gameId,
+            User player
+    ) {
+
+        Optional<Game> gameOptional =
+                gameRepository.findById(
+                        gameId
+                );
+
+        if (gameOptional.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Game game =
+                gameOptional.get();
+
+        PieceColor viewerColor =
+                resolvePlayerColor(
+                        game,
+                        player
+                );
+
+        if (viewerColor == null) {
+            return Optional.empty();
+        }
+
+        GameStateResponse state =
+                gameStateMapper.toResponse(
+                        game
+                );
+
+        ClockSnapshot clockSnapshot =
+                calculateClockSnapshot(
+                        game
+                );
+
+        return Optional.of(new GamePageResponse(
+                gameStateMapper.toResponse(
+                        game
+                ),
+                viewerColor,
+                clockSnapshot.whiteMillis(),
+                clockSnapshot.blackMillis()
+        ));
+    }
+
     // =========================================================
     // HELPERS
     // =========================================================
+
+    private record ClockSnapshot(
+
+            long whiteMillis,
+
+            long blackMillis
+
+    ) {
+    }
 
     private void setRatingSnapshots(Game game) {
 
@@ -966,6 +1023,32 @@ public class GameService {
                 gameEngine.toFen(
                         GameState.initial()
                 )
+        );
+
+
+        long initialTimeMillis =
+                game.getTimeControl()
+                        .getInitialTimeSeconds()
+                        * 1000L;
+
+
+        game.setWhiteTimeRemainingMillis(
+                initialTimeMillis
+        );
+
+        game.setBlackTimeRemainingMillis(
+                initialTimeMillis
+        );
+
+
+        game.setWhiteTimeRemainingMillis(
+                (long)game.getTimeControl()
+                        .getInitialTimeSeconds()
+        );
+
+        game.setBlackTimeRemainingMillis(
+                (long)game.getTimeControl()
+                        .getInitialTimeSeconds()
         );
     }
 
@@ -1458,6 +1541,107 @@ public class GameService {
 
         return gameRepository.save(
                 game
+        );
+    }
+
+    private PieceColor resolvePlayerColor(
+            Game game,
+            User player
+    ) {
+
+        if (game.getWhitePlayer()
+                .getId()
+                .equals(
+                        player.getId()
+                )) {
+
+            return PieceColor.WHITE;
+        }
+
+        if (game.getBlackPlayer()
+                .getId()
+                .equals(
+                        player.getId()
+                )) {
+
+            return PieceColor.BLACK;
+        }
+
+        return null;
+    }
+
+    private ClockSnapshot calculateClockSnapshot(
+            Game game
+    ) {
+
+        long whiteMillis =
+                game.getWhiteTimeRemainingMillis();
+
+        long blackMillis =
+                game.getBlackTimeRemainingMillis();
+
+
+        if (
+                game.getStatus()
+                        != GameStatus.IN_PROGRESS
+                        || game.getTurnStartedAt() == null
+        ) {
+
+            return new ClockSnapshot(
+                    whiteMillis,
+                    blackMillis
+            );
+        }
+
+
+        LocalDateTime now =
+                LocalDateTime.now(
+                        clock
+                );
+
+
+        long elapsedMillis =
+                Math.max(
+                        0L,
+                        Duration.between(
+                                game.getTurnStartedAt(),
+                                now
+                        ).toMillis()
+                );
+
+
+        GameState state =
+                gameEngine.fromFen(
+                        game.getCurrentFen()
+                );
+
+
+        if (
+                state.getSideToMove()
+                        == PieceColor.WHITE
+        ) {
+
+            whiteMillis =
+                    Math.max(
+                            0L,
+                            whiteMillis
+                                    - elapsedMillis
+                    );
+
+        } else {
+
+            blackMillis =
+                    Math.max(
+                            0L,
+                            blackMillis
+                                    - elapsedMillis
+                    );
+        }
+
+
+        return new ClockSnapshot(
+                whiteMillis,
+                blackMillis
         );
     }
 }

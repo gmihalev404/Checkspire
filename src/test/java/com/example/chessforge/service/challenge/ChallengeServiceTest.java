@@ -316,7 +316,7 @@ class ChallengeServiceTest {
     }
 
     @Test
-    void acceptChallengeShouldAcceptChallengeAndCreateGame() {
+    void acceptChallengeShouldAcceptChallenge() {
 
         Challenge challenge =
                 createPendingChallenge(
@@ -324,30 +324,17 @@ class ChallengeServiceTest {
                         opponent
                 );
 
-        Game game = Game.builder()
-                .whitePlayer(challenger)
-                .blackPlayer(opponent)
-                .status(GameStatus.WAITING)
-                .build();
 
-        when(gameService.createGameFromChallenge(challenge))
-                .thenReturn(game);
+        challengeService.acceptChallenge(
+                challenge,
+                opponent
+        );
 
-        Game result =
-                challengeService.acceptChallenge(
-                        challenge,
-                        opponent
-                );
 
         assertEquals(
                 ChallengeStatus.ACCEPTED,
                 challenge.getStatus()
         );
-
-        assertEquals(game, result);
-
-        verify(gameService)
-                .createGameFromChallenge(challenge);
     }
 
     // =========================================================
