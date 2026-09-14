@@ -15,6 +15,7 @@ import com.example.chessforge.model.enums.timeControl.TimeControlType;
 import com.example.chessforge.model.enums.tournament.TournamentMatchStatus;
 import com.example.chessforge.repository.game.GameMoveRepository;
 import com.example.chessforge.repository.game.GameRepository;
+import com.example.chessforge.service.game.dto.GameMoveResponse;
 import com.example.chessforge.service.game.dto.GamePageResponse;
 import com.example.chessforge.service.game.dto.GameStateResponse;
 import com.example.chessforge.service.game.dto.GameSummaryResponse;
@@ -909,6 +910,43 @@ public class GameService {
                 clockSnapshot.whiteMillis(),
                 clockSnapshot.blackMillis()
         ));
+    }
+
+    public List<GameMoveResponse> getMoveHistory(
+            Long gameId,
+            User player
+    ) {
+
+        Game game =
+                gameRepository
+                        .findById(
+                                gameId
+                        )
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Game not found."
+                                )
+                        );
+
+
+        validateParticipant(
+                game,
+                player
+        );
+
+
+        return gameMoveRepository
+                .findByGameIdOrderByPlyNumberAsc(
+                        gameId
+                )
+                .stream()
+                .map(move ->
+                        new GameMoveResponse(
+                                move.getPlyNumber(),
+                                move.getSan()
+                        )
+                )
+                .toList();
     }
 
     // =========================================================

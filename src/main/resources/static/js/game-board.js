@@ -4,6 +4,10 @@ let orientation;
 let gameId;
 let gameStatus;
 
+let currentPgn = "";
+let copyPgnButton;
+let copyPgnResetTimeout = null;
+
 let gameResult;
 let gameTermination;
 
@@ -65,6 +69,7 @@ document.addEventListener(
             return;
         }
 
+
         gameId =
             boardElement.dataset.gameId;
 
@@ -78,10 +83,12 @@ document.addEventListener(
             boardElement.dataset.status;
 
         gameResult =
-            boardElement.dataset.result || null;
+            boardElement.dataset.result
+            || null;
 
         gameTermination =
-            boardElement.dataset.termination || null;
+            boardElement.dataset.termination
+            || null;
 
 
         gameResultElement =
@@ -99,6 +106,7 @@ document.addEventListener(
                 "game-result-reason"
             );
 
+
         const gameActions =
             document.getElementById(
                 "game-actions"
@@ -110,7 +118,9 @@ document.addEventListener(
             );
 
         const initialDrawOffer =
-            gameActions.dataset.drawOfferByUserId;
+            gameActions
+                .dataset
+                .drawOfferByUserId;
 
         drawOfferByUserId =
             initialDrawOffer
@@ -159,16 +169,32 @@ document.addEventListener(
             );
 
 
+        copyPgnButton =
+            document.getElementById(
+                "copy-pgn-button"
+            );
+
+
         initializeGameActions();
+        initializePgnCopy();
+
         updateGameActions();
         updateGameResult();
 
 
         renderBoard();
 
+        loadMoveHistory();
+
         initializeClocks();
 
-        startClockTicker();
+        if (
+            gameStatus
+            === "IN_PROGRESS"
+        ) {
+
+            startClockTicker();
+        }
 
         connectWebSocket();
     }
@@ -178,9 +204,11 @@ document.addEventListener(
 function connectWebSocket() {
 
     const protocol =
-        window.location.protocol === "https:"
+        window.location.protocol
+        === "https:"
             ? "wss"
             : "ws";
+
 
     stompClient =
         new StompJs.Client({
@@ -253,13 +281,13 @@ function handleGameState(
 
 
     /*
-     * Before changing the status, preserve
-     * the currently displayed clock values.
+     * Preserve the values currently visible
+     * to the user before changing game state.
      *
-     * This is needed when the game finishes
-     * through resign/draw agreement because
-     * the stored server clock belongs to the
-     * beginning of the current turn.
+     * For actions such as resignation,
+     * accepted draw or abort there is no move,
+     * so the stored server clocks may represent
+     * the beginning of the current turn.
      */
     const displayedClocks =
         getDisplayedClockValues();
@@ -292,6 +320,19 @@ function handleGameState(
         null;
 
 
+    /*
+     * The backend PGN is authoritative.
+     * Use it immediately when available.
+     */
+    if (gameState.pgn) {
+
+        currentPgn =
+            gameState.pgn;
+
+        updatePgnButton();
+    }
+
+
     renderBoard();
 
 
@@ -306,20 +347,35 @@ function handleGameState(
     if (positionChanged) {
 
         /*
-         * A move was made.
-         * The server clock values are authoritative.
+         * A chess move was made.
+         *
+         * Server clock values already contain
+         * the result of that move and are
+         * authoritative.
          */
         updateClocks(
             gameState.whiteTimeRemainingMillis,
             gameState.blackTimeRemainingMillis
         );
 
+        /*
+         * Refresh SAN history after every
+         * actual board position change.
+         */
+        loadMoveHistory();
+
     } else if (gameJustFinished) {
 
         /*
-         * Resign / accepted draw.
-         * Freeze the clocks exactly where
-         * they currently are on the client.
+         * No move caused the game to finish.
+         *
+         * Examples:
+         * - resignation
+         * - accepted draw
+         * - abort
+         *
+         * Keep exactly the clock values that
+         * were visible when the action happened.
          */
         updateClocks(
             displayedClocks.white,
@@ -330,7 +386,19 @@ function handleGameState(
 
     updateGameActions();
     updateGameResult();
+
+
+    if (
+        gameStatus
+        !== "IN_PROGRESS"
+    ) {
+
+        stopClockTicker();
+
+        renderClocks();
+    }
 }
+
 
 function getDisplayedClockValues() {
 
@@ -373,6 +441,7 @@ function getDisplayedClockValues() {
 
 
     return {
+
         white:
             Math.max(
                 0,
@@ -387,9 +456,11 @@ function getDisplayedClockValues() {
     };
 }
 
+
 function renderBoard() {
 
-    boardElement.innerHTML = "";
+    boardElement.innerHTML =
+        "";
 
 
     if (!currentFen) {
@@ -409,14 +480,50 @@ function renderBoard() {
 
     const files =
         orientation === "BLACK"
-            ? ["h", "g", "f", "e", "d", "c", "b", "a"]
-            : ["a", "b", "c", "d", "e", "f", "g", "h"];
+            ? [
+                "h",
+                "g",
+                "f",
+                "e",
+                "d",
+                "c",
+                "b",
+                "a"
+            ]
+            : [
+                "a",
+                "b",
+                "c",
+                "d",
+                "e",
+                "f",
+                "g",
+                "h"
+            ];
 
 
     const ranks =
         orientation === "BLACK"
-            ? [1, 2, 3, 4, 5, 6, 7, 8]
-            : [8, 7, 6, 5, 4, 3, 2, 1];
+            ? [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8
+            ]
+            : [
+                8,
+                7,
+                6,
+                5,
+                4,
+                3,
+                2,
+                1
+            ];
 
 
     ranks.forEach(
@@ -476,8 +583,9 @@ function renderBoard() {
 
                         pieceElement.classList.add(
                             "chess-piece",
-                            getPieceColor(piece)
-                                .toLowerCase()
+                            getPieceColor(
+                                piece
+                            ).toLowerCase()
                         );
 
                         pieceElement.textContent =
@@ -512,7 +620,9 @@ function renderBoard() {
                     }
 
 
-                    if (columnIndex === 0) {
+                    if (
+                        columnIndex === 0
+                    ) {
 
                         const rankLabel =
                             document.createElement(
@@ -532,7 +642,9 @@ function renderBoard() {
                     }
 
 
-                    if (rowIndex === 7) {
+                    if (
+                        rowIndex === 7
+                    ) {
 
                         const fileLabel =
                             document.createElement(
@@ -584,7 +696,9 @@ function handleSquareClick(
 
 
         if (
-            getPieceColor(piece)
+            getPieceColor(
+                piece
+            )
             !== orientation
         ) {
 
@@ -593,7 +707,9 @@ function handleSquareClick(
 
 
         if (
-            getSideToMove(currentFen)
+            getSideToMove(
+                currentFen
+            )
             !== orientation
         ) {
 
@@ -626,8 +742,9 @@ function handleSquareClick(
 
     if (
         piece
-        && getPieceColor(piece)
-        === orientation
+        && getPieceColor(
+            piece
+        ) === orientation
     ) {
 
         selectedSquare =
@@ -669,9 +786,9 @@ function sendMove(
         || !stompClient.connected
     ) {
 
-        // alert(
-        //     "WebSocket is not connected."
-        // );
+        console.error(
+            "WebSocket is not connected."
+        );
 
         return;
     }
@@ -683,10 +800,6 @@ function sendMove(
             to
         );
 
-
-    // alert(
-    //     `Sending move: ${from} -> ${to}`
-    // );
 
     stompClient.publish({
 
@@ -967,6 +1080,15 @@ function updateClocks(
 
 function startClockTicker() {
 
+    if (
+        gameStatus
+        !== "IN_PROGRESS"
+    ) {
+
+        return;
+    }
+
+
     if (clockInterval) {
 
         clearInterval(
@@ -980,6 +1102,23 @@ function startClockTicker() {
             renderClocks,
             100
         );
+}
+
+
+function stopClockTicker() {
+
+    if (!clockInterval) {
+        return;
+    }
+
+
+    clearInterval(
+        clockInterval
+    );
+
+
+    clockInterval =
+        null;
 }
 
 
@@ -1158,6 +1297,7 @@ function formatClock(
         )}`;
 }
 
+
 function initializeGameActions() {
 
     drawButton.addEventListener(
@@ -1165,11 +1305,15 @@ function initializeGameActions() {
         () => {
 
             if (
-                gameStatus !== "IN_PROGRESS"
-                || drawOfferByUserId !== null
+                gameStatus
+                !== "IN_PROGRESS"
+                || drawOfferByUserId
+                !== null
             ) {
+
                 return;
             }
+
 
             publishGameAction(
                 `/app/games/${gameId}/draw/offer`
@@ -1182,6 +1326,15 @@ function initializeGameActions() {
         "click",
         () => {
 
+            if (
+                gameStatus
+                !== "IN_PROGRESS"
+            ) {
+
+                return;
+            }
+
+
             publishGameAction(
                 `/app/games/${gameId}/draw/accept`
             );
@@ -1193,20 +1346,32 @@ function initializeGameActions() {
         "click",
         () => {
 
+            if (
+                gameStatus
+                !== "IN_PROGRESS"
+            ) {
+
+                return;
+            }
+
+
             publishGameAction(
                 `/app/games/${gameId}/draw/reject`
             );
         }
     );
 
+
     abortButton.addEventListener(
         "click",
         () => {
 
             if (
-                gameStatus !== "IN_PROGRESS"
+                gameStatus
+                !== "IN_PROGRESS"
                 || !canAbortGame()
             ) {
+
                 return;
             }
 
@@ -1215,6 +1380,7 @@ function initializeGameActions() {
                 window.confirm(
                     "Abort this game? The game will end without a result."
                 );
+
 
             if (!confirmed) {
                 return;
@@ -1233,19 +1399,24 @@ function initializeGameActions() {
         () => {
 
             if (
-                gameStatus !== "IN_PROGRESS"
+                gameStatus
+                !== "IN_PROGRESS"
             ) {
+
                 return;
             }
+
 
             const confirmed =
                 window.confirm(
                     "Are you sure you want to resign?"
                 );
 
+
             if (!confirmed) {
                 return;
             }
+
 
             publishGameAction(
                 `/app/games/${gameId}/resign`
@@ -1253,6 +1424,7 @@ function initializeGameActions() {
         }
     );
 }
+
 
 function publishGameAction(
     destination
@@ -1272,31 +1444,40 @@ function publishGameAction(
 
 
     stompClient.publish({
+
         destination:
         destination
     });
 }
+
 
 function canAbortGame() {
 
     const initialFen =
         "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-    return gameStatus === "IN_PROGRESS"
-        && currentFen === initialFen;
+
+    return gameStatus
+        === "IN_PROGRESS"
+        && currentFen
+        === initialFen;
 }
+
 
 function updateGameActions() {
 
     const gameInProgress =
-        gameStatus === "IN_PROGRESS";
+        gameStatus
+        === "IN_PROGRESS";
 
 
     resignButton.disabled =
         !gameInProgress;
 
+
     const abortAllowed =
         canAbortGame();
+
 
     abortButton.disabled =
         !abortAllowed;
@@ -1309,14 +1490,20 @@ function updateGameActions() {
 
     if (!gameInProgress) {
 
-        drawButton.disabled = true;
+        drawButton.disabled =
+            true;
 
-        acceptDrawButton.disabled = true;
-        rejectDrawButton.disabled = true;
+        acceptDrawButton.disabled =
+            true;
+
+        rejectDrawButton.disabled =
+            true;
+
 
         drawDefaultActions.classList.remove(
             "d-none"
         );
+
 
         drawResponseActions.classList.remove(
             "d-flex"
@@ -1326,24 +1513,31 @@ function updateGameActions() {
             "d-none"
         );
 
+
         drawButton.classList.remove(
             "d-none"
         );
+
 
         drawStatus.textContent =
             gameStatus === "ABORTED"
                 ? "Game aborted."
                 : "Game finished.";
 
+
         return;
     }
 
 
-    if (drawOfferByUserId === null) {
+    if (
+        drawOfferByUserId
+        === null
+    ) {
 
         drawDefaultActions.classList.remove(
             "d-none"
         );
+
 
         drawResponseActions.classList.remove(
             "d-flex"
@@ -1353,17 +1547,20 @@ function updateGameActions() {
             "d-none"
         );
 
+
         drawButton.classList.remove(
             "d-none"
         );
 
-        drawButton.disabled = false;
+        drawButton.disabled =
+            false;
 
         drawButton.textContent =
             "Offer Draw";
 
         drawStatus.textContent =
             "";
+
 
         return;
     }
@@ -1378,6 +1575,7 @@ function updateGameActions() {
             "d-none"
         );
 
+
         drawResponseActions.classList.remove(
             "d-flex"
         );
@@ -1386,17 +1584,20 @@ function updateGameActions() {
             "d-none"
         );
 
+
         drawButton.classList.remove(
             "d-none"
         );
 
-        drawButton.disabled = true;
+        drawButton.disabled =
+            true;
 
         drawButton.textContent =
             "Draw Offered";
 
         drawStatus.textContent =
             "Waiting for opponent to respond.";
+
 
         return;
     }
@@ -1406,9 +1607,11 @@ function updateGameActions() {
         "d-none"
     );
 
+
     drawButton.classList.add(
         "d-none"
     );
+
 
     drawResponseActions.classList.remove(
         "d-none"
@@ -1418,17 +1621,24 @@ function updateGameActions() {
         "d-flex"
     );
 
-    acceptDrawButton.disabled = false;
-    rejectDrawButton.disabled = false;
+
+    acceptDrawButton.disabled =
+        false;
+
+    rejectDrawButton.disabled =
+        false;
+
 
     drawStatus.textContent =
         "Opponent offered a draw.";
 }
 
+
 function updateGameResult() {
 
     if (
-        gameStatus === "ABORTED"
+        gameStatus
+        === "ABORTED"
     ) {
 
         gameResultElement.classList.remove(
@@ -1444,8 +1654,10 @@ function updateGameResult() {
         return;
     }
 
+
     if (
-        gameStatus !== "FINISHED"
+        gameStatus
+        !== "FINISHED"
         || !gameResult
     ) {
 
@@ -1462,24 +1674,36 @@ function updateGameResult() {
     );
 
 
-    switch (gameResult) {
+    switch (
+        gameResult
+        ) {
 
         case "WHITE_WIN":
+
             gameResultScore.textContent =
                 "1–0";
+
             break;
+
 
         case "BLACK_WIN":
+
             gameResultScore.textContent =
                 "0–1";
+
             break;
+
 
         case "DRAW":
+
             gameResultScore.textContent =
                 "½–½";
+
             break;
 
+
         default:
+
             gameResultScore.textContent =
                 "";
     }
@@ -1491,11 +1715,14 @@ function updateGameResult() {
         );
 }
 
+
 function getTerminationText(
     termination
 ) {
 
-    switch (termination) {
+    switch (
+        termination
+        ) {
 
         case "CHECKMATE":
             return "Checkmate";
@@ -1534,6 +1761,7 @@ function getTerminationText(
             return "Game aborted";
 
         default:
+
             return termination
                 ? termination
                     .replaceAll(
@@ -1542,5 +1770,426 @@ function getTerminationText(
                     )
                     .toLowerCase()
                 : "";
+    }
+}
+
+
+async function loadMoveHistory() {
+
+    const moveHistoryElement =
+        document.getElementById(
+            "move-history"
+        );
+
+
+    if (!moveHistoryElement) {
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/games/${gameId}/moves`
+            );
+
+
+        if (!response.ok) {
+
+            console.error(
+                "Failed to load move history."
+            );
+
+            return;
+        }
+
+
+        const moves =
+            await response.json();
+
+
+        /*
+         * On page load we may not yet have
+         * received a WebSocket GameState.
+         *
+         * Build a valid movetext PGN from
+         * persisted SAN moves in that case.
+         */
+        currentPgn =
+            buildPgnFromMoves(
+                moves
+            );
+
+
+        updatePgnButton();
+
+
+        renderMoveHistory(
+            moves
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Failed to load move history:",
+            error
+        );
+    }
+}
+
+
+function renderMoveHistory(
+    moves
+) {
+
+    const moveHistoryElement =
+        document.getElementById(
+            "move-history"
+        );
+
+
+    if (!moveHistoryElement) {
+        return;
+    }
+
+
+    moveHistoryElement.innerHTML =
+        "";
+
+
+    if (
+        !moves
+        || moves.length === 0
+    ) {
+
+        const emptyElement =
+            document.createElement(
+                "div"
+            );
+
+
+        emptyElement.classList.add(
+            "move-history-empty"
+        );
+
+
+        emptyElement.textContent =
+            "No moves yet.";
+
+
+        moveHistoryElement.appendChild(
+            emptyElement
+        );
+
+
+        return;
+    }
+
+
+    const moveRows =
+        new Map();
+
+
+    moves.forEach(
+        move => {
+
+            const moveNumber =
+                Math.ceil(
+                    move.plyNumber / 2
+                );
+
+
+            if (
+                !moveRows.has(
+                    moveNumber
+                )
+            ) {
+
+                moveRows.set(
+                    moveNumber,
+                    {
+                        white: "",
+                        black: ""
+                    }
+                );
+            }
+
+
+            const row =
+                moveRows.get(
+                    moveNumber
+                );
+
+
+            if (
+                move.plyNumber % 2
+                === 1
+            ) {
+
+                row.white =
+                    move.san;
+
+            } else {
+
+                row.black =
+                    move.san;
+            }
+        }
+    );
+
+
+    moveRows.forEach(
+        (
+            movesForTurn,
+            moveNumber
+        ) => {
+
+            const rowElement =
+                document.createElement(
+                    "div"
+                );
+
+
+            rowElement.classList.add(
+                "move-history-row"
+            );
+
+
+            const numberElement =
+                document.createElement(
+                    "span"
+                );
+
+
+            numberElement.classList.add(
+                "move-number"
+            );
+
+
+            numberElement.textContent =
+                `${moveNumber}.`;
+
+
+            const whiteMoveElement =
+                document.createElement(
+                    "span"
+                );
+
+
+            whiteMoveElement.classList.add(
+                "move-san"
+            );
+
+
+            whiteMoveElement.textContent =
+                movesForTurn.white;
+
+
+            const blackMoveElement =
+                document.createElement(
+                    "span"
+                );
+
+
+            blackMoveElement.classList.add(
+                "move-san"
+            );
+
+
+            blackMoveElement.textContent =
+                movesForTurn.black;
+
+
+            rowElement.appendChild(
+                numberElement
+            );
+
+            rowElement.appendChild(
+                whiteMoveElement
+            );
+
+            rowElement.appendChild(
+                blackMoveElement
+            );
+
+
+            moveHistoryElement.appendChild(
+                rowElement
+            );
+        }
+    );
+
+
+    moveHistoryElement.scrollTop =
+        moveHistoryElement.scrollHeight;
+}
+
+
+function initializePgnCopy() {
+
+    if (!copyPgnButton) {
+        return;
+    }
+
+
+    copyPgnButton.addEventListener(
+        "click",
+        async () => {
+
+            if (!currentPgn) {
+                return;
+            }
+
+
+            try {
+
+                await navigator.clipboard
+                    .writeText(
+                        currentPgn
+                    );
+
+
+                if (copyPgnResetTimeout) {
+
+                    clearTimeout(
+                        copyPgnResetTimeout
+                    );
+                }
+
+
+                copyPgnButton.textContent =
+                    "Copied!";
+
+                copyPgnButton.disabled =
+                    true;
+
+
+                copyPgnResetTimeout =
+                    setTimeout(
+                        () => {
+
+                            copyPgnButton.textContent =
+                                "Copy PGN";
+
+                            copyPgnResetTimeout =
+                                null;
+
+                            updatePgnButton();
+                        },
+                        1500
+                    );
+
+
+            } catch (error) {
+
+                console.error(
+                    "Failed to copy PGN:",
+                    error
+                );
+            }
+        }
+    );
+
+
+    updatePgnButton();
+}
+
+
+function updatePgnButton() {
+
+    if (!copyPgnButton) {
+        return;
+    }
+
+
+    copyPgnButton.disabled =
+        !currentPgn
+        || copyPgnResetTimeout
+        !== null;
+}
+
+
+function buildPgnFromMoves(
+    moves
+) {
+
+    if (
+        !moves
+        || moves.length === 0
+    ) {
+
+        return "";
+    }
+
+
+    const turns = [];
+
+
+    for (
+        let index = 0;
+        index < moves.length;
+        index += 2
+    ) {
+
+        const whiteMove =
+            moves[index];
+
+        const blackMove =
+            moves[index + 1];
+
+
+        const moveNumber =
+            Math.ceil(
+                whiteMove.plyNumber / 2
+            );
+
+
+        let turn =
+            `${moveNumber}. ${whiteMove.san}`;
+
+
+        if (blackMove) {
+
+            turn +=
+                ` ${blackMove.san}`;
+        }
+
+
+        turns.push(
+            turn
+        );
+    }
+
+
+    turns.push(
+        getPgnResultToken()
+    );
+
+
+    return turns.join(
+        " "
+    );
+}
+
+
+function getPgnResultToken() {
+
+    switch (
+        gameResult
+        ) {
+
+        case "WHITE_WIN":
+            return "1-0";
+
+        case "BLACK_WIN":
+            return "0-1";
+
+        case "DRAW":
+            return "1/2-1/2";
+
+        default:
+            return "*";
     }
 }

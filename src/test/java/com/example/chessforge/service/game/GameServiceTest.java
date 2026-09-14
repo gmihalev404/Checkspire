@@ -21,6 +21,7 @@ import com.example.chessforge.model.enums.tournament.TournamentParticipantStatus
 import com.example.chessforge.model.enums.user.UserStatus;
 import com.example.chessforge.repository.game.GameMoveRepository;
 import com.example.chessforge.repository.game.GameRepository;
+import com.example.chessforge.service.game.dto.GameMoveResponse;
 import com.example.chessforge.service.game.dto.GamePageResponse;
 import com.example.chessforge.service.game.dto.GameStateResponse;
 import com.example.chessforge.service.game.engine.GameEngine;
@@ -6135,6 +6136,231 @@ class GameServiceTest {
 
         verifyNoInteractions(
                 gameStateMapper
+        );
+    }
+
+    // =========================================================
+// GET MOVE HISTORY
+// =========================================================
+
+    @Test
+    void getMoveHistoryShouldReturnMovesInPlyOrder() {
+
+        Long gameId = 1L;
+
+        Game game =
+                createWaitingGame(
+                        challenger,
+                        opponent,
+                        TimeControl.values()[0]
+                );
+
+        setId(
+                game,
+                gameId
+        );
+
+
+        GameMove firstMove =
+                GameMove.builder()
+                        .game(game)
+                        .plyNumber(1)
+                        .san("e4")
+                        .build();
+
+        GameMove secondMove =
+                GameMove.builder()
+                        .game(game)
+                        .plyNumber(2)
+                        .san("e5")
+                        .build();
+
+        GameMove thirdMove =
+                GameMove.builder()
+                        .game(game)
+                        .plyNumber(3)
+                        .san("Nf3")
+                        .build();
+
+
+        when(
+                gameRepository.findById(
+                        gameId
+                )
+        ).thenReturn(
+                Optional.of(
+                        game
+                )
+        );
+
+        when(
+                gameMoveRepository
+                        .findByGameIdOrderByPlyNumberAsc(
+                                gameId
+                        )
+        ).thenReturn(
+                List.of(
+                        firstMove,
+                        secondMove,
+                        thirdMove
+                )
+        );
+
+
+        List<GameMoveResponse> result =
+                gameService.getMoveHistory(
+                        gameId,
+                        challenger
+                );
+
+
+        assertEquals(
+                3,
+                result.size()
+        );
+
+
+        assertEquals(
+                1,
+                result.get(0).plyNumber()
+        );
+
+        assertEquals(
+                "e4",
+                result.get(0).san()
+        );
+
+
+        assertEquals(
+                2,
+                result.get(1).plyNumber()
+        );
+
+        assertEquals(
+                "e5",
+                result.get(1).san()
+        );
+
+
+        assertEquals(
+                3,
+                result.get(2).plyNumber()
+        );
+
+        assertEquals(
+                "Nf3",
+                result.get(2).san()
+        );
+
+
+        verify(
+                gameMoveRepository
+        ).findByGameIdOrderByPlyNumberAsc(
+                gameId
+        );
+    }
+
+
+    @Test
+    void getMoveHistoryShouldRejectNonParticipant() {
+
+        Long gameId = 1L;
+
+        Game game =
+                createWaitingGame(
+                        challenger,
+                        opponent,
+                        TimeControl.values()[0]
+                );
+
+        setId(
+                game,
+                gameId
+        );
+
+
+        User outsider =
+                createUser(
+                        3L,
+                        "outsider",
+                        500,
+                        500,
+                        500,
+                        500
+                );
+
+
+        when(
+                gameRepository.findById(
+                        gameId
+                )
+        ).thenReturn(
+                Optional.of(
+                        game
+                )
+        );
+
+
+        IllegalArgumentException exception =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () ->
+                                gameService.getMoveHistory(
+                                        gameId,
+                                        outsider
+                                )
+                );
+
+
+        assertEquals(
+                "User is not a participant in this game.",
+                exception.getMessage()
+        );
+
+
+        verify(
+                gameMoveRepository,
+                never()
+        ).findByGameIdOrderByPlyNumberAsc(
+                anyLong()
+        );
+    }
+
+
+    @Test
+    void getMoveHistoryShouldRejectMissingGame() {
+
+        Long gameId = 999L;
+
+
+        when(
+                gameRepository.findById(
+                        gameId
+                )
+        ).thenReturn(
+                Optional.empty()
+        );
+
+
+        IllegalArgumentException exception =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () ->
+                                gameService.getMoveHistory(
+                                        gameId,
+                                        challenger
+                                )
+                );
+
+
+        assertEquals(
+                "Game not found.",
+                exception.getMessage()
+        );
+
+
+        verifyNoInteractions(
+                gameMoveRepository
         );
     }
 

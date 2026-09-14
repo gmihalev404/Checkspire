@@ -127,3 +127,45 @@
     text-shadow:
             0 1px 1px rgba(255, 255, 255, 0.30);
 }
+
+.move-history-card {
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.move-history-header {
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.move-history {
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.move-history-row {
+    display: grid;
+    grid-template-columns: 3rem 1fr 1fr;
+    gap: 0.5rem;
+    padding: 0.45rem 1rem;
+}
+
+.move-history-row:nth-child(even) {
+    background-color: rgba(128, 128, 128, 0.08);
+}
+
+.move-number {
+    opacity: 0.65;
+}
+
+.move-san {
+    font-weight: 500;
+}
+
+.move-history-empty {
+    padding: 1rem;
+    opacity: 0.65;
+    text-align: center;
+}
