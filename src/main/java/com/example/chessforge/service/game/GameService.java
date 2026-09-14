@@ -944,6 +944,8 @@ public class GameService {
                         new GameMoveResponse(
                                 move.getPlyNumber(),
                                 move.getSan(),
+                                move.getFromSquare(),
+                                move.getToSquare(),
                                 move.getFenAfter()
                         )
                 )

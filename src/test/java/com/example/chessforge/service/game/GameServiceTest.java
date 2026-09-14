@@ -6160,12 +6160,13 @@ class GameServiceTest {
                 gameId
         );
 
-
         GameMove firstMove =
                 GameMove.builder()
                         .game(game)
                         .plyNumber(1)
                         .san("e4")
+                        .fromSquare("e2")
+                        .toSquare("e4")
                         .fenAfter("fen-after-e4")
                         .build();
 
@@ -6174,6 +6175,8 @@ class GameServiceTest {
                         .game(game)
                         .plyNumber(2)
                         .san("e5")
+                        .fromSquare("e7")
+                        .toSquare("e5")
                         .fenAfter("fen-after-e5")
                         .build();
 
@@ -6182,6 +6185,8 @@ class GameServiceTest {
                         .game(game)
                         .plyNumber(3)
                         .san("Nf3")
+                        .fromSquare("g1")
+                        .toSquare("f3")
                         .fenAfter("fen-after-nf3")
                         .build();
 
@@ -6270,6 +6275,15 @@ class GameServiceTest {
                 result.get(2).fenAfter()
         );
 
+        assertEquals(
+                "e2",
+                result.get(0).fromSquare()
+        );
+
+        assertEquals(
+                "e4",
+                result.get(0).toSquare()
+        );
 
         verify(
                 gameMoveRepository

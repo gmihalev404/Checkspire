@@ -51,21 +51,29 @@ class GameHistoryControllerTest {
 
         Long gameId = 1L;
 
+
+
         List<GameMoveResponse> moves =
                 List.of(
                         new GameMoveResponse(
                                 1,
+                                "e4",
+                                "e2",
                                 "e4",
                                 "fen-1"
                         ),
                         new GameMoveResponse(
                                 2,
                                 "e5",
+                                "e7",
+                                "e5",
                                 "fen-2"
                         ),
                         new GameMoveResponse(
                                 3,
                                 "Nf3",
+                                "g8",
+                                "f3",
                                 "fen-3"
                         )
                 );

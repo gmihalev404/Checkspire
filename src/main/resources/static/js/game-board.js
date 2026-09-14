@@ -5,7 +5,6 @@ let gameId;
 let gameStatus;
 
 let moveHistory = [];
-
 let reviewPly = null;
 
 let reviewFirstButton;
@@ -13,7 +12,6 @@ let reviewPreviousButton;
 let reviewNextButton;
 let reviewLiveButton;
 let reviewPositionLabel;
-
 
 const INITIAL_FEN =
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -52,6 +50,30 @@ let clockAnchor = 0;
 let clockInterval = null;
 
 
+// =========================================================
+// DRAG STATE
+// =========================================================
+
+let dragPointerId = null;
+let dragFromSquare = null;
+
+let dragStartX = 0;
+let dragStartY = 0;
+
+let dragActive = false;
+
+let dragGhost = null;
+let dragSourceSquare = null;
+
+let ignoreBoardClicksUntil = 0;
+
+const DRAG_THRESHOLD = 6;
+
+
+// =========================================================
+// PIECES
+// =========================================================
+
 const PIECES = {
 
     K: "♚",
@@ -69,6 +91,10 @@ const PIECES = {
     p: "♟"
 };
 
+
+// =========================================================
+// INITIALIZATION
+// =========================================================
 
 document.addEventListener(
     "DOMContentLoaded",
@@ -119,6 +145,7 @@ document.addEventListener(
             document.getElementById(
                 "game-result-reason"
             );
+
 
         reviewFirstButton =
             document.getElementById(
@@ -217,10 +244,10 @@ document.addEventListener(
         initializeGameActions();
         initializePgnCopy();
         initializeMoveReview();
+        initializeBoardDragging();
 
         updateGameActions();
         updateGameResult();
-
 
         renderBoard();
 
@@ -229,8 +256,7 @@ document.addEventListener(
         initializeClocks();
 
         if (
-            gameStatus
-            === "IN_PROGRESS"
+            gameStatus === "IN_PROGRESS"
         ) {
 
             startClockTicker();
@@ -241,11 +267,14 @@ document.addEventListener(
 );
 
 
+// =========================================================
+// WEBSOCKET
+// =========================================================
+
 function connectWebSocket() {
 
     const protocol =
-        window.location.protocol
-        === "https:"
+        window.location.protocol === "https:"
             ? "wss"
             : "ws";
 
@@ -320,15 +349,6 @@ function handleGameState(
         gameStatus;
 
 
-    /*
-     * Preserve the values currently visible
-     * to the user before changing game state.
-     *
-     * For actions such as resignation,
-     * accepted draw or abort there is no move,
-     * so the stored server clocks may represent
-     * the beginning of the current turn.
-     */
     const displayedClocks =
         getDisplayedClockValues();
 
@@ -360,10 +380,6 @@ function handleGameState(
         null;
 
 
-    /*
-     * The backend PGN is authoritative.
-     * Use it immediately when available.
-     */
     if (gameState.pgn) {
 
         currentPgn =
@@ -386,37 +402,15 @@ function handleGameState(
 
     if (positionChanged) {
 
-        /*
-         * A chess move was made.
-         *
-         * Server clock values already contain
-         * the result of that move and are
-         * authoritative.
-         */
         updateClocks(
             gameState.whiteTimeRemainingMillis,
             gameState.blackTimeRemainingMillis
         );
 
-        /*
-         * Refresh SAN history after every
-         * actual board position change.
-         */
         loadMoveHistory();
 
     } else if (gameJustFinished) {
 
-        /*
-         * No move caused the game to finish.
-         *
-         * Examples:
-         * - resignation
-         * - accepted draw
-         * - abort
-         *
-         * Keep exactly the clock values that
-         * were visible when the action happened.
-         */
         updateClocks(
             displayedClocks.white,
             displayedClocks.black
@@ -429,8 +423,7 @@ function handleGameState(
 
 
     if (
-        gameStatus
-        !== "IN_PROGRESS"
+        gameStatus !== "IN_PROGRESS"
     ) {
 
         stopClockTicker();
@@ -439,6 +432,10 @@ function handleGameState(
     }
 }
 
+
+// =========================================================
+// CLOCKS
+// =========================================================
 
 function getDisplayedClockValues() {
 
@@ -450,8 +447,7 @@ function getDisplayedClockValues() {
 
 
     if (
-        gameStatus
-        === "IN_PROGRESS"
+        gameStatus === "IN_PROGRESS"
     ) {
 
         const elapsed =
@@ -465,8 +461,7 @@ function getDisplayedClockValues() {
 
 
         if (
-            sideToMove
-            === "WHITE"
+            sideToMove === "WHITE"
         ) {
 
             displayedWhite -=
@@ -497,6 +492,45 @@ function getDisplayedClockValues() {
 }
 
 
+// =========================================================
+// BOARD
+// =========================================================
+
+function getHighlightedMove() {
+
+    if (
+        moveHistory.length === 0
+    ) {
+
+        return null;
+    }
+
+
+    if (
+        reviewPly === 0
+    ) {
+
+        return null;
+    }
+
+
+    if (
+        reviewPly !== null
+    ) {
+
+        return moveHistory.find(
+            move =>
+                move.plyNumber
+                === reviewPly
+        ) || null;
+    }
+
+
+    return moveHistory[
+    moveHistory.length - 1
+        ];
+}
+
 function renderBoard() {
 
     boardElement.innerHTML =
@@ -521,6 +555,8 @@ function renderBoard() {
             displayedFen
         );
 
+    const highlightedMove =
+        getHighlightedMove();
 
     const files =
         orientation === "BLACK"
@@ -611,11 +647,39 @@ function renderBoard() {
                     square.dataset.square =
                         squareName;
 
+                    if (
+                        highlightedMove
+                        && (
+                            squareName
+                            === highlightedMove.fromSquare
+                            || squareName
+                            === highlightedMove.toSquare
+                        )
+                    ) {
+
+                        square.classList.add(
+                            "last-move"
+                        );
+                    }
+
 
                     const piece =
                         position[
                             squareName
                             ];
+
+
+                    if (
+                        piece
+                        && canDragPiece(
+                            piece
+                        )
+                    ) {
+
+                        square.classList.add(
+                            "draggable-piece"
+                        );
+                    }
 
 
                     if (piece) {
@@ -625,6 +689,7 @@ function renderBoard() {
                                 "span"
                             );
 
+
                         pieceElement.classList.add(
                             "chess-piece",
                             getPieceColor(
@@ -632,8 +697,18 @@ function renderBoard() {
                             ).toLowerCase()
                         );
 
+
                         pieceElement.textContent =
                             PIECES[piece];
+
+
+                        /*
+                         * Native browser dragging is disabled.
+                         * Pointer Events handle the chess drag.
+                         */
+                        pieceElement.draggable =
+                            false;
+
 
                         square.appendChild(
                             pieceElement
@@ -644,6 +719,15 @@ function renderBoard() {
                     square.addEventListener(
                         "click",
                         () => {
+
+                            if (
+                                performance.now()
+                                < ignoreBoardClicksUntil
+                            ) {
+
+                                return;
+                            }
+
 
                             handleSquareClick(
                                 squareName,
@@ -673,12 +757,15 @@ function renderBoard() {
                                 "span"
                             );
 
+
                         rankLabel.classList.add(
                             "rank-label"
                         );
 
+
                         rankLabel.textContent =
                             rank;
+
 
                         square.appendChild(
                             rankLabel
@@ -695,12 +782,15 @@ function renderBoard() {
                                 "span"
                             );
 
+
                         fileLabel.classList.add(
                             "file-label"
                         );
 
+
                         fileLabel.textContent =
                             file;
+
 
                         square.appendChild(
                             fileLabel
@@ -722,6 +812,7 @@ function handleSquareClick(
     square,
     piece
 ) {
+
     if (
         reviewPly !== null
     ) {
@@ -729,9 +820,9 @@ function handleSquareClick(
         return;
     }
 
+
     if (
-        gameStatus
-        !== "IN_PROGRESS"
+        gameStatus !== "IN_PROGRESS"
     ) {
 
         return;
@@ -748,8 +839,7 @@ function handleSquareClick(
         if (
             getPieceColor(
                 piece
-            )
-            !== orientation
+            ) !== orientation
         ) {
 
             return;
@@ -759,8 +849,7 @@ function handleSquareClick(
         if (
             getSideToMove(
                 currentFen
-            )
-            !== orientation
+            ) !== orientation
         ) {
 
             return;
@@ -777,8 +866,7 @@ function handleSquareClick(
 
 
     if (
-        square
-        === selectedSquare
+        square === selectedSquare
     ) {
 
         selectedSquare =
@@ -825,6 +913,532 @@ function handleSquareClick(
     );
 }
 
+
+// =========================================================
+// DRAG AND DROP
+// =========================================================
+
+function canDragPiece(
+    piece
+) {
+
+    if (!piece) {
+        return false;
+    }
+
+
+    if (
+        reviewPly !== null
+    ) {
+
+        return false;
+    }
+
+
+    if (
+        gameStatus !== "IN_PROGRESS"
+    ) {
+
+        return false;
+    }
+
+
+    if (
+        getPieceColor(
+            piece
+        ) !== orientation
+    ) {
+
+        return false;
+    }
+
+
+    return getSideToMove(
+        currentFen
+    ) === orientation;
+}
+
+
+function initializeBoardDragging() {
+
+    /*
+     * IMPORTANT:
+     *
+     * We listen for pointerdown on the SQUARE,
+     * not on .chess-piece.
+     *
+     * .chess-piece uses pointer-events: none
+     * so mouse/touch events pass directly to
+     * the square.
+     */
+    boardElement.addEventListener(
+        "pointerdown",
+        event => {
+
+            if (
+                event.button !== undefined
+                && event.button !== 0
+            ) {
+
+                return;
+            }
+
+
+            const squareElement =
+                event.target.closest(
+                    ".chess-square"
+                );
+
+
+            if (
+                !squareElement
+                || !boardElement.contains(
+                    squareElement
+                )
+            ) {
+
+                return;
+            }
+
+
+            const squareName =
+                squareElement.dataset.square;
+
+
+            const position =
+                parseFen(
+                    currentFen
+                );
+
+
+            const piece =
+                position[squareName];
+
+
+            if (
+                !canDragPiece(
+                    piece
+                )
+            ) {
+
+                return;
+            }
+
+
+            dragPointerId =
+                event.pointerId;
+
+            dragFromSquare =
+                squareName;
+
+            dragStartX =
+                event.clientX;
+
+            dragStartY =
+                event.clientY;
+
+            dragActive =
+                false;
+
+            dragSourceSquare =
+                squareElement;
+        }
+    );
+
+
+    document.addEventListener(
+        "pointermove",
+        event => {
+
+            if (
+                dragPointerId === null
+                || event.pointerId
+                !== dragPointerId
+            ) {
+
+                return;
+            }
+
+
+            const dx =
+                event.clientX
+                - dragStartX;
+
+            const dy =
+                event.clientY
+                - dragStartY;
+
+
+            const distance =
+                Math.hypot(
+                    dx,
+                    dy
+                );
+
+
+            if (
+                !dragActive
+                && distance < DRAG_THRESHOLD
+            ) {
+
+                return;
+            }
+
+
+            if (!dragActive) {
+
+                dragActive =
+                    true;
+
+                selectedSquare =
+                    null;
+
+
+                createDragGhost();
+
+
+                if (dragSourceSquare) {
+
+                    dragSourceSquare.classList.add(
+                        "drag-source"
+                    );
+                }
+
+
+                boardElement.classList.add(
+                    "is-dragging"
+                );
+            }
+
+
+            event.preventDefault();
+
+
+            moveDragGhost(
+                event.clientX,
+                event.clientY
+            );
+
+
+            updateDragTarget(
+                event.clientX,
+                event.clientY
+            );
+        },
+        {
+            passive: false
+        }
+    );
+
+
+    document.addEventListener(
+        "pointerup",
+        event => {
+
+            if (
+                dragPointerId === null
+                || event.pointerId
+                !== dragPointerId
+            ) {
+
+                return;
+            }
+
+
+            /*
+             * Normal click.
+             *
+             * Do not consume it.
+             * The existing square click handler
+             * will perform click-click movement.
+             */
+            if (!dragActive) {
+
+                resetPointerDrag();
+
+                return;
+            }
+
+
+            event.preventDefault();
+
+
+            const from =
+                dragFromSquare;
+
+
+            const targetElement =
+                document.elementFromPoint(
+                    event.clientX,
+                    event.clientY
+                );
+
+
+            const targetSquare =
+                targetElement
+                    ?.closest(
+                        ".chess-square"
+                    );
+
+
+            const to =
+                targetSquare
+                    ?.dataset
+                    ?.square;
+
+
+            ignoreBoardClicksUntil =
+                performance.now()
+                + 300;
+
+
+            resetPointerDrag();
+
+
+            if (
+                !from
+                || !to
+                || from === to
+            ) {
+
+                return;
+            }
+
+
+            selectedSquare =
+                null;
+
+
+            sendMove(
+                from,
+                to
+            );
+        }
+    );
+
+
+    document.addEventListener(
+        "pointercancel",
+        event => {
+
+            if (
+                event.pointerId
+                !== dragPointerId
+            ) {
+
+                return;
+            }
+
+
+            resetPointerDrag();
+        }
+    );
+}
+
+
+function createDragGhost() {
+
+    if (!dragSourceSquare) {
+        return;
+    }
+
+
+    const sourcePiece =
+        dragSourceSquare.querySelector(
+            ".chess-piece"
+        );
+
+
+    if (!sourcePiece) {
+        return;
+    }
+
+
+    dragGhost =
+        sourcePiece.cloneNode(
+            true
+        );
+
+
+    const sourceRect =
+        sourcePiece.getBoundingClientRect();
+
+
+    const computedStyle =
+        window.getComputedStyle(
+            sourcePiece
+        );
+
+
+    dragGhost.classList.add(
+        "drag-ghost"
+    );
+
+
+    dragGhost.style.position =
+        "fixed";
+
+    dragGhost.style.left =
+        `${dragStartX}px`;
+
+    dragGhost.style.top =
+        `${dragStartY}px`;
+
+    dragGhost.style.width =
+        `${sourceRect.width}px`;
+
+    dragGhost.style.height =
+        `${sourceRect.height}px`;
+
+    dragGhost.style.display =
+        "flex";
+
+    dragGhost.style.alignItems =
+        "center";
+
+    dragGhost.style.justifyContent =
+        "center";
+
+    dragGhost.style.transform =
+        "translate(-50%, -50%)";
+
+    dragGhost.style.pointerEvents =
+        "none";
+
+    dragGhost.style.zIndex =
+        "99999";
+
+    dragGhost.style.fontSize =
+        computedStyle.fontSize;
+
+    dragGhost.style.lineHeight =
+        computedStyle.lineHeight;
+
+
+    document.body.appendChild(
+        dragGhost
+    );
+}
+
+
+function moveDragGhost(
+    x,
+    y
+) {
+
+    if (!dragGhost) {
+        return;
+    }
+
+
+    dragGhost.style.left =
+        `${x}px`;
+
+    dragGhost.style.top =
+        `${y}px`;
+}
+
+
+function updateDragTarget(
+    x,
+    y
+) {
+
+    clearDragTargets();
+
+
+    const element =
+        document.elementFromPoint(
+            x,
+            y
+        );
+
+
+    const square =
+        element
+            ?.closest(
+                ".chess-square"
+            );
+
+
+    if (
+        !square
+        || !boardElement.contains(
+            square
+        )
+    ) {
+
+        return;
+    }
+
+
+    square.classList.add(
+        "drag-target"
+    );
+}
+
+
+function clearDragTargets() {
+
+    document
+        .querySelectorAll(
+            ".chess-square.drag-target"
+        )
+        .forEach(
+            square => {
+
+                square.classList.remove(
+                    "drag-target"
+                );
+            }
+        );
+}
+
+
+function resetPointerDrag() {
+
+    if (dragGhost) {
+
+        dragGhost.remove();
+
+        dragGhost =
+            null;
+    }
+
+
+    if (dragSourceSquare) {
+
+        dragSourceSquare.classList.remove(
+            "drag-source"
+        );
+
+        dragSourceSquare =
+            null;
+    }
+
+
+    boardElement.classList.remove(
+        "is-dragging"
+    );
+
+
+    clearDragTargets();
+
+
+    dragPointerId =
+        null;
+
+    dragFromSquare =
+        null;
+
+    dragActive =
+        false;
+}
+
+
+// =========================================================
+// SEND MOVE
+// =========================================================
 
 function sendMove(
     from,
@@ -951,6 +1565,10 @@ function switchPromotion(
 }
 
 
+// =========================================================
+// FEN
+// =========================================================
+
 function parseFen(
     fen
 ) {
@@ -1036,11 +1654,16 @@ function getSideToMove(
     const side =
         fen.split(" ")[1];
 
+
     return side === "w"
         ? "WHITE"
         : "BLACK";
 }
 
+
+// =========================================================
+// CLOCK
+// =========================================================
 
 function initializeClocks() {
 
@@ -1076,8 +1699,7 @@ function initializeClocks() {
 
 
     if (
-        orientation
-        === "WHITE"
+        orientation === "WHITE"
     ) {
 
         blackClockMillis =
@@ -1131,8 +1753,7 @@ function updateClocks(
 function startClockTicker() {
 
     if (
-        gameStatus
-        !== "IN_PROGRESS"
+        gameStatus !== "IN_PROGRESS"
     ) {
 
         return;
@@ -1202,8 +1823,7 @@ function renderClocks() {
 
 
     if (
-        gameStatus
-        === "IN_PROGRESS"
+        gameStatus === "IN_PROGRESS"
     ) {
 
         const elapsed =
@@ -1218,8 +1838,7 @@ function renderClocks() {
 
 
         if (
-            sideToMove
-            === "WHITE"
+            sideToMove === "WHITE"
         ) {
 
             displayedWhite -=
@@ -1247,8 +1866,7 @@ function renderClocks() {
 
 
     if (
-        orientation
-        === "WHITE"
+        orientation === "WHITE"
     ) {
 
         topClock.textContent =
@@ -1298,8 +1916,7 @@ function formatClock(
 
 
     if (
-        milliseconds
-        < 20_000
+        milliseconds < 20_000
     ) {
 
         const seconds =
@@ -1348,6 +1965,10 @@ function formatClock(
 }
 
 
+// =========================================================
+// GAME ACTIONS
+// =========================================================
+
 function initializeGameActions() {
 
     drawButton.addEventListener(
@@ -1355,10 +1976,8 @@ function initializeGameActions() {
         () => {
 
             if (
-                gameStatus
-                !== "IN_PROGRESS"
-                || drawOfferByUserId
-                !== null
+                gameStatus !== "IN_PROGRESS"
+                || drawOfferByUserId !== null
             ) {
 
                 return;
@@ -1377,8 +1996,7 @@ function initializeGameActions() {
         () => {
 
             if (
-                gameStatus
-                !== "IN_PROGRESS"
+                gameStatus !== "IN_PROGRESS"
             ) {
 
                 return;
@@ -1397,8 +2015,7 @@ function initializeGameActions() {
         () => {
 
             if (
-                gameStatus
-                !== "IN_PROGRESS"
+                gameStatus !== "IN_PROGRESS"
             ) {
 
                 return;
@@ -1417,8 +2034,7 @@ function initializeGameActions() {
         () => {
 
             if (
-                gameStatus
-                !== "IN_PROGRESS"
+                gameStatus !== "IN_PROGRESS"
                 || !canAbortGame()
             ) {
 
@@ -1449,8 +2065,7 @@ function initializeGameActions() {
         () => {
 
             if (
-                gameStatus
-                !== "IN_PROGRESS"
+                gameStatus !== "IN_PROGRESS"
             ) {
 
                 return;
@@ -1494,7 +2109,6 @@ function publishGameAction(
 
 
     stompClient.publish({
-
         destination:
         destination
     });
@@ -1503,22 +2117,15 @@ function publishGameAction(
 
 function canAbortGame() {
 
-    const initialFen =
-        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-
-
-    return gameStatus
-        === "IN_PROGRESS"
-        && currentFen
-        === initialFen;
+    return gameStatus === "IN_PROGRESS"
+        && currentFen === INITIAL_FEN;
 }
 
 
 function updateGameActions() {
 
     const gameInProgress =
-        gameStatus
-        === "IN_PROGRESS";
+        gameStatus === "IN_PROGRESS";
 
 
     resignButton.disabled =
@@ -1580,8 +2187,7 @@ function updateGameActions() {
 
 
     if (
-        drawOfferByUserId
-        === null
+        drawOfferByUserId === null
     ) {
 
         drawDefaultActions.classList.remove(
@@ -1617,8 +2223,7 @@ function updateGameActions() {
 
 
     if (
-        drawOfferByUserId
-        === viewerUserId
+        drawOfferByUserId === viewerUserId
     ) {
 
         drawDefaultActions.classList.remove(
@@ -1684,11 +2289,14 @@ function updateGameActions() {
 }
 
 
+// =========================================================
+// RESULT
+// =========================================================
+
 function updateGameResult() {
 
     if (
-        gameStatus
-        === "ABORTED"
+        gameStatus === "ABORTED"
     ) {
 
         gameResultElement.classList.remove(
@@ -1706,8 +2314,7 @@ function updateGameResult() {
 
 
     if (
-        gameStatus
-        !== "FINISHED"
+        gameStatus !== "FINISHED"
         || !gameResult
     ) {
 
@@ -1824,6 +2431,10 @@ function getTerminationText(
 }
 
 
+// =========================================================
+// MOVE HISTORY
+// =========================================================
+
 async function loadMoveHistory() {
 
     const moveHistoryElement =
@@ -1858,17 +2469,12 @@ async function loadMoveHistory() {
         const moves =
             await response.json();
 
+
         moveHistory =
             moves;
 
+        renderBoard();
 
-        /*
-         * On page load we may not yet have
-         * received a WebSocket GameState.
-         *
-         * Build a valid movetext PGN from
-         * persisted SAN moves in that case.
-         */
         currentPgn =
             buildPgnFromMoves(
                 moves
@@ -1881,6 +2487,7 @@ async function loadMoveHistory() {
         renderMoveHistory(
             moves
         );
+
 
         updateMoveReviewControls();
 
@@ -1925,16 +2532,20 @@ function renderMoveHistory(
                 "div"
             );
 
+
         emptyElement.classList.add(
             "move-history-empty"
         );
 
+
         emptyElement.textContent =
             "No moves yet.";
+
 
         moveHistoryElement.appendChild(
             emptyElement
         );
+
 
         return;
     }
@@ -1976,8 +2587,7 @@ function renderMoveHistory(
 
 
             if (
-                move.plyNumber % 2
-                === 1
+                move.plyNumber % 2 === 1
             ) {
 
                 row.white =
@@ -2003,6 +2613,7 @@ function renderMoveHistory(
                     "div"
                 );
 
+
             rowElement.classList.add(
                 "move-history-row"
             );
@@ -2013,9 +2624,11 @@ function renderMoveHistory(
                     "span"
                 );
 
+
             numberElement.classList.add(
                 "move-number"
             );
+
 
             numberElement.textContent =
                 `${moveNumber}.`;
@@ -2025,6 +2638,7 @@ function renderMoveHistory(
                 createMoveHistoryElement(
                     movesForTurn.white
                 );
+
 
             const blackMoveElement =
                 createMoveHistoryElement(
@@ -2064,6 +2678,10 @@ function renderMoveHistory(
     updateMoveSelection();
 }
 
+
+// =========================================================
+// PGN
+// =========================================================
 
 function initializePgnCopy() {
 
@@ -2144,8 +2762,7 @@ function updatePgnButton() {
 
     copyPgnButton.disabled =
         !currentPgn
-        || copyPgnResetTimeout
-        !== null;
+        || copyPgnResetTimeout !== null;
 }
 
 
@@ -2232,6 +2849,11 @@ function getPgnResultToken() {
     }
 }
 
+
+// =========================================================
+// REVIEW
+// =========================================================
+
 function getDisplayedBoardFen() {
 
     if (
@@ -2263,6 +2885,7 @@ function getDisplayedBoardFen() {
         || currentFen;
 }
 
+
 function createMoveHistoryElement(
     move
 ) {
@@ -2274,9 +2897,11 @@ function createMoveHistoryElement(
                 "span"
             );
 
+
         emptyElement.classList.add(
             "move-san"
         );
+
 
         return emptyElement;
     }
@@ -2329,6 +2954,7 @@ function createMoveHistoryElement(
     return moveElement;
 }
 
+
 function initializeMoveReview() {
 
     if (
@@ -2349,8 +2975,10 @@ function initializeMoveReview() {
             if (
                 moveHistory.length === 0
             ) {
+
                 return;
             }
+
 
             goToReviewPly(
                 0
@@ -2370,6 +2998,7 @@ function initializeMoveReview() {
             if (
                 lastPly === 0
             ) {
+
                 return;
             }
 
@@ -2467,6 +3096,8 @@ function goToReviewPly(
         null;
 
 
+    resetPointerDrag();
+
     renderBoard();
 
     updateMoveReviewControls();
@@ -2484,6 +3115,8 @@ function returnToLivePosition() {
     selectedSquare =
         null;
 
+
+    resetPointerDrag();
 
     renderBoard();
 
@@ -2591,6 +3224,7 @@ function updateMoveSelection() {
                 "fw-bold",
                 selected
             );
+
 
             element.classList.toggle(
                 "text-decoration-underline",

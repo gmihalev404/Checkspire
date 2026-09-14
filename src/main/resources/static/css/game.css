@@ -169,3 +169,68 @@
     opacity: 0.65;
     text-align: center;
 }
+
+.chess-board,
+#chess-board {
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+}
+
+.chess-square {
+    position: relative;
+}
+
+.chess-piece {
+    /*
+     * Самият Unicode символ не обработва pointer events.
+     * Interaction-ът се обработва от квадрата.
+     */
+    pointer-events: none;
+
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+}
+
+.chess-square.draggable-piece {
+    cursor: grab;
+}
+
+#chess-board.is-dragging,
+#chess-board.is-dragging .chess-square {
+    cursor: grabbing;
+}
+
+.chess-square.drag-source .chess-piece {
+    opacity: 0.30;
+}
+
+.chess-square.drag-target {
+    box-shadow:
+            inset 0 0 0 4px
+            rgba(255, 255, 255, 0.45);
+}
+
+.chess-piece.drag-ghost {
+    pointer-events: none;
+
+    user-select: none;
+    -webkit-user-select: none;
+
+    margin: 0;
+}
+
+.chess-square.last-move {
+    box-shadow:
+            inset 0 0 0 9999px
+            rgba(255, 215, 0, 0.22);
+}
+
+.chess-square.last-move.drag-target {
+    box-shadow:
+            inset 0 0 0 9999px
+            rgba(255, 215, 0, 0.22),
+            inset 0 0 0 4px
+            rgba(255, 255, 255, 0.55);
+}
