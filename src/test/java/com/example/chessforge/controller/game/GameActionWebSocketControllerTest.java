@@ -268,4 +268,51 @@ class GameActionWebSocketControllerTest {
                 messagingTemplate
         );
     }
+
+    @Test
+    void abortShouldAbortAndPublishState() {
+
+        Long gameId = 1L;
+
+        when(
+                userService.findByUsername(
+                        "player"
+                )
+        ).thenReturn(
+                Optional.of(
+                        player
+                )
+        );
+
+        when(
+                gameActionApplicationService
+                        .abortAndGetState(
+                                gameId,
+                                player
+                        )
+        ).thenReturn(
+                response
+        );
+
+
+        controller.abort(
+                gameId,
+                principal
+        );
+
+
+        verify(
+                gameActionApplicationService
+        ).abortAndGetState(
+                gameId,
+                player
+        );
+
+        verify(
+                messagingTemplate
+        ).convertAndSend(
+                "/topic/games/1",
+                response
+        );
+    }
 }

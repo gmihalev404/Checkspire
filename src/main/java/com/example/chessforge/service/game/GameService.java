@@ -236,30 +236,105 @@ public class GameService {
     }
 
     @Transactional
-    public void abortGame(Game game) {
+    public Game abortGame(
+            Long gameId,
+            User player
+    ) {
 
-        if (game.getStatus() == GameStatus.FINISHED) {
+        Game game =
+                gameRepository
+                        .findByIdForUpdate(
+                                gameId
+                        )
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Game not found."
+                                )
+                        );
+
+
+        if (
+                game.getStatus()
+                        != GameStatus.IN_PROGRESS
+        ) {
+
             throw new IllegalStateException(
-                    "A finished game cannot be aborted."
+                    "Only an active game can be aborted."
             );
         }
 
-        if (game.getStatus() == GameStatus.ABORTED) {
+
+        validateParticipant(
+                game,
+                player
+        );
+
+
+        if (
+                game.getTournamentMatch()
+                        != null
+        ) {
+
             throw new IllegalStateException(
-                    "Game is already aborted."
+                    "Tournament games cannot be aborted."
             );
         }
 
-        game.setStatus(GameStatus.ABORTED);
-        game.setTermination(GameTermination.ABORTED);
-        game.setFinishedAt(LocalDateTime.now(clock));
+
+        List<GameMove> moves =
+                gameMoveRepository
+                        .findByGameIdOrderByPlyNumberAsc(
+                                gameId
+                        );
+
+
+        if (!moves.isEmpty()) {
+
+            throw new IllegalStateException(
+                    "A game can only be aborted before the first move."
+            );
+        }
+
+
+        game.setStatus(
+                GameStatus.ABORTED
+        );
+
+        game.setTermination(
+                GameTermination.ABORTED
+        );
+
+        game.setFinishedAt(
+                LocalDateTime.now(
+                        clock
+                )
+        );
+
+        game.setTurnStartedAt(
+                null
+        );
 
         game.setTurnExpiresAt(
                 null
         );
 
-        game.setWhiteRatingAfter(game.getWhiteRatingBefore());
-        game.setBlackRatingAfter(game.getBlackRatingBefore());
+        game.setDrawOfferBy(
+                null
+        );
+
+
+        game.setWhiteRatingAfter(
+                game.getWhiteRatingBefore()
+        );
+
+        game.setBlackRatingAfter(
+                game.getBlackRatingBefore()
+        );
+
+
+        return gameRepository.save(
+                game
+        );
     }
 
     public List<GameSummaryResponse> getGameSummariesForUser(
@@ -436,83 +511,6 @@ public class GameService {
                 move,
                 movingColor,
                 now
-        );
-    }
-
-    @Transactional
-    public Game claimDraw(
-            Long gameId,
-            User player
-    ) {
-
-        Game game =
-                gameRepository.findByIdForUpdate(gameId)
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        "Game not found."
-                                )
-                        );
-
-        if (game.getStatus()
-                != GameStatus.IN_PROGRESS) {
-
-            throw new IllegalStateException(
-                    "Game is not in progress."
-            );
-        }
-
-        GameState state =
-                loadGameState(game);
-
-        validatePlayerTurn(
-                game,
-                player,
-                state
-        );
-
-        RepetitionTracker repetitionTracker =
-                restoreRepetitionTracker(
-                        game
-                );
-
-        Set<DrawReason> reasons =
-                gameEngine.getClaimableDrawReasons(
-                        state,
-                        repetitionTracker
-                );
-
-        if (reasons.contains(
-                DrawReason.THREEFOLD_REPETITION
-        )) {
-
-            finishGame(
-                    game,
-                    GameResult.DRAW,
-                    GameTermination.THREEFOLD_REPETITION
-            );
-
-            return gameRepository.save(
-                    game
-            );
-        }
-
-        if (reasons.contains(
-                DrawReason.FIFTY_MOVE_RULE
-        )) {
-
-            finishGame(
-                    game,
-                    GameResult.DRAW,
-                    GameTermination.FIFTY_MOVE_RULE
-            );
-
-            return gameRepository.save(
-                    game
-            );
-        }
-
-        throw new IllegalStateException(
-                "The current position does not allow a draw claim."
         );
     }
 
@@ -1075,6 +1073,7 @@ public class GameService {
             return;
         }
 
+
         if (gameEngine.isStalemate(state)) {
 
             finishGame(
@@ -1086,7 +1085,12 @@ public class GameService {
             return;
         }
 
-        if (gameEngine.isInsufficientMaterial(state)) {
+
+        if (
+                gameEngine.isInsufficientMaterial(
+                        state
+                )
+        ) {
 
             finishGame(
                     game,
@@ -1097,35 +1101,81 @@ public class GameService {
             return;
         }
 
-        if (gameEngine
-                .getAutomaticDrawReasons(
-                        state,
-                        repetitionTracker
-                )
-                .contains(
+
+        Set<DrawReason> automaticReasons =
+                gameEngine
+                        .getAutomaticDrawReasons(
+                                state,
+                                repetitionTracker
+                        );
+
+
+        if (
+                automaticReasons.contains(
                         DrawReason.FIVEFOLD_REPETITION
-                )) {
+                )
+        ) {
 
             finishGame(
                     game,
                     GameResult.DRAW,
                     GameTermination.FIVEFOLD_REPETITION
             );
+
+            return;
         }
 
-        if (gameEngine
-                .getAutomaticDrawReasons(
-                        state,
-                        repetitionTracker
-                )
-                .contains(
+
+        if (
+                automaticReasons.contains(
                         DrawReason.SEVENTY_FIVE_MOVE_RULE
-                )) {
+                )
+        ) {
 
             finishGame(
                     game,
                     GameResult.DRAW,
                     GameTermination.SEVENTY_FIVE_MOVE_RULE
+            );
+
+            return;
+        }
+
+
+        Set<DrawReason> claimableReasons =
+                gameEngine
+                        .getClaimableDrawReasons(
+                                state,
+                                repetitionTracker
+                        );
+
+
+        if (
+                claimableReasons.contains(
+                        DrawReason.THREEFOLD_REPETITION
+                )
+        ) {
+
+            finishGame(
+                    game,
+                    GameResult.DRAW,
+                    GameTermination.THREEFOLD_REPETITION
+            );
+
+            return;
+        }
+
+
+        if (
+                claimableReasons.contains(
+                        DrawReason.FIFTY_MOVE_RULE
+                )
+        ) {
+
+            finishGame(
+                    game,
+                    GameResult.DRAW,
+                    GameTermination.FIFTY_MOVE_RULE
             );
         }
     }

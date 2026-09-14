@@ -229,4 +229,52 @@ class GameActionApplicationServiceTest {
                         game
                 );
     }
+
+    @Test
+    void abortAndGetStateShouldReturnMappedState() {
+
+        Long gameId = 1L;
+
+        when(
+                gameService.abortGame(
+                        gameId,
+                        player
+                )
+        ).thenReturn(
+                game
+        );
+
+        when(
+                gameStateMapper.toResponse(
+                        game
+                )
+        ).thenReturn(
+                response
+        );
+
+
+        GameStateResponse result =
+                gameActionApplicationService
+                        .abortAndGetState(
+                                gameId,
+                                player
+                        );
+
+
+        assertSame(
+                response,
+                result
+        );
+
+        verify(gameService)
+                .abortGame(
+                        gameId,
+                        player
+                );
+
+        verify(gameStateMapper)
+                .toResponse(
+                        game
+                );
+    }
 }

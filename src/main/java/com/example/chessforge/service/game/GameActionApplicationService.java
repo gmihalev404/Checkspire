@@ -2,6 +2,8 @@ package com.example.chessforge.service.game;
 
 import com.example.chessforge.model.entity.game.Game;
 import com.example.chessforge.model.entity.user.User;
+import com.example.chessforge.service.game.GameService;
+import com.example.chessforge.service.game.GameStateMapper;
 import com.example.chessforge.service.game.dto.GameStateResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,23 @@ public class GameActionApplicationService {
 
     private final GameService gameService;
     private final GameStateMapper gameStateMapper;
+
+    @Transactional
+    public GameStateResponse abortAndGetState(
+            Long gameId,
+            User player
+    ) {
+
+        Game game =
+                gameService.abortGame(
+                        gameId,
+                        player
+                );
+
+        return gameStateMapper.toResponse(
+                game
+        );
+    }
 
 
     @Transactional

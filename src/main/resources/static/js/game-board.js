@@ -16,6 +16,7 @@ let drawOfferByUserId = null;
 
 let drawButton;
 let resignButton;
+let abortButton;
 let acceptDrawButton;
 let rejectDrawButton;
 
@@ -125,6 +126,11 @@ document.addEventListener(
         resignButton =
             document.getElementById(
                 "resign-button"
+            );
+
+        abortButton =
+            document.getElementById(
+                "abort-button"
             );
 
         acceptDrawButton =
@@ -1193,6 +1199,34 @@ function initializeGameActions() {
         }
     );
 
+    abortButton.addEventListener(
+        "click",
+        () => {
+
+            if (
+                gameStatus !== "IN_PROGRESS"
+                || !canAbortGame()
+            ) {
+                return;
+            }
+
+
+            const confirmed =
+                window.confirm(
+                    "Abort this game? The game will end without a result."
+                );
+
+            if (!confirmed) {
+                return;
+            }
+
+
+            publishGameAction(
+                `/app/games/${gameId}/abort`
+            );
+        }
+    );
+
 
     resignButton.addEventListener(
         "click",
@@ -1243,6 +1277,15 @@ function publishGameAction(
     });
 }
 
+function canAbortGame() {
+
+    const initialFen =
+        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+    return gameStatus === "IN_PROGRESS"
+        && currentFen === initialFen;
+}
+
 function updateGameActions() {
 
     const gameInProgress =
@@ -1251,6 +1294,17 @@ function updateGameActions() {
 
     resignButton.disabled =
         !gameInProgress;
+
+    const abortAllowed =
+        canAbortGame();
+
+    abortButton.disabled =
+        !abortAllowed;
+
+    abortButton.classList.toggle(
+        "d-none",
+        !abortAllowed
+    );
 
 
     if (!gameInProgress) {
@@ -1277,7 +1331,9 @@ function updateGameActions() {
         );
 
         drawStatus.textContent =
-            "Game finished.";
+            gameStatus === "ABORTED"
+                ? "Game aborted."
+                : "Game finished.";
 
         return;
     }
@@ -1370,6 +1426,23 @@ function updateGameActions() {
 }
 
 function updateGameResult() {
+
+    if (
+        gameStatus === "ABORTED"
+    ) {
+
+        gameResultElement.classList.remove(
+            "d-none"
+        );
+
+        gameResultScore.textContent =
+            "";
+
+        gameResultReason.textContent =
+            "Game aborted";
+
+        return;
+    }
 
     if (
         gameStatus !== "FINISHED"

@@ -1,10 +1,7 @@
 package com.example.chessforge.controller.game;
 
-import com.example.chessforge.model.entity.game.Game;
 import com.example.chessforge.model.entity.user.User;
 import com.example.chessforge.service.game.GameActionApplicationService;
-import com.example.chessforge.service.game.GameService;
-import com.example.chessforge.service.game.GameStateMapper;
 import com.example.chessforge.service.game.dto.GameStateResponse;
 import com.example.chessforge.service.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +37,32 @@ public class GameActionWebSocketController {
         GameStateResponse response =
                 gameActionApplicationService
                         .resignAndGetState(
+                                gameId,
+                                player
+                        );
+
+        publishGameState(
+                gameId,
+                response
+        );
+    }
+
+    @MessageMapping(
+            "/games/{gameId}/abort"
+    )
+    public void abort(
+            @DestinationVariable Long gameId,
+            Principal principal
+    ) {
+
+        User player =
+                getCurrentUser(
+                        principal
+                );
+
+        GameStateResponse response =
+                gameActionApplicationService
+                        .abortAndGetState(
                                 gameId,
                                 player
                         );
