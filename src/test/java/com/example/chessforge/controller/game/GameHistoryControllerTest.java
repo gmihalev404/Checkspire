@@ -55,15 +55,18 @@ class GameHistoryControllerTest {
                 List.of(
                         new GameMoveResponse(
                                 1,
-                                "e4"
+                                "e4",
+                                "fen-1"
                         ),
                         new GameMoveResponse(
                                 2,
-                                "e5"
+                                "e5",
+                                "fen-2"
                         ),
                         new GameMoveResponse(
                                 3,
-                                "Nf3"
+                                "Nf3",
+                                "fen-3"
                         )
                 );
 

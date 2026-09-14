@@ -6166,6 +6166,7 @@ class GameServiceTest {
                         .game(game)
                         .plyNumber(1)
                         .san("e4")
+                        .fenAfter("fen-after-e4")
                         .build();
 
         GameMove secondMove =
@@ -6173,6 +6174,7 @@ class GameServiceTest {
                         .game(game)
                         .plyNumber(2)
                         .san("e5")
+                        .fenAfter("fen-after-e5")
                         .build();
 
         GameMove thirdMove =
@@ -6180,6 +6182,7 @@ class GameServiceTest {
                         .game(game)
                         .plyNumber(3)
                         .san("Nf3")
+                        .fenAfter("fen-after-nf3")
                         .build();
 
 
@@ -6250,6 +6253,21 @@ class GameServiceTest {
         assertEquals(
                 "Nf3",
                 result.get(2).san()
+        );
+
+        assertEquals(
+                "fen-after-e4",
+                result.get(0).fenAfter()
+        );
+
+        assertEquals(
+                "fen-after-e5",
+                result.get(1).fenAfter()
+        );
+
+        assertEquals(
+                "fen-after-nf3",
+                result.get(2).fenAfter()
         );
 
 

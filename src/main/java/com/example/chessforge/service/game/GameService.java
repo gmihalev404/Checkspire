@@ -943,7 +943,8 @@ public class GameService {
                 .map(move ->
                         new GameMoveResponse(
                                 move.getPlyNumber(),
-                                move.getSan()
+                                move.getSan(),
+                                move.getFenAfter()
                         )
                 )
                 .toList();

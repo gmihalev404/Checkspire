@@ -108,37 +108,6 @@
         data-termination=${game.termination}">
             </div>
 
-            <div class="move-history-card mt-3">
-
-                <div class="move-history-header
-            d-flex
-            justify-content-between
-            align-items-center">
-
-    <span>
-        Moves
-    </span>
-
-                    <button id="copy-pgn-button"
-                            type="button"
-                            class="btn btn-sm btn-outline-secondary">
-                        Copy PGN
-                    </button>
-
-                </div>
-
-
-                <div id="move-history"
-                     class="move-history">
-
-                    <div class="move-history-empty">
-                        No moves yet.
-                    </div>
-
-                </div>
-
-            </div>
-
             <div class="game-player-bar mt-2">
 
                 <div th:if="${viewerColor == 'WHITE'}">
@@ -256,6 +225,75 @@
 
 
                     <hr>
+
+                    <div class="move-history-card mt-3">
+
+                        <div class="move-history-header
+            d-flex
+            justify-content-between
+            align-items-center">
+
+    <span>
+        Moves
+    </span>
+
+                            <button id="copy-pgn-button"
+                                    type="button"
+                                    class="btn btn-sm btn-outline-secondary">
+                                Copy PGN
+                            </button>
+
+                        </div>
+
+                        <div id="move-review-controls"
+                             class="d-flex justify-content-center align-items-center gap-2 mt-3">
+
+                            <button id="review-first-button"
+                                    type="button"
+                                    class="btn btn-sm btn-outline-secondary"
+                                    title="Initial position">
+                                ⏮
+                            </button>
+
+                            <button id="review-previous-button"
+                                    type="button"
+                                    class="btn btn-sm btn-outline-secondary"
+                                    title="Previous move">
+                                ◀
+                            </button>
+
+                            <span id="review-position-label"
+                                  class="small text-body-secondary text-center"
+                                  style="min-width: 70px;">
+        Live
+    </span>
+
+                            <button id="review-next-button"
+                                    type="button"
+                                    class="btn btn-sm btn-outline-secondary"
+                                    title="Next move">
+                                ▶
+                            </button>
+
+                            <button id="review-live-button"
+                                    type="button"
+                                    class="btn btn-sm btn-outline-secondary"
+                                    title="Return to live position">
+                                ⏭
+                            </button>
+
+                        </div>
+                        <div id="move-history"
+                             class="move-history">
+
+                            <div class="move-history-empty">
+                                No moves yet.
+                            </div>
+
+                        </div>
+
+                    </div>
+
 
                     <div id="game-result"
                          class="alert alert-secondary text-center d-none mt-3"

@@ -4,6 +4,20 @@ let orientation;
 let gameId;
 let gameStatus;
 
+let moveHistory = [];
+
+let reviewPly = null;
+
+let reviewFirstButton;
+let reviewPreviousButton;
+let reviewNextButton;
+let reviewLiveButton;
+let reviewPositionLabel;
+
+
+const INITIAL_FEN =
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
 let currentPgn = "";
 let copyPgnButton;
 let copyPgnResetTimeout = null;
@@ -106,6 +120,31 @@ document.addEventListener(
                 "game-result-reason"
             );
 
+        reviewFirstButton =
+            document.getElementById(
+                "review-first-button"
+            );
+
+        reviewPreviousButton =
+            document.getElementById(
+                "review-previous-button"
+            );
+
+        reviewNextButton =
+            document.getElementById(
+                "review-next-button"
+            );
+
+        reviewLiveButton =
+            document.getElementById(
+                "review-live-button"
+            );
+
+        reviewPositionLabel =
+            document.getElementById(
+                "review-position-label"
+            );
+
 
         const gameActions =
             document.getElementById(
@@ -177,6 +216,7 @@ document.addEventListener(
 
         initializeGameActions();
         initializePgnCopy();
+        initializeMoveReview();
 
         updateGameActions();
         updateGameResult();
@@ -463,7 +503,11 @@ function renderBoard() {
         "";
 
 
-    if (!currentFen) {
+    const displayedFen =
+        getDisplayedBoardFen();
+
+
+    if (!displayedFen) {
 
         boardElement.textContent =
             "Position unavailable.";
@@ -474,7 +518,7 @@ function renderBoard() {
 
     const position =
         parseFen(
-            currentFen
+            displayedFen
         );
 
 
@@ -678,6 +722,12 @@ function handleSquareClick(
     square,
     piece
 ) {
+    if (
+        reviewPly !== null
+    ) {
+
+        return;
+    }
 
     if (
         gameStatus
@@ -1808,6 +1858,9 @@ async function loadMoveHistory() {
         const moves =
             await response.json();
 
+        moveHistory =
+            moves;
+
 
         /*
          * On page load we may not yet have
@@ -1829,6 +1882,9 @@ async function loadMoveHistory() {
             moves
         );
 
+        updateMoveReviewControls();
+
+        updateMoveSelection();
 
     } catch (error) {
 
@@ -1869,20 +1925,16 @@ function renderMoveHistory(
                 "div"
             );
 
-
         emptyElement.classList.add(
             "move-history-empty"
         );
 
-
         emptyElement.textContent =
             "No moves yet.";
-
 
         moveHistoryElement.appendChild(
             emptyElement
         );
-
 
         return;
     }
@@ -1910,8 +1962,8 @@ function renderMoveHistory(
                 moveRows.set(
                     moveNumber,
                     {
-                        white: "",
-                        black: ""
+                        white: null,
+                        black: null
                     }
                 );
             }
@@ -1929,12 +1981,12 @@ function renderMoveHistory(
             ) {
 
                 row.white =
-                    move.san;
+                    move;
 
             } else {
 
                 row.black =
-                    move.san;
+                    move;
             }
         }
     );
@@ -1951,7 +2003,6 @@ function renderMoveHistory(
                     "div"
                 );
 
-
             rowElement.classList.add(
                 "move-history-row"
             );
@@ -1962,44 +2013,23 @@ function renderMoveHistory(
                     "span"
                 );
 
-
             numberElement.classList.add(
                 "move-number"
             );
-
 
             numberElement.textContent =
                 `${moveNumber}.`;
 
 
             const whiteMoveElement =
-                document.createElement(
-                    "span"
+                createMoveHistoryElement(
+                    movesForTurn.white
                 );
-
-
-            whiteMoveElement.classList.add(
-                "move-san"
-            );
-
-
-            whiteMoveElement.textContent =
-                movesForTurn.white;
-
 
             const blackMoveElement =
-                document.createElement(
-                    "span"
+                createMoveHistoryElement(
+                    movesForTurn.black
                 );
-
-
-            blackMoveElement.classList.add(
-                "move-san"
-            );
-
-
-            blackMoveElement.textContent =
-                movesForTurn.black;
 
 
             rowElement.appendChild(
@@ -2022,8 +2052,16 @@ function renderMoveHistory(
     );
 
 
-    moveHistoryElement.scrollTop =
-        moveHistoryElement.scrollHeight;
+    if (
+        reviewPly === null
+    ) {
+
+        moveHistoryElement.scrollTop =
+            moveHistoryElement.scrollHeight;
+    }
+
+
+    updateMoveSelection();
 }
 
 
@@ -2192,4 +2230,372 @@ function getPgnResultToken() {
         default:
             return "*";
     }
+}
+
+function getDisplayedBoardFen() {
+
+    if (
+        reviewPly === null
+    ) {
+
+        return currentFen;
+    }
+
+
+    if (
+        reviewPly === 0
+    ) {
+
+        return INITIAL_FEN;
+    }
+
+
+    const move =
+        moveHistory.find(
+            currentMove =>
+                currentMove.plyNumber
+                === reviewPly
+        );
+
+
+    return move
+            ?.fenAfter
+        || currentFen;
+}
+
+function createMoveHistoryElement(
+    move
+) {
+
+    if (!move) {
+
+        const emptyElement =
+            document.createElement(
+                "span"
+            );
+
+        emptyElement.classList.add(
+            "move-san"
+        );
+
+        return emptyElement;
+    }
+
+
+    const moveElement =
+        document.createElement(
+            "button"
+        );
+
+
+    moveElement.type =
+        "button";
+
+
+    moveElement.classList.add(
+        "move-san",
+        "btn",
+        "btn-sm",
+        "btn-link",
+        "text-body",
+        "text-decoration-none",
+        "border-0",
+        "p-0",
+        "text-start"
+    );
+
+
+    moveElement.dataset.ply =
+        String(
+            move.plyNumber
+        );
+
+
+    moveElement.textContent =
+        move.san;
+
+
+    moveElement.addEventListener(
+        "click",
+        () => {
+
+            goToReviewPly(
+                move.plyNumber
+            );
+        }
+    );
+
+
+    return moveElement;
+}
+
+function initializeMoveReview() {
+
+    if (
+        !reviewFirstButton
+        || !reviewPreviousButton
+        || !reviewNextButton
+        || !reviewLiveButton
+    ) {
+
+        return;
+    }
+
+
+    reviewFirstButton.addEventListener(
+        "click",
+        () => {
+
+            if (
+                moveHistory.length === 0
+            ) {
+                return;
+            }
+
+            goToReviewPly(
+                0
+            );
+        }
+    );
+
+
+    reviewPreviousButton.addEventListener(
+        "click",
+        () => {
+
+            const lastPly =
+                getLastPly();
+
+
+            if (
+                lastPly === 0
+            ) {
+                return;
+            }
+
+
+            if (
+                reviewPly === null
+            ) {
+
+                goToReviewPly(
+                    Math.max(
+                        0,
+                        lastPly - 1
+                    )
+                );
+
+                return;
+            }
+
+
+            if (
+                reviewPly > 0
+            ) {
+
+                goToReviewPly(
+                    reviewPly - 1
+                );
+            }
+        }
+    );
+
+
+    reviewNextButton.addEventListener(
+        "click",
+        () => {
+
+            const lastPly =
+                getLastPly();
+
+
+            if (
+                reviewPly === null
+                || lastPly === 0
+            ) {
+
+                return;
+            }
+
+
+            if (
+                reviewPly < lastPly
+            ) {
+
+                goToReviewPly(
+                    reviewPly + 1
+                );
+
+                return;
+            }
+
+
+            returnToLivePosition();
+        }
+    );
+
+
+    reviewLiveButton.addEventListener(
+        "click",
+        returnToLivePosition
+    );
+
+
+    updateMoveReviewControls();
+}
+
+
+function goToReviewPly(
+    ply
+) {
+
+    const lastPly =
+        getLastPly();
+
+
+    reviewPly =
+        Math.max(
+            0,
+            Math.min(
+                ply,
+                lastPly
+            )
+        );
+
+
+    selectedSquare =
+        null;
+
+
+    renderBoard();
+
+    updateMoveReviewControls();
+
+    updateMoveSelection();
+}
+
+
+function returnToLivePosition() {
+
+    reviewPly =
+        null;
+
+
+    selectedSquare =
+        null;
+
+
+    renderBoard();
+
+    updateMoveReviewControls();
+
+    updateMoveSelection();
+}
+
+
+function getLastPly() {
+
+    if (
+        moveHistory.length === 0
+    ) {
+
+        return 0;
+    }
+
+
+    return moveHistory[
+    moveHistory.length - 1
+        ].plyNumber;
+}
+
+
+function updateMoveReviewControls() {
+
+    if (
+        !reviewFirstButton
+        || !reviewPreviousButton
+        || !reviewNextButton
+        || !reviewLiveButton
+        || !reviewPositionLabel
+    ) {
+
+        return;
+    }
+
+
+    const lastPly =
+        getLastPly();
+
+    const hasMoves =
+        lastPly > 0;
+
+
+    reviewFirstButton.disabled =
+        !hasMoves
+        || reviewPly === 0;
+
+
+    reviewPreviousButton.disabled =
+        !hasMoves
+        || reviewPly === 0;
+
+
+    reviewNextButton.disabled =
+        !hasMoves
+        || reviewPly === null;
+
+
+    reviewLiveButton.disabled =
+        reviewPly === null;
+
+
+    if (
+        reviewPly === null
+    ) {
+
+        reviewPositionLabel.textContent =
+            "Live";
+
+        return;
+    }
+
+
+    reviewPositionLabel.textContent =
+        `${reviewPly} / ${lastPly}`;
+}
+
+
+function updateMoveSelection() {
+
+    const moveElements =
+        document.querySelectorAll(
+            ".move-san[data-ply]"
+        );
+
+
+    moveElements.forEach(
+        element => {
+
+            const ply =
+                Number(
+                    element.dataset.ply
+                );
+
+
+            const selected =
+                reviewPly !== null
+                && ply === reviewPly;
+
+
+            element.classList.toggle(
+                "fw-bold",
+                selected
+            );
+
+            element.classList.toggle(
+                "text-decoration-underline",
+                selected
+            );
+        }
+    );
 }
