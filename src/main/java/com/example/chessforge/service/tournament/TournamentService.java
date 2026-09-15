@@ -100,6 +100,11 @@ public class TournamentService {
             );
         }
 
+        int storedNumberOfRounds =
+                format == TournamentFormat.SWISS
+                        ? numberOfRounds
+                        : 0;
+
         Tournament tournament = Tournament.builder()
                 .name(name)
                 .creator(creator)
@@ -121,8 +126,9 @@ public class TournamentService {
                         TournamentStatus.REGISTRATION
                 )
                 .numberOfRounds(
-                        numberOfRounds
+                        storedNumberOfRounds
                 )
+                .currentRound(0)
                 .build();
 
         return tournamentRepository.save(
@@ -154,15 +160,40 @@ public class TournamentService {
             );
         }
 
-        if (participantRepository
-                .existsByTournamentAndUser(
-                        tournament,
-                        user
-                )) {
+        var existingParticipant =
+                participantRepository
+                        .findByTournamentAndUser(
+                                tournament,
+                                user
+                        );
 
-            throw new IllegalStateException(
-                    "User is already registered for this tournament."
+        if (existingParticipant.isPresent()) {
+
+            TournamentParticipant participant =
+                    existingParticipant.get();
+
+            if (
+                    participant.getStatus()
+                            != TournamentParticipantStatus.WITHDRAWN
+            ) {
+
+                throw new IllegalStateException(
+                        "User is already registered for this tournament."
+                );
+            }
+
+            if (isFull(tournament)) {
+
+                throw new IllegalStateException(
+                        "Tournament is full."
+                );
+            }
+
+            participant.setStatus(
+                    TournamentParticipantStatus.ACTIVE
             );
+
+            return participant;
         }
 
         if (isFull(tournament)) {
@@ -186,6 +217,8 @@ public class TournamentService {
                                 TournamentParticipantStatus.ACTIVE
                         )
                         .build();
+
+        tournament.touch();
 
         return participantRepository.save(
                 participant
@@ -227,6 +260,8 @@ public class TournamentService {
         participant.setStatus(
                 TournamentParticipantStatus.WITHDRAWN
         );
+
+        tournament.touch();
     }
 
     // =========================================================
@@ -332,6 +367,8 @@ public class TournamentService {
         tournament.setStatus(
                 TournamentStatus.CANCELLED
         );
+
+        tournament.touch();
     }
 
     // =========================================================
@@ -399,6 +436,8 @@ public class TournamentService {
                         )
                         .toList()
         );
+
+        tournament.touch();
 
         return matches;
     }
@@ -580,6 +619,27 @@ public class TournamentService {
                 );
     }
 
+    public List<Tournament> getAllTournaments() {
+
+        return tournamentRepository
+                .findAll();
+    }
+
+    public Tournament getTournament(
+            Long tournamentId
+    ) {
+
+        return tournamentRepository
+                .findById(
+                        tournamentId
+                )
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Tournament not found."
+                        )
+                );
+    }
+
     // =========================================================
     // RECORD GAME RESULT
     // =========================================================
@@ -652,6 +712,8 @@ public class TournamentService {
         handleRoundCompletion(
                 tournament
         );
+
+        tournament.touch();
     }
 
     // =========================================================

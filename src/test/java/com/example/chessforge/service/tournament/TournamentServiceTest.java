@@ -271,11 +271,13 @@ class TournamentServiceTest {
 
         when(
                 participantRepository
-                        .existsByTournamentAndUser(
+                        .findByTournamentAndUser(
                                 tournament,
                                 player
                         )
-        ).thenReturn(false);
+        ).thenReturn(
+                Optional.empty()
+        );
 
         when(
                 participantRepository
@@ -348,13 +350,23 @@ class TournamentServiceTest {
                         TournamentFormat.ROUND_ROBIN
                 );
 
+        TournamentParticipant existingParticipant =
+                createParticipant(
+                        tournament,
+                        player
+                );
+
         when(
                 participantRepository
-                        .existsByTournamentAndUser(
+                        .findByTournamentAndUser(
                                 tournament,
                                 player
                         )
-        ).thenReturn(true);
+        ).thenReturn(
+                Optional.of(
+                        existingParticipant
+                )
+        );
 
         assertThrows(
                 IllegalStateException.class,
@@ -384,11 +396,13 @@ class TournamentServiceTest {
 
         when(
                 participantRepository
-                        .existsByTournamentAndUser(
+                        .findByTournamentAndUser(
                                 tournament,
                                 player
                         )
-        ).thenReturn(false);
+        ).thenReturn(
+                Optional.empty()
+        );
 
         when(
                 participantRepository
@@ -406,6 +420,75 @@ class TournamentServiceTest {
                                 player
                         )
         );
+    }
+
+    @Test
+    void joinTournamentShouldReactivateWithdrawnParticipant() {
+
+        Tournament tournament =
+                createTournament(
+                        TournamentStatus.REGISTRATION,
+                        TournamentFormat.ROUND_ROBIN
+                );
+
+
+        TournamentParticipant participant =
+                createParticipant(
+                        tournament,
+                        player
+                );
+
+
+        participant.setStatus(
+                TournamentParticipantStatus.WITHDRAWN
+        );
+
+
+        when(
+                participantRepository
+                        .findByTournamentAndUser(
+                                tournament,
+                                player
+                        )
+        ).thenReturn(
+                Optional.of(
+                        participant
+                )
+        );
+
+
+        when(
+                participantRepository
+                        .countByTournamentAndStatus(
+                                tournament,
+                                TournamentParticipantStatus.ACTIVE
+                        )
+        ).thenReturn(1L);
+
+
+        TournamentParticipant result =
+                tournamentService.joinTournament(
+                        tournament,
+                        player
+                );
+
+
+        assertSame(
+                participant,
+                result
+        );
+
+
+        assertEquals(
+                TournamentParticipantStatus.ACTIVE,
+                participant.getStatus()
+        );
+
+
+        verify(
+                participantRepository,
+                never()
+        ).save(any());
     }
 
     // =========================================================

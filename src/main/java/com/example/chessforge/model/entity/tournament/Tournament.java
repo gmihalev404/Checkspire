@@ -75,6 +75,12 @@ public class Tournament extends BaseEntity {
 
     private LocalDateTime finishedAt;
 
+    @Column(
+            name = "updated_at",
+            nullable = false
+    )
+    private LocalDateTime updatedAt;
+
     @PrePersist
     private void onCreate() {
 
@@ -93,5 +99,23 @@ public class Tournament extends BaseEntity {
         if (tieBreaks == null) {
             tieBreaks = new ArrayList<>();
         }
+
+        if (updatedAt == null) {
+            updatedAt =
+                    createdAt;
+        }
+    }
+
+    @PreUpdate
+    private void preUpdate() {
+
+        updatedAt =
+                LocalDateTime.now();
+    }
+
+    public void touch() {
+
+        updatedAt =
+                LocalDateTime.now();
     }
 }
