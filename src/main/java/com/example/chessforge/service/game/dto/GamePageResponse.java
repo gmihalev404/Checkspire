@@ -10,7 +10,11 @@ public record GamePageResponse(
 
         long whiteTimeRemainingMillis,
 
-        long blackTimeRemainingMillis
+        long blackTimeRemainingMillis,
+
+        Long tournamentId,
+
+        boolean viewerParticipant
 
 ) {
 }

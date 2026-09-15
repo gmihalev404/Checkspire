@@ -15,6 +15,7 @@ import com.example.chessforge.model.enums.user.UserStatus;
 import com.example.chessforge.repository.tournament.TournamentMatchRepository;
 import com.example.chessforge.repository.tournament.TournamentParticipantRepository;
 import com.example.chessforge.repository.tournament.TournamentRepository;
+import com.example.chessforge.repository.tournament.TournamentRoundRepository;
 import com.example.chessforge.service.game.RatingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,9 @@ class TournamentServiceTest {
 
     @Mock
     private TournamentParticipantRepository participantRepository;
+
+    @Mock
+    private TournamentRoundRepository roundRepository;
 
     @Mock
     private TournamentMatchRepository matchRepository;

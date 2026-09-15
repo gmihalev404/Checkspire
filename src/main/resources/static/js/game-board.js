@@ -13,6 +13,9 @@ let reviewNextButton;
 let reviewLiveButton;
 let reviewPositionLabel;
 
+let returnToTournamentButton;
+let viewerParticipant = false;
+
 const INITIAL_FEN =
     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -48,7 +51,6 @@ let blackClockMillis = 0;
 
 let clockAnchor = 0;
 let clockInterval = null;
-
 
 // =========================================================
 // DRAG STATE
@@ -130,6 +132,9 @@ document.addEventListener(
             boardElement.dataset.termination
             || null;
 
+        viewerParticipant =
+            boardElement.dataset.viewerParticipant
+            === "true";
 
         gameResultElement =
             document.getElementById(
@@ -155,6 +160,11 @@ document.addEventListener(
         reviewPreviousButton =
             document.getElementById(
                 "review-previous-button"
+            );
+
+        returnToTournamentButton =
+            document.getElementById(
+                "return-to-tournament"
             );
 
         reviewNextButton =
@@ -812,6 +822,9 @@ function handleSquareClick(
     square,
     piece
 ) {
+    if (!viewerParticipant) {
+        return;
+    }
 
     if (
         reviewPly !== null
@@ -921,6 +934,10 @@ function handleSquareClick(
 function canDragPiece(
     piece
 ) {
+
+    if (!viewerParticipant) {
+        return false;
+    }
 
     if (!piece) {
         return false;
@@ -1444,6 +1461,10 @@ function sendMove(
     from,
     to
 ) {
+
+    if (!viewerParticipant) {
+        return;
+    }
 
     if (
         !stompClient
@@ -2322,6 +2343,15 @@ function updateGameResult() {
             "d-none"
         );
 
+        if (returnToTournamentButton) {
+
+            returnToTournamentButton
+                .classList
+                .add(
+                    "d-none"
+                );
+        }
+
         return;
     }
 
@@ -2330,6 +2360,14 @@ function updateGameResult() {
         "d-none"
     );
 
+    if (returnToTournamentButton) {
+
+        returnToTournamentButton
+            .classList
+            .remove(
+                "d-none"
+            );
+    }
 
     switch (
         gameResult

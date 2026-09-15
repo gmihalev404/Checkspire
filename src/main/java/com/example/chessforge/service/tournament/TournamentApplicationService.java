@@ -1,14 +1,17 @@
 package com.example.chessforge.service.tournament;
 
 import com.example.chessforge.controller.tournament.dto.TournamentCreateRequest;
+import com.example.chessforge.model.entity.game.Game;
 import com.example.chessforge.model.entity.tournament.Tournament;
+import com.example.chessforge.model.entity.tournament.TournamentMatch;
 import com.example.chessforge.model.entity.tournament.TournamentParticipant;
+import com.example.chessforge.model.entity.tournament.TournamentRound;
 import com.example.chessforge.model.entity.user.User;
 import com.example.chessforge.model.enums.tournament.TournamentParticipantStatus;
+import com.example.chessforge.model.enums.tournament.TournamentStatus;
+import com.example.chessforge.service.game.GameService;
 import com.example.chessforge.service.game.RatingService;
-import com.example.chessforge.service.tournament.dto.TournamentDetailsResponse;
-import com.example.chessforge.service.tournament.dto.TournamentParticipantResponse;
-import com.example.chessforge.service.tournament.dto.TournamentSummaryResponse;
+import com.example.chessforge.service.tournament.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,8 +25,15 @@ import java.util.List;
 public class TournamentApplicationService {
 
     private final TournamentService tournamentService;
+
     private final RatingService ratingService;
 
+    private final GameService gameService;
+
+
+    // =========================================================
+    // TOURNAMENT LIST
+    // =========================================================
 
     public List<TournamentSummaryResponse> getTournaments() {
 
@@ -43,6 +53,31 @@ public class TournamentApplicationService {
                 )
                 .toList();
     }
+
+
+    private TournamentSummaryResponse toSummary(
+            Tournament tournament
+    ) {
+
+        return new TournamentSummaryResponse(
+                tournament.getId(),
+                tournament.getName(),
+                tournament.getCreator()
+                        .getUsername(),
+                tournament.getFormat(),
+                tournament.getTimeControl(),
+                tournament.isRated(),
+                tournament.getStatus(),
+                tournament.getMaxPlayers(),
+                tournament.getStartsAt(),
+                tournament.getUpdatedAt()
+        );
+    }
+
+
+    // =========================================================
+    // CREATE
+    // =========================================================
 
     @Transactional
     public Long createTournament(
@@ -68,24 +103,10 @@ public class TournamentApplicationService {
         return tournament.getId();
     }
 
-    private TournamentSummaryResponse toSummary(
-            Tournament tournament
-    ) {
 
-        return new TournamentSummaryResponse(
-                tournament.getId(),
-                tournament.getName(),
-                tournament.getCreator()
-                        .getUsername(),
-                tournament.getFormat(),
-                tournament.getTimeControl(),
-                tournament.isRated(),
-                tournament.getStatus(),
-                tournament.getMaxPlayers(),
-                tournament.getStartsAt(),
-                tournament.getUpdatedAt()
-        );
-    }
+    // =========================================================
+    // DETAILS
+    // =========================================================
 
     public TournamentDetailsResponse getTournamentDetails(
             Long tournamentId,
@@ -105,6 +126,10 @@ public class TournamentApplicationService {
                         );
 
 
+        // =====================================================
+        // PARTICIPANTS
+        // =====================================================
+
         List<TournamentParticipantResponse> participantResponses =
                 participants
                         .stream()
@@ -112,28 +137,12 @@ public class TournamentApplicationService {
                                 participant.getStatus()
                                         != TournamentParticipantStatus.WITHDRAWN
                         )
-                        .map(participant -> {
-
-                            int rating =
-                                    participant.getRatingAtStart() != null
-                                            ? participant.getRatingAtStart()
-                                            : ratingService.getRating(
-                                            participant.getUser(),
-                                            tournament
-                                                    .getTimeControl()
-                                                    .getType()
-                                    );
-
-                            return new TournamentParticipantResponse(
-                                    participant
-                                            .getUser()
-                                            .getUsername(),
-                                    rating,
-                                    participant.getScore(),
-                                    participant.getSeed(),
-                                    participant.getStatus()
-                            );
-                        })
+                        .map(participant ->
+                                toParticipantResponse(
+                                        participant,
+                                        tournament
+                                )
+                        )
                         .sorted(
                                 Comparator
                                         .comparingInt(
@@ -147,6 +156,124 @@ public class TournamentApplicationService {
                         )
                         .toList();
 
+
+        // =====================================================
+        // CURRENT ROUND MATCHES
+        // =====================================================
+
+        List<TournamentMatchResponse> matchResponses;
+
+        if (
+                tournament.getCurrentRound() == null
+                        ||
+                        tournament.getCurrentRound() <= 0
+        ) {
+
+            matchResponses =
+                    List.of();
+
+        } else {
+
+            matchResponses =
+                    tournamentService
+                            .getRoundMatches(
+                                    tournament,
+                                    tournament.getCurrentRound()
+                            )
+                            .stream()
+                            .map(match ->
+                                    toMatchResponse(
+                                            match,
+                                            viewer
+                                    )
+                            )
+                            .toList();
+        }
+
+        List<TournamentRoundResponse> roundResponses =
+                tournamentService
+                        .getRounds(
+                                tournament
+                        )
+                        .stream()
+                        .sorted(
+                                Comparator.comparing(
+                                        TournamentRound::getRoundNumber
+                                ).reversed()
+                        )
+                        .map(round ->
+                                toRoundResponse(
+                                        round,
+                                        tournament,
+                                        viewer
+                                )
+                        )
+                        .toList();
+
+        // =====================================================
+        // STANDINGS
+        // =====================================================
+
+        List<TournamentParticipant> standingParticipants;
+
+        if (
+                tournament.getStatus()
+                        == TournamentStatus.FINISHED
+        ) {
+
+            standingParticipants =
+                    participants
+                            .stream()
+                            .filter(participant ->
+                                    participant.getFinalRank()
+                                            != null
+                            )
+                            .sorted(
+                                    Comparator.comparing(
+                                            TournamentParticipant::getFinalRank
+                                    )
+                            )
+                            .toList();
+
+        } else if (
+                tournament.getStatus()
+                        == TournamentStatus.IN_PROGRESS
+        ) {
+
+            standingParticipants =
+                    tournamentService
+                            .getStandings(
+                                    tournament
+                            )
+                            .stream()
+                            .filter(participant ->
+                                    participant.getStatus()
+                                            != TournamentParticipantStatus.WITHDRAWN
+                            )
+                            .toList();
+
+        } else {
+
+            standingParticipants =
+                    List.of();
+        }
+
+
+        List<TournamentParticipantResponse> standingResponses =
+                standingParticipants
+                        .stream()
+                        .map(participant ->
+                                toParticipantResponse(
+                                        participant,
+                                        tournament
+                                )
+                        )
+                        .toList();
+
+
+        // =====================================================
+        // VIEWER STATE
+        // =====================================================
 
         boolean viewerJoined =
                 participants
@@ -173,6 +300,10 @@ public class TournamentApplicationService {
                         );
 
 
+        // =====================================================
+        // RESPONSE
+        // =====================================================
+
         return new TournamentDetailsResponse(
                 tournament.getId(),
                 tournament.getName(),
@@ -190,12 +321,126 @@ public class TournamentApplicationService {
                 tournament.isArmageddonForFirstPlaceTie(),
                 tournament.getNumberOfRounds(),
                 tournament.getCurrentRound(),
+                matchResponses,
                 participantResponses,
+                standingResponses,
                 viewerJoined,
-                viewerCreator
+                viewerCreator,
+                roundResponses
         );
     }
 
+
+    // =========================================================
+    // PARTICIPANT MAPPING
+    // =========================================================
+
+    private TournamentParticipantResponse toParticipantResponse(
+            TournamentParticipant participant,
+            Tournament tournament
+    ) {
+
+        int rating =
+                participant.getRatingAtStart() != null
+                        ? participant.getRatingAtStart()
+                        : ratingService.getRating(
+                        participant.getUser(),
+                        tournament
+                                .getTimeControl()
+                                .getType()
+                );
+
+
+        return new TournamentParticipantResponse(
+                participant
+                        .getUser()
+                        .getUsername(),
+                rating,
+                participant.getScore(),
+                participant.getSeed(),
+                participant.getFinalRank(),
+                participant.getStatus()
+        );
+    }
+
+
+    // =========================================================
+    // MATCH MAPPING
+    // =========================================================
+
+    private TournamentMatchResponse toMatchResponse(
+            TournamentMatch match,
+            User viewer
+    ) {
+
+        Long gameId =
+                gameService
+                        .getLatestGameForTournamentMatch(
+                                match
+                        )
+                        .map(
+                                Game::getId
+                        )
+                        .orElse(
+                                null
+                        );
+
+
+        boolean viewerIsWhite =
+                match
+                        .getWhiteParticipant()
+                        .getUser()
+                        .getId()
+                        .equals(
+                                viewer.getId()
+                        );
+
+
+        boolean viewerIsBlack =
+                match.getBlackParticipant() != null
+                        &&
+                        match
+                                .getBlackParticipant()
+                                .getUser()
+                                .getId()
+                                .equals(
+                                        viewer.getId()
+                                );
+
+
+        boolean viewerCanOpen =
+                viewerIsWhite
+                        ||
+                        viewerIsBlack;
+
+
+        return new TournamentMatchResponse(
+                match.getId(),
+                gameId,
+                match.getRoundNumber(),
+                match.getBoardNumber(),
+                match
+                        .getWhiteParticipant()
+                        .getUser()
+                        .getUsername(),
+                match.getBlackParticipant() != null
+                        ? match
+                        .getBlackParticipant()
+                        .getUser()
+                        .getUsername()
+                        : null,
+                match.getStatus(),
+                match.getType(),
+                match.getWhiteScore(),
+                match.getBlackScore(),
+                viewerCanOpen
+        );
+    }
+
+
+    // =========================================================
+    // JOIN
+    // =========================================================
 
     @Transactional
     public void joinTournament(
@@ -208,12 +453,16 @@ public class TournamentApplicationService {
                         tournamentId
                 );
 
+
         tournamentService.joinTournament(
                 tournament,
                 user
         );
     }
 
+    // =========================================================
+    // WITHDRAW
+    // =========================================================
 
     @Transactional
     public void withdrawFromTournament(
@@ -226,11 +475,17 @@ public class TournamentApplicationService {
                         tournamentId
                 );
 
+
         tournamentService.withdraw(
                 tournament,
                 user
         );
     }
+
+
+    // =========================================================
+    // START
+    // =========================================================
 
     @Transactional
     public void startTournament(
@@ -243,12 +498,22 @@ public class TournamentApplicationService {
                         tournamentId
                 );
 
+
         tournamentService.startTournament(
                 tournament,
                 requester
         );
+
+
+        gameService.startGamesForCurrentRound(
+                tournament
+        );
     }
 
+
+    // =========================================================
+    // CANCEL
+    // =========================================================
 
     @Transactional
     public void cancelTournament(
@@ -261,9 +526,55 @@ public class TournamentApplicationService {
                         tournamentId
                 );
 
+
         tournamentService.cancelTournament(
                 tournament,
                 requester
+        );
+    }
+
+    private TournamentRoundResponse toRoundResponse(
+            TournamentRound round,
+            Tournament tournament,
+            User viewer
+    ) {
+
+        List<TournamentMatchResponse> matches =
+                tournamentService
+                        .getRoundMatches(
+                                tournament,
+                                round.getRoundNumber()
+                        )
+                        .stream()
+                        .map(match ->
+                                toMatchResponse(
+                                        match,
+                                        viewer
+                                )
+                        )
+                        .toList();
+
+
+        boolean current =
+                tournament.getStatus()
+                        == TournamentStatus.IN_PROGRESS
+                        &&
+                        tournament.getCurrentRound() != null
+                        &&
+                        tournament.getCurrentRound()
+                                .equals(
+                                        round.getRoundNumber()
+                                );
+
+
+        return new TournamentRoundResponse(
+                round.getRoundNumber(),
+                round.getStatus(),
+                round.getScheduledAt(),
+                round.getStartedAt(),
+                round.getCompletedAt(),
+                current,
+                matches
         );
     }
 }

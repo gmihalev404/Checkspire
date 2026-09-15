@@ -40,6 +40,7 @@ class GameControllerTest {
 
     private GameController controller;
 
+
     @BeforeEach
     void setUp() {
 
@@ -50,6 +51,7 @@ class GameControllerTest {
                 );
     }
 
+
     @Test
     void gamesShouldLoadAuthenticatedUsersGames() {
 
@@ -59,28 +61,36 @@ class GameControllerTest {
         List<GameSummaryResponse> games =
                 List.of();
 
-        when(userService.findByUsername(
-                "testplayer"
-        )).thenReturn(
+
+        when(
+                userService.findByUsername(
+                        "testplayer"
+                )
+        ).thenReturn(
                 Optional.of(user)
         );
 
-        when(user.getUsername())
-                .thenReturn(
-                        "testplayer"
-                );
+        when(
+                user.getUsername()
+        ).thenReturn(
+                "testplayer"
+        );
 
-        when(gameService.getGameSummariesForUser(
-                user
-        )).thenReturn(
+        when(
+                gameService.getGameSummariesForUser(
+                        user
+                )
+        ).thenReturn(
                 games
         );
+
 
         String result =
                 controller.games(
                         principal,
                         model
                 );
+
 
         assertEquals(
                 "game/games",
@@ -100,39 +110,58 @@ class GameControllerTest {
                 );
     }
 
+
     @Test
     void gameShouldLoadGameForAuthenticatedParticipant() {
 
         Long gameId = 10L;
+        Long tournamentId = 20L;
+        Long userId = 1L;
 
         Principal principal =
                 () -> "testplayer";
+
 
         GamePageResponse page =
                 new GamePageResponse(
                         null,
                         PieceColor.WHITE,
                         540_000L,
-                        515_000L
+                        515_000L,
+                        tournamentId,
+                        true
                 );
 
-        when(userService.findByUsername(
-                "testplayer"
-        )).thenReturn(
+
+        when(
+                userService.findByUsername(
+                        "testplayer"
+                )
+        ).thenReturn(
                 Optional.of(user)
         );
 
-        when(user.getUsername())
-                .thenReturn(
-                        "testplayer"
-                );
+        when(
+                user.getUsername()
+        ).thenReturn(
+                "testplayer"
+        );
 
-        when(gameService.getGamePageForPlayer(
-                gameId,
-                user
-        )).thenReturn(
+        when(
+                user.getId()
+        ).thenReturn(
+                userId
+        );
+
+        when(
+                gameService.getGamePage(
+                        gameId,
+                        user
+                )
+        ).thenReturn(
                 Optional.of(page)
         );
+
 
         String result =
                 controller.game(
@@ -141,10 +170,12 @@ class GameControllerTest {
                         model
                 );
 
+
         assertEquals(
                 "game/game",
                 result
         );
+
 
         verify(model)
                 .addAttribute(
@@ -175,29 +206,138 @@ class GameControllerTest {
                         "username",
                         "testplayer"
                 );
+
+        verify(model)
+                .addAttribute(
+                        "currentUserId",
+                        userId
+                );
+
+        verify(model)
+                .addAttribute(
+                        "tournamentId",
+                        tournamentId
+                );
+
+        verify(model)
+                .addAttribute(
+                        "viewerParticipant",
+                        true
+                );
     }
 
 
     @Test
-    void gameShouldReturnNotFoundWhenUserCannotAccessGame() {
+    void gameShouldLoadGameForAuthenticatedSpectator() {
 
         Long gameId = 10L;
+        Long tournamentId = 20L;
+        Long userId = 99L;
+
+        Principal principal =
+                () -> "spectator";
+
+
+        GamePageResponse page =
+                new GamePageResponse(
+                        null,
+                        PieceColor.WHITE,
+                        500_000L,
+                        480_000L,
+                        tournamentId,
+                        false
+                );
+
+
+        when(
+                userService.findByUsername(
+                        "spectator"
+                )
+        ).thenReturn(
+                Optional.of(user)
+        );
+
+        when(
+                user.getUsername()
+        ).thenReturn(
+                "spectator"
+        );
+
+        when(
+                user.getId()
+        ).thenReturn(
+                userId
+        );
+
+        when(
+                gameService.getGamePage(
+                        gameId,
+                        user
+                )
+        ).thenReturn(
+                Optional.of(page)
+        );
+
+
+        String result =
+                controller.game(
+                        gameId,
+                        principal,
+                        model
+                );
+
+
+        assertEquals(
+                "game/game",
+                result
+        );
+
+        verify(model)
+                .addAttribute(
+                        "viewerParticipant",
+                        false
+                );
+
+        verify(model)
+                .addAttribute(
+                        "viewerColor",
+                        "WHITE"
+                );
+
+        verify(model)
+                .addAttribute(
+                        "tournamentId",
+                        tournamentId
+                );
+    }
+
+
+    @Test
+    void gameShouldReturnNotFoundWhenGameDoesNotExist() {
+
+        Long gameId = 999L;
 
         Principal principal =
                 () -> "testplayer";
 
-        when(userService.findByUsername(
-                "testplayer"
-        )).thenReturn(
+
+        when(
+                userService.findByUsername(
+                        "testplayer"
+                )
+        ).thenReturn(
                 Optional.of(user)
         );
 
-        when(gameService.getGamePageForPlayer(
-                gameId,
-                user
-        )).thenReturn(
+        when(
+                gameService.getGamePage(
+                        gameId,
+                        user
+                )
+        ).thenReturn(
                 Optional.empty()
         );
+
 
         ResponseStatusException exception =
                 assertThrows(
@@ -209,6 +349,7 @@ class GameControllerTest {
                                         model
                                 )
                 );
+
 
         assertEquals(
                 HttpStatus.NOT_FOUND,

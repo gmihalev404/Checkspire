@@ -68,7 +68,7 @@ public class GameController {
                 );
 
         GamePageResponse page =
-                gameService.getGamePageForPlayer(
+                gameService.getGamePage(
                         gameId,
                         currentUser
                 ).orElseThrow(() ->
@@ -76,6 +76,16 @@ public class GameController {
                                 HttpStatus.NOT_FOUND
                         )
                 );
+
+        model.addAttribute(
+                "viewerParticipant",
+                page.viewerParticipant()
+        );
+
+        model.addAttribute(
+                "tournamentId",
+                page.tournamentId()
+        );
 
         model.addAttribute(
                 "game",

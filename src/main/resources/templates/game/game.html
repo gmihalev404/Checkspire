@@ -53,7 +53,11 @@
 <main class="container py-4">
 
     <div class="row g-4 justify-content-center">
-
+            <span th:if="${!viewerParticipant
+        and game.status.name() == 'IN_PROGRESS'}"
+                  class="badge text-bg-secondary mb-2">
+    Spectating
+</span>
         <!-- ========================= -->
         <!-- BOARD -->
         <!-- ========================= -->
@@ -105,8 +109,10 @@
         data-orientation=${viewerColor},
         data-status=${game.status},
         data-result=${game.result},
-        data-termination=${game.termination}">
+        data-termination=${game.termination},
+        data-viewer-participant=${viewerParticipant}">
             </div>
+
 
             <div class="game-player-bar mt-2">
 
@@ -306,14 +312,26 @@
                         <div id="game-result-reason"
                              class="small mt-1">
                         </div>
+                        <a id="return-to-tournament"
+                           th:if="${tournamentId != null}"
+                           th:href="@{/tournaments/{id}(
+       id=${tournamentId}
+   )}"
+                           class="btn btn-primary mt-3 d-none">
+
+                            Return to Tournament
+
+                        </a>
 
                     </div>
 
 
                     <div id="game-actions"
                          class="d-flex flex-column gap-2 mt-3"
-                         th:attr="data-viewer-user-id=${currentUserId},
-              data-draw-offer-by-user-id=${game.drawOfferByUserId}">
+                         th:classappend="${!viewerParticipant} ? ' d-none'"
+                         th:attr="
+        data-viewer-user-id=${currentUserId},
+        data-draw-offer-by-user-id=${game.drawOfferByUserId}">
 
                         <div id="draw-status"
                              class="small text-body-secondary text-center"

@@ -23,8 +23,11 @@ public record TournamentDetailsResponse(
         boolean armageddonForFirstPlaceTie,
         Integer numberOfRounds,
         Integer currentRound,
+        List<TournamentMatchResponse> matches,
         List<TournamentParticipantResponse> participants,
+        List<TournamentParticipantResponse> standings,
         boolean viewerJoined,
-        boolean viewerCreator
+        boolean viewerCreator,
+        List<TournamentRoundResponse> rounds
 ) {
 }

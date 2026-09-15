@@ -13,6 +13,7 @@ import com.example.chessforge.model.enums.game.GameTermination;
 import com.example.chessforge.model.enums.timeControl.TimeControl;
 import com.example.chessforge.model.enums.timeControl.TimeControlType;
 import com.example.chessforge.model.enums.tournament.TournamentMatchStatus;
+import com.example.chessforge.model.enums.tournament.TournamentStatus;
 import com.example.chessforge.repository.game.GameMoveRepository;
 import com.example.chessforge.repository.game.GameRepository;
 import com.example.chessforge.service.game.dto.GameMoveResponse;
@@ -188,6 +189,76 @@ public class GameService {
     }
 
     @Transactional
+    public void startGamesForCurrentRound(
+            Tournament tournament
+    ) {
+
+        if (tournament.getStatus()
+                != TournamentStatus.IN_PROGRESS) {
+
+            return;
+        }
+
+        if (tournament.getCurrentRound() == null) {
+            return;
+        }
+
+
+        List<TournamentMatch> matches =
+                tournamentService
+                        .getRoundMatches(
+                                tournament,
+                                tournament.getCurrentRound()
+                        );
+
+
+        for (TournamentMatch match : matches) {
+
+            if (match.getStatus()
+                    == TournamentMatchStatus.COMPLETED) {
+
+                continue;
+            }
+
+
+            if (match.getBlackParticipant() == null) {
+
+                continue;
+            }
+
+
+            boolean hasActiveGame =
+                    gameRepository
+                            .findByTournamentMatchOrderById(
+                                    match
+                            )
+                            .stream()
+                            .anyMatch(game ->
+                                    game.getStatus()
+                                            == GameStatus.WAITING
+                                            ||
+                                            game.getStatus()
+                                                    == GameStatus.IN_PROGRESS
+                            );
+
+
+            if (hasActiveGame) {
+                continue;
+            }
+
+
+            Game game =
+                    createGameFromTournament(
+                            match
+                    );
+
+            startGame(
+                    game
+            );
+        }
+    }
+
+    @Transactional
     public void finishGame(
             Game game,
             GameResult result,
@@ -228,7 +299,18 @@ public class GameService {
         ratingService.updateRatings(game);
 
         if (game.getTournamentMatch() != null) {
-            tournamentService.recordGameResult(game);
+
+            Tournament tournament =
+                    game.getTournamentMatch()
+                            .getTournament();
+
+            tournamentService.recordGameResult(
+                    game
+            );
+
+            startGamesForCurrentRound(
+                    tournament
+            );
         }
 
         game.setDrawOfferBy(
@@ -389,6 +471,11 @@ public class GameService {
             );
         }
 
+        validateParticipant(
+                game,
+                player
+        );
+
         GameState state =
                 loadGameState(
                         game
@@ -456,6 +543,11 @@ public class GameService {
             );
         }
 
+        validateParticipant(
+                game,
+                player
+        );
+
         GameState state =
                 loadGameState(
                         game
@@ -486,6 +578,7 @@ public class GameService {
                     game
             );
         }
+        Result result = new Result(game, state, movingColor, now);
 
         Square fromSquare =
                 Square.fromAlgebraic(
@@ -499,20 +592,23 @@ public class GameService {
 
         Move move =
                 gameEngine.resolveMove(
-                        state,
+                        result.state(),
                         fromSquare,
                         toSquare,
                         promotion
                 );
 
         return executeMove(
-                game,
+                result.game(),
                 player,
-                state,
+                result.state(),
                 move,
-                movingColor,
-                now
+                result.movingColor(),
+                result.now()
         );
+    }
+
+    private record Result(Game game, GameState state, PieceColor movingColor, LocalDateTime now) {
     }
 
     @Transactional
@@ -865,9 +961,13 @@ public class GameService {
         );
     }
 
-    public Optional<GamePageResponse> getGamePageForPlayer(
+    // =========================================================
+    // READ
+    // =========================================================
+
+    public Optional<GamePageResponse> getGamePage(
             Long gameId,
-            User player
+            User viewer
     ) {
 
         Optional<Game> gameOptional =
@@ -882,57 +982,65 @@ public class GameService {
         Game game =
                 gameOptional.get();
 
-        PieceColor viewerColor =
+
+        PieceColor playerColor =
                 resolvePlayerColor(
                         game,
-                        player
+                        viewer
                 );
 
-        if (viewerColor == null) {
-            return Optional.empty();
-        }
 
-        GameStateResponse state =
-                gameStateMapper.toResponse(
-                        game
-                );
+        boolean viewerParticipant =
+                playerColor != null;
+
+
+        PieceColor viewerColor =
+                viewerParticipant
+                        ? playerColor
+                        : PieceColor.WHITE;
+
 
         ClockSnapshot clockSnapshot =
                 calculateClockSnapshot(
                         game
                 );
 
-        return Optional.of(new GamePageResponse(
-                gameStateMapper.toResponse(
-                        game
-                ),
-                viewerColor,
-                clockSnapshot.whiteMillis(),
-                clockSnapshot.blackMillis()
-        ));
+
+        Long tournamentId =
+                game.getTournamentMatch() != null
+                        ? game.getTournamentMatch()
+                        .getTournament()
+                        .getId()
+                        : null;
+
+
+        return Optional.of(
+                new GamePageResponse(
+                        gameStateMapper.toResponse(
+                                game
+                        ),
+                        viewerColor,
+                        clockSnapshot.whiteMillis(),
+                        clockSnapshot.blackMillis(),
+                        tournamentId,
+                        viewerParticipant
+                )
+        );
     }
 
     public List<GameMoveResponse> getMoveHistory(
-            Long gameId,
-            User player
+            Long gameId
     ) {
 
-        Game game =
-                gameRepository
-                        .findById(
-                                gameId
+        gameRepository
+                .findById(
+                        gameId
+                )
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Game not found."
                         )
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        "Game not found."
-                                )
-                        );
-
-
-        validateParticipant(
-                game,
-                player
-        );
+                );
 
 
         return gameMoveRepository
@@ -950,6 +1058,27 @@ public class GameService {
                         )
                 )
                 .toList();
+    }
+
+    public Optional<Game> getLatestGameForTournamentMatch(
+            TournamentMatch match
+    ) {
+
+        List<Game> games =
+                gameRepository
+                        .findByTournamentMatchOrderById(
+                                match
+                        );
+
+        if (games.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(
+                games.get(
+                        games.size() - 1
+                )
+        );
     }
 
     // =========================================================

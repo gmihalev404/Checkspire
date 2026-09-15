@@ -7,6 +7,7 @@ public record TournamentParticipantResponse(
         Integer rating,
         Double score,
         Integer seed,
+        Integer finalRank,
         TournamentParticipantStatus status
 ) {
 }

@@ -4,6 +4,7 @@ import com.example.chessforge.model.entity.game.Game;
 import com.example.chessforge.model.entity.tournament.Tournament;
 import com.example.chessforge.model.entity.tournament.TournamentMatch;
 import com.example.chessforge.model.entity.tournament.TournamentParticipant;
+import com.example.chessforge.model.entity.tournament.TournamentRound;
 import com.example.chessforge.model.entity.user.User;
 import com.example.chessforge.model.enums.game.GameStatus;
 import com.example.chessforge.model.enums.timeControl.TimeControl;
@@ -13,6 +14,7 @@ import com.example.chessforge.model.enums.user.UserStatus;
 import com.example.chessforge.repository.tournament.TournamentMatchRepository;
 import com.example.chessforge.repository.tournament.TournamentParticipantRepository;
 import com.example.chessforge.repository.tournament.TournamentRepository;
+import com.example.chessforge.repository.tournament.TournamentRoundRepository;
 import com.example.chessforge.service.game.RatingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,7 @@ public class TournamentService {
     private final TournamentPairingService pairingService;
     private final TournamentLeaderboardService leaderboardService;
     private final RatingService ratingService;
+    private final TournamentRoundRepository roundRepository;
 
     // =========================================================
     // CREATE TOURNAMENT
@@ -428,6 +431,12 @@ public class TournamentService {
                 1
         );
 
+        startRound(
+                tournament,
+                1,
+                tournament.getStartsAt()
+        );
+
         resolveAutomaticResults(
                 tournament,
                 matches.stream()
@@ -569,6 +578,12 @@ public class TournamentService {
                 nextRoundNumber
         );
 
+        startRound(
+                tournament,
+                nextRoundNumber,
+                LocalDateTime.now()
+        );
+
         resolveAutomaticResults(
                 tournament,
                 matches
@@ -637,6 +652,28 @@ public class TournamentService {
                         new IllegalArgumentException(
                                 "Tournament not found."
                         )
+                );
+    }
+
+    public List<TournamentMatch> getRoundMatches(
+            Tournament tournament,
+            Integer roundNumber
+    ) {
+
+        return matchRepository
+                .findByTournamentAndRoundNumberOrderByBoardNumber(
+                        tournament,
+                        roundNumber
+                );
+    }
+
+    public List<TournamentRound> getRounds(
+            Tournament tournament
+    ) {
+
+        return roundRepository
+                .findByTournamentOrderByRoundNumberAsc(
+                        tournament
                 );
     }
 
@@ -1278,6 +1315,11 @@ public class TournamentService {
             return;
         }
 
+        completeRound(
+                tournament,
+                currentRound
+        );
+
         switch (tournament.getFormat()) {
 
             case SINGLE_ELIMINATION ->
@@ -1709,6 +1751,100 @@ public class TournamentService {
 
         throw new IllegalStateException(
                 "A knockout placement match cannot end in a draw."
+        );
+    }
+
+    private void startRound(
+            Tournament tournament,
+            Integer roundNumber,
+            LocalDateTime scheduledAt
+    ) {
+
+        LocalDateTime now =
+                LocalDateTime.now();
+
+
+        TournamentRound round =
+                roundRepository
+                        .findByTournamentAndRoundNumber(
+                                tournament,
+                                roundNumber
+                        )
+                        .orElseGet(() ->
+                                TournamentRound.builder()
+                                        .tournament(
+                                                tournament
+                                        )
+                                        .roundNumber(
+                                                roundNumber
+                                        )
+                                        .build()
+                        );
+
+
+        round.setStatus(
+                TournamentRoundStatus.IN_PROGRESS
+        );
+
+
+        if (round.getScheduledAt() == null) {
+
+            round.setScheduledAt(
+                    scheduledAt
+            );
+        }
+
+
+        if (round.getStartedAt() == null) {
+
+            round.setStartedAt(
+                    now
+            );
+        }
+
+
+        roundRepository.save(
+                round
+        );
+    }
+
+    private void completeRound(
+            Tournament tournament,
+            Integer roundNumber
+    ) {
+
+        TournamentRound round =
+                roundRepository
+                        .findByTournamentAndRoundNumber(
+                                tournament,
+                                roundNumber
+                        )
+                        .orElseGet(() ->
+                                TournamentRound.builder()
+                                        .tournament(
+                                                tournament
+                                        )
+                                        .roundNumber(
+                                                roundNumber
+                                        )
+                                        .startedAt(
+                                                LocalDateTime.now()
+                                        )
+                                        .build()
+                        );
+
+
+        round.setStatus(
+                TournamentRoundStatus.COMPLETED
+        );
+
+        round.setCompletedAt(
+                LocalDateTime.now()
+        );
+
+
+        roundRepository.save(
+                round
         );
     }
 }

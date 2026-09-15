@@ -16,41 +16,16 @@ import java.util.List;
 public class GameHistoryController {
 
     private final GameService gameService;
-    private final UserService userService;
 
 
     @GetMapping("/{gameId}/moves")
     public List<GameMoveResponse> moveHistory(
-            @PathVariable Long gameId,
-            Principal principal
+            @PathVariable Long gameId
     ) {
-
-        User currentUser =
-                getCurrentUser(
-                        principal
-                );
-
 
         return gameService
                 .getMoveHistory(
-                        gameId,
-                        currentUser
-                );
-    }
-
-
-    private User getCurrentUser(
-            Principal principal
-    ) {
-
-        return userService
-                .findByUsername(
-                        principal.getName()
-                )
-                .orElseThrow(() ->
-                        new IllegalStateException(
-                                "Authenticated user was not found."
-                        )
+                        gameId
                 );
     }
 }

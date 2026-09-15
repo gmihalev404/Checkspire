@@ -18,9 +18,11 @@ import com.example.chessforge.model.enums.timeControl.TimeControlType;
 import com.example.chessforge.model.enums.tournament.TournamentMatchStatus;
 import com.example.chessforge.model.enums.tournament.TournamentMatchTermination;
 import com.example.chessforge.model.enums.tournament.TournamentParticipantStatus;
+import com.example.chessforge.model.enums.tournament.TournamentStatus;
 import com.example.chessforge.model.enums.user.UserStatus;
 import com.example.chessforge.repository.game.GameMoveRepository;
 import com.example.chessforge.repository.game.GameRepository;
+import com.example.chessforge.repository.tournament.TournamentRoundRepository;
 import com.example.chessforge.service.game.dto.GameMoveResponse;
 import com.example.chessforge.service.game.dto.GamePageResponse;
 import com.example.chessforge.service.game.dto.GameStateResponse;
@@ -986,12 +988,26 @@ class GameServiceTest {
     @Test
     void finishGameShouldUpdateTournamentMatchForTournamentGame() {
 
+        Tournament tournament =
+                Tournament.builder()
+                        .status(
+                                TournamentStatus.IN_PROGRESS
+                        )
+                        .currentRound(
+                                1
+                        )
+                        .build();
+
         TournamentMatch tournamentMatch =
                 TournamentMatch.builder()
                         .status(
                                 TournamentMatchStatus.IN_PROGRESS
                         )
+                        .tournament(
+                                tournament
+                        )
                         .build();
+
 
         Game game =
                 createWaitingGame(
@@ -1006,6 +1022,15 @@ class GameServiceTest {
 
         game.setTournamentMatch(
                 tournamentMatch
+        );
+
+        when(
+                tournamentService.getRoundMatches(
+                        tournament,
+                        1
+                )
+        ).thenReturn(
+                List.of()
         );
 
         gameService.finishGame(
@@ -5954,7 +5979,7 @@ class GameServiceTest {
     }
 
     @Test
-    void getGamePageForPlayerShouldReturnWhitePerspective() {
+    void getGamePageShouldReturnWhitePerspectiveForWhitePlayer() {
 
         Long gameId = 10L;
 
@@ -5973,28 +5998,36 @@ class GameServiceTest {
                 600_000L
         );
 
+
         GameStateResponse state =
                 mock(
                         GameStateResponse.class
                 );
 
-        when(gameRepository.findById(
-                gameId
-        )).thenReturn(
+
+        when(
+                gameRepository.findById(
+                        gameId
+                )
+        ).thenReturn(
                 Optional.of(game)
         );
 
-        when(gameStateMapper.toResponse(
-                game
-        )).thenReturn(
+        when(
+                gameStateMapper.toResponse(
+                        game
+                )
+        ).thenReturn(
                 state
         );
 
+
         Optional<GamePageResponse> result =
-                gameService.getGamePageForPlayer(
+                gameService.getGamePage(
                         gameId,
                         challenger
                 );
+
 
         assertTrue(
                 result.isPresent()
@@ -6011,11 +6044,16 @@ class GameServiceTest {
                 result.get()
                         .viewerColor()
         );
+
+        assertTrue(
+                result.get()
+                        .viewerParticipant()
+        );
     }
 
 
     @Test
-    void getGamePageForPlayerShouldReturnBlackPerspective() {
+    void getGamePageShouldReturnBlackPerspectiveForBlackPlayer() {
 
         Long gameId = 10L;
 
@@ -6034,28 +6072,36 @@ class GameServiceTest {
                 600_000L
         );
 
+
         GameStateResponse state =
                 mock(
                         GameStateResponse.class
                 );
 
-        when(gameRepository.findById(
-                gameId
-        )).thenReturn(
+
+        when(
+                gameRepository.findById(
+                        gameId
+                )
+        ).thenReturn(
                 Optional.of(game)
         );
 
-        when(gameStateMapper.toResponse(
-                game
-        )).thenReturn(
+        when(
+                gameStateMapper.toResponse(
+                        game
+                )
+        ).thenReturn(
                 state
         );
 
+
         Optional<GamePageResponse> result =
-                gameService.getGamePageForPlayer(
+                gameService.getGamePage(
                         gameId,
                         opponent
                 );
+
 
         assertTrue(
                 result.isPresent()
@@ -6066,23 +6112,29 @@ class GameServiceTest {
                 result.get()
                         .viewerColor()
         );
+
+        assertTrue(
+                result.get()
+                        .viewerParticipant()
+        );
     }
 
 
     @Test
-    void getGamePageForPlayerShouldRejectOutsider() {
+    void getGamePageShouldAllowSpectator() {
 
         Long gameId = 10L;
 
-        User outsider =
+        User spectator =
                 createUser(
                         99L,
-                        "outsider",
+                        "spectator",
                         400,
                         400,
                         400,
                         400
                 );
+
 
         Game game =
                 createWaitingGame(
@@ -6091,44 +6143,89 @@ class GameServiceTest {
                         TimeControl.values()[0]
                 );
 
-        when(gameRepository.findById(
-                gameId
-        )).thenReturn(
+        game.setWhiteTimeRemainingMillis(
+                600_000L
+        );
+
+        game.setBlackTimeRemainingMillis(
+                600_000L
+        );
+
+
+        GameStateResponse state =
+                mock(
+                        GameStateResponse.class
+                );
+
+
+        when(
+                gameRepository.findById(
+                        gameId
+                )
+        ).thenReturn(
                 Optional.of(game)
         );
 
-        Optional<GamePageResponse> result =
-                gameService.getGamePageForPlayer(
-                        gameId,
-                        outsider
-                );
-
-        assertTrue(
-                result.isEmpty()
+        when(
+                gameStateMapper.toResponse(
+                        game
+                )
+        ).thenReturn(
+                state
         );
 
-        verifyNoInteractions(
-                gameStateMapper
+
+        Optional<GamePageResponse> result =
+                gameService.getGamePage(
+                        gameId,
+                        spectator
+                );
+
+
+        assertTrue(
+                result.isPresent()
+        );
+
+        assertSame(
+                state,
+                result.get()
+                        .game()
+        );
+
+        assertEquals(
+                PieceColor.WHITE,
+                result.get()
+                        .viewerColor()
+        );
+
+        assertFalse(
+                result.get()
+                        .viewerParticipant()
         );
     }
 
 
     @Test
-    void getGamePageForPlayerShouldReturnEmptyForUnknownGame() {
+    void getGamePageShouldReturnEmptyForUnknownGame() {
 
         Long gameId = 999L;
 
-        when(gameRepository.findById(
-                gameId
-        )).thenReturn(
+
+        when(
+                gameRepository.findById(
+                        gameId
+                )
+        ).thenReturn(
                 Optional.empty()
         );
 
+
         Optional<GamePageResponse> result =
-                gameService.getGamePageForPlayer(
+                gameService.getGamePage(
                         gameId,
                         challenger
                 );
+
 
         assertTrue(
                 result.isEmpty()
@@ -6140,8 +6237,8 @@ class GameServiceTest {
     }
 
     // =========================================================
-// GET MOVE HISTORY
-// =========================================================
+    // GET MOVE HISTORY
+    // =========================================================
 
     @Test
     void getMoveHistoryShouldReturnMovesInPlyOrder() {
@@ -6217,8 +6314,7 @@ class GameServiceTest {
 
         List<GameMoveResponse> result =
                 gameService.getMoveHistory(
-                        gameId,
-                        challenger
+                        gameId
                 );
 
 
@@ -6294,7 +6390,7 @@ class GameServiceTest {
 
 
     @Test
-    void getMoveHistoryShouldRejectNonParticipant() {
+    void getMoveHistoryShouldAllowNonParticipant() {
 
         Long gameId = 1L;
 
@@ -6311,15 +6407,15 @@ class GameServiceTest {
         );
 
 
-        User outsider =
-                createUser(
-                        3L,
-                        "outsider",
-                        500,
-                        500,
-                        500,
-                        500
-                );
+        GameMove move =
+                GameMove.builder()
+                        .game(game)
+                        .plyNumber(1)
+                        .san("e4")
+                        .fromSquare("e2")
+                        .toSquare("e4")
+                        .fenAfter("fen-after-e4")
+                        .build();
 
 
         when(
@@ -6327,34 +6423,42 @@ class GameServiceTest {
                         gameId
                 )
         ).thenReturn(
-                Optional.of(
-                        game
+                Optional.of(game)
+        );
+
+        when(
+                gameMoveRepository
+                        .findByGameIdOrderByPlyNumberAsc(
+                                gameId
+                        )
+        ).thenReturn(
+                List.of(
+                        move
                 )
         );
 
 
-        IllegalArgumentException exception =
-                assertThrows(
-                        IllegalArgumentException.class,
-                        () ->
-                                gameService.getMoveHistory(
-                                        gameId,
-                                        outsider
-                                )
+        List<GameMoveResponse> result =
+                gameService.getMoveHistory(
+                        gameId
                 );
 
 
         assertEquals(
-                "User is not a participant in this game.",
-                exception.getMessage()
+                1,
+                result.size()
         );
 
+        assertEquals(
+                "e4",
+                result.get(0)
+                        .san()
+        );
 
         verify(
-                gameMoveRepository,
-                never()
+                gameMoveRepository
         ).findByGameIdOrderByPlyNumberAsc(
-                anyLong()
+                gameId
         );
     }
 
@@ -6379,8 +6483,7 @@ class GameServiceTest {
                         IllegalArgumentException.class,
                         () ->
                                 gameService.getMoveHistory(
-                                        gameId,
-                                        challenger
+                                        gameId
                                 )
                 );
 
@@ -6393,6 +6496,84 @@ class GameServiceTest {
 
         verifyNoInteractions(
                 gameMoveRepository
+        );
+    }
+
+    @Test
+    void makeMoveShouldRejectNonParticipant() {
+
+        Long gameId = 1L;
+
+        User spectator =
+                createUser(
+                        99L,
+                        "spectator",
+                        400,
+                        400,
+                        400,
+                        400
+                );
+
+
+        Game game =
+                createWaitingGame(
+                        challenger,
+                        opponent,
+                        TimeControl.values()[0]
+                );
+
+        game.setStatus(
+                GameStatus.IN_PROGRESS
+        );
+
+        game.setCurrentFen(
+                INITIAL_FEN
+        );
+
+
+        when(
+                gameRepository.findByIdForUpdate(
+                        gameId
+                )
+        ).thenReturn(
+                Optional.of(game)
+        );
+
+
+        IllegalArgumentException exception =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () ->
+                                gameService.makeMove(
+                                        gameId,
+                                        spectator,
+                                        "e2",
+                                        "e4",
+                                        null
+                                )
+                );
+
+
+        assertEquals(
+                "User is not a participant in this game.",
+                exception.getMessage()
+        );
+
+        verify(
+                gameEngine,
+                never()
+        ).resolveMove(
+                any(),
+                any(),
+                any(),
+                any()
+        );
+
+        verify(
+                gameRepository,
+                never()
+        ).save(
+                any()
         );
     }
 
