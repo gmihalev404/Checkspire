@@ -2,8 +2,10 @@ package com.example.chessforge.repository.tournament;
 
 import com.example.chessforge.model.entity.tournament.Tournament;
 import com.example.chessforge.model.entity.tournament.TournamentRound;
+import com.example.chessforge.model.enums.tournament.TournamentRoundStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,5 +21,11 @@ public interface TournamentRoundRepository
     findByTournamentAndRoundNumber(
             Tournament tournament,
             Integer roundNumber
+    );
+
+    List<TournamentRound>
+    findByStatusAndScheduledAtLessThanEqualOrderByScheduledAtAsc(
+            TournamentRoundStatus status,
+            LocalDateTime scheduledAt
     );
 }

@@ -139,6 +139,57 @@ public class TournamentService {
         );
     }
 
+    @Transactional
+    public Tournament createTournament(
+            String name,
+            User creator,
+            TournamentFormat format,
+            TimeControl timeControl,
+            boolean rated,
+            Integer maxPlayers,
+            LocalDateTime startsAt,
+            boolean automaticStart,
+            Integer roundBreakMinutes,
+            double byePoints,
+            List<TieBreakType> tieBreaks,
+            boolean armageddonForFirstPlaceTie,
+            Integer numberOfRounds
+    ) {
+
+        if (roundBreakMinutes == null
+                || roundBreakMinutes < 0) {
+
+            throw new IllegalArgumentException(
+                    "Round break minutes cannot be negative."
+            );
+        }
+
+        Tournament tournament =
+                createTournament(
+                        name,
+                        creator,
+                        format,
+                        timeControl,
+                        rated,
+                        maxPlayers,
+                        startsAt,
+                        byePoints,
+                        tieBreaks,
+                        armageddonForFirstPlaceTie,
+                        numberOfRounds
+                );
+
+        tournament.setAutomaticStart(
+                automaticStart
+        );
+
+        tournament.setRoundBreakMinutes(
+                roundBreakMinutes
+        );
+
+        return tournament;
+    }
+
     // =========================================================
     // JOIN TOURNAMENT
     // =========================================================
@@ -389,6 +440,68 @@ public class TournamentService {
                 requester
         );
 
+        return startTournamentInternal(
+                tournament
+        );
+    }
+
+
+    @Transactional
+    public Tournament startTournamentAutomatically(
+            Long tournamentId
+    ) {
+
+        Tournament tournament =
+                tournamentRepository
+                        .findById(
+                                tournamentId
+                        )
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Tournament not found."
+                                )
+                        );
+
+
+        if (!tournament.isAutomaticStart()) {
+
+            throw new IllegalStateException(
+                    "Tournament is not configured for automatic start."
+            );
+        }
+
+
+        if (tournament.getStartsAt() == null) {
+
+            throw new IllegalStateException(
+                    "Tournament has no scheduled start time."
+            );
+        }
+
+
+        if (tournament.getStartsAt()
+                .isAfter(
+                        LocalDateTime.now()
+                )) {
+
+            throw new IllegalStateException(
+                    "Tournament is not due yet."
+            );
+        }
+
+
+        startTournamentInternal(
+                tournament
+        );
+
+        return tournament;
+    }
+
+
+    private List<TournamentMatch> startTournamentInternal(
+            Tournament tournament
+    ) {
+
         if (tournament.getStatus()
                 != TournamentStatus.REGISTRATION) {
 
@@ -397,20 +510,24 @@ public class TournamentService {
             );
         }
 
+
         List<TournamentParticipant> participants =
                 getActiveParticipants(
                         tournament
                 );
+
 
         validateTournamentCanStart(
                 tournament,
                 participants
         );
 
+
         assignSeeds(
                 tournament,
                 participants
         );
+
 
         List<TournamentMatch> matches =
                 pairingService
@@ -419,9 +536,11 @@ public class TournamentService {
                                 participants
                         );
 
+
         matchRepository.saveAll(
                 matches
         );
+
 
         tournament.setStatus(
                 TournamentStatus.IN_PROGRESS
@@ -431,11 +550,13 @@ public class TournamentService {
                 1
         );
 
+
         startRound(
                 tournament,
                 1,
                 tournament.getStartsAt()
         );
+
 
         resolveAutomaticResults(
                 tournament,
@@ -445,6 +566,7 @@ public class TournamentService {
                         )
                         .toList()
         );
+
 
         tournament.touch();
 
@@ -456,7 +578,7 @@ public class TournamentService {
     // =========================================================
 
     @Transactional
-    public List<TournamentMatch> startNextRound(
+    public List<TournamentMatch> scheduleNextRound(
             Tournament tournament
     ) {
 
@@ -574,26 +696,152 @@ public class TournamentService {
         // ACTIVATE ROUND
         // =====================================================
 
-        tournament.setCurrentRound(
-                nextRoundNumber
-        );
+        LocalDateTime scheduledAt =
+                LocalDateTime.now()
+                        .plusMinutes(
+                                tournament.getRoundBreakMinutes()
+                        );
 
-        startRound(
+        scheduleRound(
                 tournament,
                 nextRoundNumber,
-                LocalDateTime.now()
+                scheduledAt
         );
+
+        tournament.touch();
+
+        return matches;
+    }
+
+    // =========================================================
+    // ACTIVATE SCHEDULED ROUND
+    // =========================================================
+
+    @Transactional
+    public Tournament activateScheduledRound(
+            Long roundId
+    ) {
+
+        TournamentRound round =
+                roundRepository
+                        .findById(
+                                roundId
+                        )
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Tournament round not found."
+                                )
+                        );
+
+
+        if (round.getStatus()
+                != TournamentRoundStatus.SCHEDULED) {
+
+            throw new IllegalStateException(
+                    "Only a scheduled round can be activated."
+            );
+        }
+
+
+        Tournament tournament =
+                round.getTournament();
+
+
+        if (tournament.getStatus()
+                != TournamentStatus.IN_PROGRESS) {
+
+            throw new IllegalStateException(
+                    "Tournament is not in progress."
+            );
+        }
+
+
+        LocalDateTime scheduledAt =
+                round.getScheduledAt();
+
+        if (scheduledAt == null) {
+
+            throw new IllegalStateException(
+                    "Scheduled round has no start time."
+            );
+        }
+
+
+        LocalDateTime now =
+                LocalDateTime.now();
+
+
+        if (scheduledAt.isAfter(now)) {
+
+            throw new IllegalStateException(
+                    "Tournament round is not due yet."
+            );
+        }
+
+
+        int expectedRound =
+                tournament.getCurrentRound() + 1;
+
+
+        if (!round.getRoundNumber()
+                .equals(expectedRound)) {
+
+            throw new IllegalStateException(
+                    "Tournament round is not the next round."
+            );
+        }
+
+
+        List<TournamentMatch> matches =
+                matchRepository
+                        .findByTournamentAndRoundNumberOrderByBoardNumber(
+                                tournament,
+                                round.getRoundNumber()
+                        );
+
+
+        if (matches.isEmpty()) {
+
+            throw new IllegalStateException(
+                    "Scheduled round has no matches."
+            );
+        }
+
+
+        tournament.setCurrentRound(
+                round.getRoundNumber()
+        );
+
+
+        round.setStatus(
+                TournamentRoundStatus.IN_PROGRESS
+        );
+
+        round.setStartedAt(
+                now
+        );
+
+
+        roundRepository.save(
+                round
+        );
+
 
         resolveAutomaticResults(
                 tournament,
                 matches
         );
 
+
         handleRoundCompletion(
                 tournament
         );
 
-        return matches;
+
+        tournament.touch();
+
+
+        return tournament;
     }
 
     // =========================================================
@@ -1368,7 +1616,7 @@ public class TournamentService {
             );
         }
 
-        startNextRound(
+        scheduleNextRound(
                 tournament
         );
     }
@@ -1387,7 +1635,7 @@ public class TournamentService {
             return;
         }
 
-        startNextRound(
+        scheduleNextRound(
                 tournament
         );
     }
@@ -1415,7 +1663,7 @@ public class TournamentService {
             return;
         }
 
-        startNextRound(
+        scheduleNextRound(
                 tournament
         );
     }
@@ -1842,6 +2090,50 @@ public class TournamentService {
                 LocalDateTime.now()
         );
 
+
+        roundRepository.save(
+                round
+        );
+    }
+
+    private void scheduleRound(
+            Tournament tournament,
+            Integer roundNumber,
+            LocalDateTime scheduledAt
+    ) {
+
+        TournamentRound round =
+                roundRepository
+                        .findByTournamentAndRoundNumber(
+                                tournament,
+                                roundNumber
+                        )
+                        .orElseGet(() ->
+                                TournamentRound.builder()
+                                        .tournament(
+                                                tournament
+                                        )
+                                        .roundNumber(
+                                                roundNumber
+                                        )
+                                        .build()
+                        );
+
+        round.setStatus(
+                TournamentRoundStatus.SCHEDULED
+        );
+
+        round.setScheduledAt(
+                scheduledAt
+        );
+
+        round.setStartedAt(
+                null
+        );
+
+        round.setCompletedAt(
+                null
+        );
 
         roundRepository.save(
                 round

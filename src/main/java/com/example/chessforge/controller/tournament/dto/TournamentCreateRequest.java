@@ -30,6 +30,10 @@ public class TournamentCreateRequest {
     )
     private LocalDateTime startsAt;
 
+    private boolean automaticStart;
+
+    private Integer roundBreakMinutes = 5;
+
     private double byePoints = 1.0;
 
     private List<TieBreakType> tieBreaks =

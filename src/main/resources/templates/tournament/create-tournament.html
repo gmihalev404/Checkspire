@@ -162,6 +162,52 @@
 
         </div>
 
+        <div class="row g-3 mb-4">
+
+            <div class="col-md-6">
+
+                <label for="roundBreakMinutes"
+                       class="form-label">
+                    Break between rounds
+                </label>
+
+                <input id="roundBreakMinutes"
+                       type="number"
+                       class="form-control"
+                       th:field="*{roundBreakMinutes}"
+                       min="0"
+                       required>
+
+                <div class="form-text">
+                    Minutes between tournament rounds.
+                </div>
+
+            </div>
+
+            <div class="col-md-6 d-flex align-items-end">
+
+                <div class="form-check mb-2">
+
+                    <input id="automaticStart"
+                           type="checkbox"
+                           class="form-check-input"
+                           th:field="*{automaticStart}">
+
+                    <label for="automaticStart"
+                           class="form-check-label">
+                        Start tournament automatically
+                    </label>
+
+                    <div class="form-text">
+                        Starts automatically at the scheduled start time.
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
 
         <div class="form-check mb-4">
 

@@ -28,6 +28,8 @@ public record TournamentDetailsResponse(
         List<TournamentParticipantResponse> standings,
         boolean viewerJoined,
         boolean viewerCreator,
-        List<TournamentRoundResponse> rounds
+        List<TournamentRoundResponse> rounds,
+        boolean automaticStart,
+        Integer roundBreakMinutes
 ) {
 }

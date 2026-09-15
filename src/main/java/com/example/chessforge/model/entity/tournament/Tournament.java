@@ -75,6 +75,13 @@ public class Tournament extends BaseEntity {
 
     private LocalDateTime finishedAt;
 
+    @Column(nullable = false)
+    private boolean automaticStart;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Integer roundBreakMinutes = 5;
+
     @Column(
             name = "updated_at",
             nullable = false
@@ -103,6 +110,10 @@ public class Tournament extends BaseEntity {
         if (updatedAt == null) {
             updatedAt =
                     createdAt;
+        }
+
+        if (roundBreakMinutes == null) {
+            roundBreakMinutes = 1;
         }
     }
 

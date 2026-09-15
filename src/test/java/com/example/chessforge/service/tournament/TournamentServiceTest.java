@@ -5,6 +5,7 @@ import com.example.chessforge.model.entity.game.Game;
 import com.example.chessforge.model.entity.tournament.Tournament;
 import com.example.chessforge.model.entity.tournament.TournamentMatch;
 import com.example.chessforge.model.entity.tournament.TournamentParticipant;
+import com.example.chessforge.model.entity.tournament.TournamentRound;
 import com.example.chessforge.model.entity.user.User;
 import com.example.chessforge.model.enums.game.GameResult;
 import com.example.chessforge.model.enums.game.GameStatus;
@@ -1077,12 +1078,12 @@ class TournamentServiceTest {
         );
 
         List<TournamentMatch> result =
-                tournamentService.startNextRound(
+                tournamentService.scheduleNextRound(
                         tournament
                 );
 
         assertEquals(
-                2,
+                1,
                 tournament.getCurrentRound()
         );
 
@@ -1092,12 +1093,11 @@ class TournamentServiceTest {
         );
 
         assertEquals(
-                TournamentMatchStatus.COMPLETED,
+                TournamentMatchStatus.PENDING,
                 round2.getStatus()
         );
 
-        assertEquals(
-                TournamentMatchTermination.BYE,
+        assertNull(
                 round2.getTermination()
         );
 
@@ -1210,12 +1210,12 @@ class TournamentServiceTest {
         ).thenReturn(generatedMatches);
 
         List<TournamentMatch> result =
-                tournamentService.startNextRound(
+                tournamentService.scheduleNextRound(
                         tournament
                 );
 
         assertEquals(
-                2,
+                1,
                 tournament.getCurrentRound()
         );
 
@@ -1256,7 +1256,7 @@ class TournamentServiceTest {
                 IllegalStateException.class,
                 () ->
                         tournamentService
-                                .startNextRound(
+                                .scheduleNextRound(
                                         tournament
                                 )
         );
@@ -1319,7 +1319,7 @@ class TournamentServiceTest {
         assertThrows(
                 IllegalStateException.class,
                 () ->
-                        tournamentService.startNextRound(
+                        tournamentService.scheduleNextRound(
                                 tournament
                         )
         );
@@ -1344,7 +1344,7 @@ class TournamentServiceTest {
         assertThrows(
                 IllegalStateException.class,
                 () ->
-                        tournamentService.startNextRound(
+                        tournamentService.scheduleNextRound(
                                 tournament
                         )
         );
@@ -2608,7 +2608,7 @@ class TournamentServiceTest {
     }
 
     @Test
-    void recordGameResultShouldStartNextSwissRoundWhenCurrentRoundCompletes() {
+    void recordGameResultShouldScheduleNextSwissRoundWhenCurrentRoundCompletes() {
 
         Tournament tournament =
                 createTournament(
@@ -2720,7 +2720,7 @@ class TournamentServiceTest {
         );
 
         assertEquals(
-                2,
+                1,
                 tournament.getCurrentRound()
         );
 
@@ -3401,8 +3401,8 @@ class TournamentServiceTest {
     }
 
     // =========================================================
-// RECORD GAME RESULT - VALIDATION
-// =========================================================
+    // RECORD GAME RESULT - VALIDATION
+    // =========================================================
 
     @Test
     void recordGameResultShouldRejectNonTournamentGame() {
@@ -3579,6 +3579,586 @@ class TournamentServiceTest {
         assertEquals(
                 "Tournament is not in progress.",
                 exception.getMessage()
+        );
+    }
+
+    // =========================================================
+    // SCHEDULE
+    // =========================================================
+
+    @Test
+    void activateScheduledRoundShouldActivateDueRound() {
+
+        Tournament tournament =
+                createTournament(
+                        TournamentStatus.IN_PROGRESS,
+                        TournamentFormat.ROUND_ROBIN
+                );
+
+        tournament.setCurrentRound(
+                1
+        );
+
+
+        TournamentRound round =
+                TournamentRound.builder()
+                        .tournament(
+                                tournament
+                        )
+                        .roundNumber(
+                                2
+                        )
+                        .status(
+                                TournamentRoundStatus.SCHEDULED
+                        )
+                        .scheduledAt(
+                                LocalDateTime.now()
+                                        .minusMinutes(1)
+                        )
+                        .build();
+
+        setId(
+                round,
+                50L
+        );
+
+
+        TournamentParticipant white =
+                createParticipant(
+                        tournament,
+                        creator
+                );
+
+        TournamentParticipant black =
+                createParticipant(
+                        tournament,
+                        player
+                );
+
+
+        TournamentMatch match =
+                TournamentMatch.builder()
+                        .tournament(
+                                tournament
+                        )
+                        .whiteParticipant(
+                                white
+                        )
+                        .blackParticipant(
+                                black
+                        )
+                        .roundNumber(
+                                2
+                        )
+                        .boardNumber(
+                                1
+                        )
+                        .status(
+                                TournamentMatchStatus.PENDING
+                        )
+                        .build();
+
+
+        when(
+                roundRepository.findById(
+                        50L
+                )
+        ).thenReturn(
+                Optional.of(round)
+        );
+
+
+        when(
+                matchRepository
+                        .findByTournamentAndRoundNumberOrderByBoardNumber(
+                                tournament,
+                                2
+                        )
+        ).thenReturn(
+                List.of(match)
+        );
+
+
+        Tournament result =
+                tournamentService
+                        .activateScheduledRound(
+                                50L
+                        );
+
+
+        assertSame(
+                tournament,
+                result
+        );
+
+        assertEquals(
+                2,
+                tournament.getCurrentRound()
+        );
+
+        assertEquals(
+                TournamentRoundStatus.IN_PROGRESS,
+                round.getStatus()
+        );
+
+        assertNotNull(
+                round.getStartedAt()
+        );
+
+
+        verify(
+                roundRepository
+        ).save(
+                round
+        );
+    }
+
+    @Test
+    void activateScheduledRoundShouldRejectRoundThatIsNotDueYet() {
+
+        Tournament tournament =
+                createTournament(
+                        TournamentStatus.IN_PROGRESS,
+                        TournamentFormat.ROUND_ROBIN
+                );
+
+        tournament.setCurrentRound(
+                1
+        );
+
+
+        TournamentRound round =
+                TournamentRound.builder()
+                        .tournament(
+                                tournament
+                        )
+                        .roundNumber(
+                                2
+                        )
+                        .status(
+                                TournamentRoundStatus.SCHEDULED
+                        )
+                        .scheduledAt(
+                                LocalDateTime.now()
+                                        .plusHours(1)
+                        )
+                        .build();
+
+        setId(
+                round,
+                50L
+        );
+
+
+        when(
+                roundRepository.findById(
+                        50L
+                )
+        ).thenReturn(
+                Optional.of(round)
+        );
+
+
+        IllegalStateException exception =
+                assertThrows(
+                        IllegalStateException.class,
+                        () ->
+                                tournamentService
+                                        .activateScheduledRound(
+                                                50L
+                                        )
+                );
+
+
+        assertEquals(
+                "Tournament round is not due yet.",
+                exception.getMessage()
+        );
+
+        assertEquals(
+                1,
+                tournament.getCurrentRound()
+        );
+
+        assertEquals(
+                TournamentRoundStatus.SCHEDULED,
+                round.getStatus()
+        );
+
+        verifyNoInteractions(
+                matchRepository
+        );
+    }
+
+    @Test
+    void startTournamentAutomaticallyShouldStartDueTournament() {
+
+        Tournament tournament =
+                createTournament(
+                        TournamentStatus.REGISTRATION,
+                        TournamentFormat.ROUND_ROBIN
+                );
+
+        setId(
+                tournament,
+                100L
+        );
+
+        tournament.setAutomaticStart(
+                true
+        );
+
+        tournament.setStartsAt(
+                LocalDateTime.now()
+                        .minusMinutes(1)
+        );
+
+        tournament.setCurrentRound(
+                0
+        );
+
+
+        TournamentParticipant first =
+                createParticipant(
+                        tournament,
+                        creator
+                );
+
+        TournamentParticipant second =
+                createParticipant(
+                        tournament,
+                        player
+                );
+
+        List<TournamentParticipant> participants =
+                List.of(
+                        first,
+                        second
+                );
+
+
+        TournamentMatch match =
+                TournamentMatch.builder()
+                        .tournament(
+                                tournament
+                        )
+                        .whiteParticipant(
+                                first
+                        )
+                        .blackParticipant(
+                                second
+                        )
+                        .roundNumber(
+                                1
+                        )
+                        .boardNumber(
+                                1
+                        )
+                        .status(
+                                TournamentMatchStatus.PENDING
+                        )
+                        .build();
+
+
+        when(
+                tournamentRepository.findById(
+                        100L
+                )
+        ).thenReturn(
+                Optional.of(tournament)
+        );
+
+        when(
+                participantRepository.findByTournament(
+                        tournament
+                )
+        ).thenReturn(
+                participants
+        );
+
+        when(
+                pairingService.createInitialPairings(
+                        tournament,
+                        participants
+                )
+        ).thenReturn(
+                List.of(match)
+        );
+
+        when(
+                roundRepository
+                        .findByTournamentAndRoundNumber(
+                                tournament,
+                                1
+                        )
+        ).thenReturn(
+                Optional.empty()
+        );
+
+
+        Tournament result =
+                tournamentService
+                        .startTournamentAutomatically(
+                                100L
+                        );
+
+
+        assertSame(
+                tournament,
+                result
+        );
+
+        assertEquals(
+                TournamentStatus.IN_PROGRESS,
+                tournament.getStatus()
+        );
+
+        assertEquals(
+                1,
+                tournament.getCurrentRound()
+        );
+
+        verify(
+                matchRepository
+        ).saveAll(
+                List.of(match)
+        );
+
+        verify(
+                roundRepository
+        ).save(
+                any(TournamentRound.class)
+        );
+    }
+
+    @Test
+    void startTournamentAutomaticallyShouldRejectManualTournament() {
+
+        Tournament tournament =
+                createTournament(
+                        TournamentStatus.REGISTRATION,
+                        TournamentFormat.ROUND_ROBIN
+                );
+
+        setId(
+                tournament,
+                100L
+        );
+
+        tournament.setAutomaticStart(
+                false
+        );
+
+        tournament.setStartsAt(
+                LocalDateTime.now()
+                        .minusMinutes(1)
+        );
+
+
+        when(
+                tournamentRepository.findById(
+                        100L
+                )
+        ).thenReturn(
+                Optional.of(tournament)
+        );
+
+
+        IllegalStateException exception =
+                assertThrows(
+                        IllegalStateException.class,
+                        () ->
+                                tournamentService
+                                        .startTournamentAutomatically(
+                                                100L
+                                        )
+                );
+
+
+        assertEquals(
+                "Tournament is not configured for automatic start.",
+                exception.getMessage()
+        );
+    }
+
+    @Test
+    void activateScheduledRoundShouldResolveByeWithoutCompletingWholeRound() {
+
+        Tournament tournament =
+                createTournament(
+                        TournamentStatus.IN_PROGRESS,
+                        TournamentFormat.ROUND_ROBIN
+                );
+
+        tournament.setCurrentRound(
+                1
+        );
+
+        tournament.setByePoints(
+                1.0
+        );
+
+
+        TournamentRound round =
+                TournamentRound.builder()
+                        .tournament(
+                                tournament
+                        )
+                        .roundNumber(
+                                2
+                        )
+                        .status(
+                                TournamentRoundStatus.SCHEDULED
+                        )
+                        .scheduledAt(
+                                LocalDateTime.now()
+                                        .minusMinutes(1)
+                        )
+                        .build();
+
+        setId(
+                round,
+                50L
+        );
+
+
+        TournamentParticipant byePlayer =
+                createParticipant(
+                        tournament,
+                        creator
+                );
+
+        TournamentParticipant white =
+                createParticipant(
+                        tournament,
+                        createUser(
+                                10L,
+                                "white"
+                        )
+                );
+
+        TournamentParticipant black =
+                createParticipant(
+                        tournament,
+                        createUser(
+                                11L,
+                                "black"
+                        )
+                );
+
+
+        TournamentMatch byeMatch =
+                TournamentMatch.builder()
+                        .tournament(
+                                tournament
+                        )
+                        .whiteParticipant(
+                                byePlayer
+                        )
+                        .blackParticipant(
+                                null
+                        )
+                        .roundNumber(
+                                2
+                        )
+                        .boardNumber(
+                                1
+                        )
+                        .status(
+                                TournamentMatchStatus.PENDING
+                        )
+                        .build();
+
+
+        TournamentMatch normalMatch =
+                TournamentMatch.builder()
+                        .tournament(
+                                tournament
+                        )
+                        .whiteParticipant(
+                                white
+                        )
+                        .blackParticipant(
+                                black
+                        )
+                        .roundNumber(
+                                2
+                        )
+                        .boardNumber(
+                                2
+                        )
+                        .status(
+                                TournamentMatchStatus.PENDING
+                        )
+                        .build();
+
+
+        when(
+                roundRepository.findById(
+                        50L
+                )
+        ).thenReturn(
+                Optional.of(
+                        round
+                )
+        );
+
+
+        when(
+                matchRepository
+                        .findByTournamentAndRoundNumberOrderByBoardNumber(
+                                tournament,
+                                2
+                        )
+        ).thenReturn(
+                List.of(
+                        byeMatch,
+                        normalMatch
+                )
+        );
+
+
+        tournamentService
+                .activateScheduledRound(
+                        50L
+                );
+
+
+        assertEquals(
+                2,
+                tournament.getCurrentRound()
+        );
+
+        assertEquals(
+                TournamentRoundStatus.IN_PROGRESS,
+                round.getStatus()
+        );
+
+
+        assertEquals(
+                TournamentMatchStatus.COMPLETED,
+                byeMatch.getStatus()
+        );
+
+        assertEquals(
+                TournamentMatchTermination.BYE,
+                byeMatch.getTermination()
+        );
+
+        assertEquals(
+                1.0,
+                byeMatch.getWhiteScore()
+        );
+
+        assertEquals(
+                1.0,
+                byePlayer.getScore()
+        );
+
+
+        assertEquals(
+                TournamentMatchStatus.PENDING,
+                normalMatch.getStatus()
         );
     }
 

@@ -94,6 +94,8 @@ public class TournamentApplicationService {
                         request.isRated(),
                         request.getMaxPlayers(),
                         request.getStartsAt(),
+                        request.isAutomaticStart(),
+                        request.getRoundBreakMinutes(),
                         request.getByePoints(),
                         request.getTieBreaks(),
                         request.isArmageddonForFirstPlaceTie(),
@@ -326,7 +328,9 @@ public class TournamentApplicationService {
                 standingResponses,
                 viewerJoined,
                 viewerCreator,
-                roundResponses
+                roundResponses,
+                tournament.isAutomaticStart(),
+                tournament.getRoundBreakMinutes()
         );
     }
 
@@ -508,6 +512,43 @@ public class TournamentApplicationService {
         gameService.startGamesForCurrentRound(
                 tournament
         );
+    }
+
+    @Transactional
+    public void startTournamentAutomatically(
+            Long tournamentId
+    ) {
+
+        Tournament tournament =
+                tournamentService
+                        .startTournamentAutomatically(
+                                tournamentId
+                        );
+
+
+        gameService
+                .startGamesForCurrentRound(
+                        tournament
+                );
+    }
+
+
+    @Transactional
+    public void activateScheduledRound(
+            Long roundId
+    ) {
+
+        Tournament tournament =
+                tournamentService
+                        .activateScheduledRound(
+                                roundId
+                        );
+
+
+        gameService
+                .startGamesForCurrentRound(
+                        tournament
+                );
     }
 
 

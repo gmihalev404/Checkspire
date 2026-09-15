@@ -190,6 +190,36 @@
 
                 </div>
 
+                <div class="col-md-6">
+
+                    <div class="text-body-secondary small">
+                        Automatic start
+                    </div>
+
+                    <strong th:text="${tournament.automaticStart
+            ? 'Yes'
+            : 'No'}">
+                        Yes
+                    </strong>
+
+                </div>
+
+
+                <div class="col-md-6">
+
+                    <div class="text-body-secondary small">
+                        Break between rounds
+                    </div>
+
+                    <strong>
+        <span th:text="${tournament.roundBreakMinutes}">
+            5
+        </span>
+                        min
+                    </strong>
+
+                </div>
+
 
                 <!-- Swiss rounds -->
                 <div class="col-md-6"
@@ -258,10 +288,10 @@
                             <button type="submit"
                                     class="btn btn-success"
                                     onclick="return confirm(
-                                        'Start this tournament? Registration will be closed.'
+                                        'Start this tournament now? Registration will be closed.'
                                     );">
 
-                                Start Tournament
+                                Start Now
 
                             </button>
 
