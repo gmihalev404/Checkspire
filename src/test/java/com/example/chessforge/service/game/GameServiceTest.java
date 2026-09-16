@@ -1088,6 +1088,154 @@ class GameServiceTest {
         );
     }
 
+    @Test
+    void forfeitTournamentGameShouldFinishGameWithoutRecordingTournamentResultAgain() {
+
+        Long gameId = 10L;
+
+
+        Tournament tournament =
+                Tournament.builder()
+                        .status(
+                                TournamentStatus.IN_PROGRESS
+                        )
+                        .build();
+
+
+        TournamentMatch match =
+                TournamentMatch.builder()
+                        .tournament(
+                                tournament
+                        )
+                        .status(
+                                TournamentMatchStatus.COMPLETED
+                        )
+                        .build();
+
+
+        Game game =
+                Game.builder()
+                        .whitePlayer(
+                                challenger
+                        )
+                        .blackPlayer(
+                                opponent
+                        )
+                        .tournamentMatch(
+                                match
+                        )
+                        .status(
+                                GameStatus.IN_PROGRESS
+                        )
+                        .build();
+
+
+        when(
+                gameRepository.findByIdForUpdate(
+                        gameId
+                )
+        ).thenReturn(
+                Optional.of(game)
+        );
+
+        when(
+                gameRepository.save(
+                        game
+                )
+        ).thenReturn(
+                game
+        );
+
+        Game result =
+                gameService
+                        .forfeitTournamentGame(
+                                gameId,
+                                challenger
+                        );
+
+        assertEquals(
+                GameStatus.FINISHED,
+                result.getStatus()
+        );
+
+        assertEquals(
+                GameResult.BLACK_WIN,
+                result.getResult()
+        );
+
+        assertEquals(
+                GameTermination.RESIGNATION,
+                result.getTermination()
+        );
+
+        assertNotNull(
+                result.getFinishedAt()
+        );
+
+        verify(
+                tournamentService,
+                never()
+        ).recordGameResult(
+                any()
+        );
+
+        verify(
+                gameRepository
+        ).save(
+                game
+        );
+    }
+
+    @Test
+    void forfeitTournamentGameShouldRejectNonTournamentGame() {
+
+        Long gameId = 10L;
+
+
+        Game game =
+                Game.builder()
+                        .whitePlayer(
+                                challenger
+                        )
+                        .blackPlayer(
+                                opponent
+                        )
+                        .status(
+                                GameStatus.IN_PROGRESS
+                        )
+                        .tournamentMatch(
+                                null
+                        )
+                        .build();
+
+
+        when(
+                gameRepository.findByIdForUpdate(
+                        gameId
+                )
+        ).thenReturn(
+                Optional.of(game)
+        );
+
+
+        IllegalStateException exception =
+                assertThrows(
+                        IllegalStateException.class,
+                        () ->
+                                gameService
+                                        .forfeitTournamentGame(
+                                                gameId,
+                                                challenger
+                                        )
+                );
+
+
+        assertEquals(
+                "Game does not belong to a tournament.",
+                exception.getMessage()
+        );
+    }
+
     // =========================================================
 // ABORT GAME
 // =========================================================
@@ -3070,6 +3218,7 @@ class GameServiceTest {
                 ratingService
         );
     }
+
 
     // =========================================================
     // AUTO DRAWS

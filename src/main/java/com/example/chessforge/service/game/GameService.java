@@ -265,56 +265,11 @@ public class GameService {
             GameTermination termination
     ) {
 
-        if (game.getStatus() != GameStatus.IN_PROGRESS) {
-            throw new IllegalStateException(
-                    "Only an active game can be finished."
-            );
-        }
-
-        if (result == null) {
-            throw new IllegalArgumentException(
-                    "Game result cannot be null."
-            );
-        }
-
-        if (termination == null) {
-            throw new IllegalArgumentException(
-                    "Game termination cannot be null."
-            );
-        }
-
-        game.setResult(result);
-        game.setTermination(termination);
-        game.setStatus(GameStatus.FINISHED);
-        game.setFinishedAt(LocalDateTime.now(clock));
-
-        game.setTurnExpiresAt(
-                null
-        );
-
-        generateAndSetPgn(
-                game
-        );
-
-        ratingService.updateRatings(game);
-
-        if (game.getTournamentMatch() != null) {
-
-            Tournament tournament =
-                    game.getTournamentMatch()
-                            .getTournament();
-
-            tournamentService.recordGameResult(
-                    game
-            );
-
-            startGamesForCurrentRound(
-                    tournament
-            );
-        }
-
-        game.setDrawOfferBy(
-                null
+        finishGameInternal(
+                game,
+                result,
+                termination,
+                true
         );
     }
 
@@ -647,6 +602,63 @@ public class GameService {
                 result,
                 GameTermination.RESIGNATION
         );
+
+        return gameRepository.save(
+                game
+        );
+    }
+
+    @Transactional
+    public Game forfeitTournamentGame(
+            Long gameId,
+            User player
+    ) {
+
+        Game game =
+                getActiveGame(
+                        gameId
+                );
+
+
+        validateParticipant(
+                game,
+                player
+        );
+
+
+        if (game.getTournamentMatch() == null) {
+
+            throw new IllegalStateException(
+                    "Game does not belong to a tournament."
+            );
+        }
+
+
+        GameResult result;
+
+        if (game.getWhitePlayer()
+                .getId()
+                .equals(
+                        player.getId()
+                )) {
+
+            result =
+                    GameResult.BLACK_WIN;
+
+        } else {
+
+            result =
+                    GameResult.WHITE_WIN;
+        }
+
+
+        finishGameInternal(
+                game,
+                result,
+                GameTermination.RESIGNATION,
+                false
+        );
+
 
         return gameRepository.save(
                 game
@@ -1862,6 +1874,97 @@ public class GameService {
         return new ClockSnapshot(
                 whiteMillis,
                 blackMillis
+        );
+    }
+
+    private void finishGameInternal(
+            Game game,
+            GameResult result,
+            GameTermination termination,
+            boolean updateTournament
+    ) {
+
+        if (game.getStatus()
+                != GameStatus.IN_PROGRESS) {
+
+            throw new IllegalStateException(
+                    "Only an active game can be finished."
+            );
+        }
+
+
+        if (result == null) {
+
+            throw new IllegalArgumentException(
+                    "Game result cannot be null."
+            );
+        }
+
+
+        if (termination == null) {
+
+            throw new IllegalArgumentException(
+                    "Game termination cannot be null."
+            );
+        }
+
+
+        game.setResult(
+                result
+        );
+
+        game.setTermination(
+                termination
+        );
+
+        game.setStatus(
+                GameStatus.FINISHED
+        );
+
+        game.setFinishedAt(
+                LocalDateTime.now(
+                        clock
+                )
+        );
+
+
+        game.setTurnExpiresAt(
+                null
+        );
+
+
+        generateAndSetPgn(
+                game
+        );
+
+
+        ratingService.updateRatings(
+                game
+        );
+
+
+        if (updateTournament
+                && game.getTournamentMatch() != null) {
+
+            Tournament tournament =
+                    game.getTournamentMatch()
+                            .getTournament();
+
+
+            tournamentService
+                    .recordGameResult(
+                            game
+                    );
+
+
+            startGamesForCurrentRound(
+                    tournament
+            );
+        }
+
+
+        game.setDrawOfferBy(
+                null
         );
     }
 }

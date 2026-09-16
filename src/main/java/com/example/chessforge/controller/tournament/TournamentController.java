@@ -274,6 +274,54 @@ public class TournamentController {
                 + tournamentId;
     }
 
+    @PostMapping(
+            "/{tournamentId}/rounds/{roundNumber}/start"
+    )
+    public String startRoundNow(
+            @PathVariable Long tournamentId,
+            @PathVariable Integer roundNumber,
+            Principal principal,
+            RedirectAttributes redirectAttributes
+    ) {
+
+        User requester =
+                getAuthenticatedUser(
+                        principal
+                );
+
+
+        try {
+
+            tournamentApplicationService
+                    .startScheduledRoundNow(
+                            tournamentId,
+                            roundNumber,
+                            requester
+                    );
+
+            redirectAttributes
+                    .addFlashAttribute(
+                            "success",
+                            "Round started."
+                    );
+
+        } catch (
+                IllegalArgumentException
+                | IllegalStateException exception
+        ) {
+
+            redirectAttributes
+                    .addFlashAttribute(
+                            "error",
+                            exception.getMessage()
+                    );
+        }
+
+
+        return "redirect:/tournaments/"
+                + tournamentId;
+    }
+
 
     @PostMapping("/{tournamentId}/cancel")
     public String cancelTournament(
@@ -310,6 +358,51 @@ public class TournamentController {
                     "error",
                     exception.getMessage()
             );
+        }
+
+
+        return "redirect:/tournaments/"
+                + tournamentId;
+    }
+
+    @PostMapping("/{tournamentId}/forfeit")
+    public String forfeitTournament(
+            @PathVariable Long tournamentId,
+            Principal principal,
+            RedirectAttributes redirectAttributes
+    ) {
+
+        User user =
+                getAuthenticatedUser(
+                        principal
+                );
+
+
+        try {
+
+            tournamentApplicationService
+                    .forfeitTournament(
+                            tournamentId,
+                            user
+                    );
+
+
+            redirectAttributes
+                    .addFlashAttribute(
+                            "success",
+                            "You forfeited the tournament."
+                    );
+
+        } catch (
+                IllegalArgumentException
+                | IllegalStateException exception
+        ) {
+
+            redirectAttributes
+                    .addFlashAttribute(
+                            "error",
+                            exception.getMessage()
+                    );
         }
 
 

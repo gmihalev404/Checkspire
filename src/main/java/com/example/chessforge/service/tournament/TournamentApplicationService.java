@@ -7,6 +7,7 @@ import com.example.chessforge.model.entity.tournament.TournamentMatch;
 import com.example.chessforge.model.entity.tournament.TournamentParticipant;
 import com.example.chessforge.model.entity.tournament.TournamentRound;
 import com.example.chessforge.model.entity.user.User;
+import com.example.chessforge.model.enums.game.GameStatus;
 import com.example.chessforge.model.enums.tournament.TournamentParticipantStatus;
 import com.example.chessforge.model.enums.tournament.TournamentStatus;
 import com.example.chessforge.service.game.GameService;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -551,6 +553,35 @@ public class TournamentApplicationService {
                 );
     }
 
+    @Transactional
+    public void startScheduledRoundNow(
+            Long tournamentId,
+            Integer roundNumber,
+            User requester
+    ) {
+
+        Tournament tournament =
+                tournamentService
+                        .getTournament(
+                                tournamentId
+                        );
+
+
+        Tournament activatedTournament =
+                tournamentService
+                        .startScheduledRoundNow(
+                                tournament,
+                                roundNumber,
+                                requester
+                        );
+
+
+        gameService
+                .startGamesForCurrentRound(
+                        activatedTournament
+                );
+    }
+
 
     // =========================================================
     // CANCEL
@@ -573,6 +604,50 @@ public class TournamentApplicationService {
                 requester
         );
     }
+
+
+    // =========================================================
+    // FORFEIT
+    // =========================================================
+
+    @Transactional
+    public void forfeitTournament(
+            Long tournamentId,
+            User user
+    ) {
+
+        Tournament tournament =
+                tournamentService
+                        .getTournament(
+                                tournamentId
+                        );
+
+
+        Optional<Game> activeGame =
+                findCurrentTournamentGame(
+                        tournament,
+                        user
+                );
+
+
+        tournamentService.forfeit(
+                tournament,
+                user
+        );
+
+
+        activeGame.ifPresent(game ->
+                gameService
+                        .forfeitTournamentGame(
+                                game.getId(),
+                                user
+                        )
+        );
+    }
+
+    // =========================================================
+    // HELPERS
+    // =========================================================
 
     private TournamentRoundResponse toRoundResponse(
             TournamentRound round,
@@ -617,5 +692,58 @@ public class TournamentApplicationService {
                 current,
                 matches
         );
+    }
+
+    private Optional<Game> findCurrentTournamentGame(
+            Tournament tournament,
+            User user
+    ) {
+
+        if (tournament.getCurrentRound() == null
+                || tournament.getCurrentRound() <= 0) {
+
+            return Optional.empty();
+        }
+
+
+        return tournamentService
+                .getRoundMatches(
+                        tournament,
+                        tournament.getCurrentRound()
+                )
+                .stream()
+                .filter(match -> {
+
+                    boolean white =
+                            match.getWhiteParticipant()
+                                    .getUser()
+                                    .getId()
+                                    .equals(
+                                            user.getId()
+                                    );
+
+                    boolean black =
+                            match.getBlackParticipant() != null
+                                    &&
+                                    match.getBlackParticipant()
+                                            .getUser()
+                                            .getId()
+                                            .equals(
+                                                    user.getId()
+                                            );
+
+                    return white || black;
+                })
+                .map(
+                        gameService::getLatestGameForTournamentMatch
+                )
+                .flatMap(
+                        Optional::stream
+                )
+                .filter(game ->
+                        game.getStatus()
+                                == GameStatus.IN_PROGRESS
+                )
+                .findFirst();
     }
 }

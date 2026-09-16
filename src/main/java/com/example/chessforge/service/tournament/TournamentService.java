@@ -377,14 +377,40 @@ public class TournamentService {
                 TournamentParticipantStatus.FORFEITED
         );
 
-        resolveAutomaticResults(
-                tournament,
+        boolean hasUnfinishedCurrentMatch =
                 currentRoundMatches
-        );
+                        .stream()
+                        .filter(match ->
+                                match.getStatus()
+                                        != TournamentMatchStatus.COMPLETED
+                        )
+                        .anyMatch(match ->
+                                sameParticipant(
+                                        match.getWhiteParticipant(),
+                                        participant
+                                )
+                                        ||
+                                        sameParticipant(
+                                                match.getBlackParticipant(),
+                                                participant
+                                        )
+                        );
 
-        handleRoundCompletion(
-                tournament
-        );
+
+        if (hasUnfinishedCurrentMatch) {
+
+            resolveAutomaticResults(
+                    tournament,
+                    currentRoundMatches
+            );
+
+            handleRoundCompletion(
+                    tournament
+            );
+        }
+
+
+        tournament.touch();
     }
 
     // =========================================================
@@ -734,32 +760,7 @@ public class TournamentService {
                         );
 
 
-        if (round.getStatus()
-                != TournamentRoundStatus.SCHEDULED) {
-
-            throw new IllegalStateException(
-                    "Only a scheduled round can be activated."
-            );
-        }
-
-
-        Tournament tournament =
-                round.getTournament();
-
-
-        if (tournament.getStatus()
-                != TournamentStatus.IN_PROGRESS) {
-
-            throw new IllegalStateException(
-                    "Tournament is not in progress."
-            );
-        }
-
-
-        LocalDateTime scheduledAt =
-                round.getScheduledAt();
-
-        if (scheduledAt == null) {
+        if (round.getScheduledAt() == null) {
 
             throw new IllegalStateException(
                     "Scheduled round has no start time."
@@ -767,11 +768,10 @@ public class TournamentService {
         }
 
 
-        LocalDateTime now =
-                LocalDateTime.now();
-
-
-        if (scheduledAt.isAfter(now)) {
+        if (round.getScheduledAt()
+                .isAfter(
+                        LocalDateTime.now()
+                )) {
 
             throw new IllegalStateException(
                     "Tournament round is not due yet."
@@ -779,69 +779,40 @@ public class TournamentService {
         }
 
 
-        int expectedRound =
-                tournament.getCurrentRound() + 1;
+        return activateRound(
+                round
+        );
+    }
+
+    @Transactional
+    public Tournament startScheduledRoundNow(
+            Tournament tournament,
+            Integer roundNumber,
+            User requester
+    ) {
+
+        validateCreator(
+                tournament,
+                requester
+        );
 
 
-        if (!round.getRoundNumber()
-                .equals(expectedRound)) {
-
-            throw new IllegalStateException(
-                    "Tournament round is not the next round."
-            );
-        }
-
-
-        List<TournamentMatch> matches =
-                matchRepository
-                        .findByTournamentAndRoundNumberOrderByBoardNumber(
+        TournamentRound round =
+                roundRepository
+                        .findByTournamentAndRoundNumber(
                                 tournament,
-                                round.getRoundNumber()
+                                roundNumber
+                        )
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "Tournament round not found."
+                                )
                         );
 
 
-        if (matches.isEmpty()) {
-
-            throw new IllegalStateException(
-                    "Scheduled round has no matches."
-            );
-        }
-
-
-        tournament.setCurrentRound(
-                round.getRoundNumber()
-        );
-
-
-        round.setStatus(
-                TournamentRoundStatus.IN_PROGRESS
-        );
-
-        round.setStartedAt(
-                now
-        );
-
-
-        roundRepository.save(
+        return activateRound(
                 round
         );
-
-
-        resolveAutomaticResults(
-                tournament,
-                matches
-        );
-
-
-        handleRoundCompletion(
-                tournament
-        );
-
-
-        tournament.touch();
-
-
-        return tournament;
     }
 
     // =========================================================
@@ -1158,7 +1129,7 @@ public class TournamentService {
         for (TournamentMatch match : matches) {
 
             if (match.getStatus()
-                    != TournamentMatchStatus.PENDING) {
+                    == TournamentMatchStatus.COMPLETED) {
 
                 continue;
             }
@@ -2138,5 +2109,97 @@ public class TournamentService {
         roundRepository.save(
                 round
         );
+    }
+
+    private Tournament activateRound(
+            TournamentRound round
+    ) {
+
+        if (round.getStatus()
+                != TournamentRoundStatus.SCHEDULED) {
+
+            throw new IllegalStateException(
+                    "Only a scheduled round can be activated."
+            );
+        }
+
+
+        Tournament tournament =
+                round.getTournament();
+
+
+        if (tournament.getStatus()
+                != TournamentStatus.IN_PROGRESS) {
+
+            throw new IllegalStateException(
+                    "Tournament is not in progress."
+            );
+        }
+
+
+        int expectedRound =
+                tournament.getCurrentRound() + 1;
+
+
+        if (!round.getRoundNumber()
+                .equals(
+                        expectedRound
+                )) {
+
+            throw new IllegalStateException(
+                    "Tournament round is not the next round."
+            );
+        }
+
+
+        List<TournamentMatch> matches =
+                matchRepository
+                        .findByTournamentAndRoundNumberOrderByBoardNumber(
+                                tournament,
+                                round.getRoundNumber()
+                        );
+
+
+        if (matches.isEmpty()) {
+
+            throw new IllegalStateException(
+                    "Scheduled round has no matches."
+            );
+        }
+
+
+        tournament.setCurrentRound(
+                round.getRoundNumber()
+        );
+
+
+        round.setStatus(
+                TournamentRoundStatus.IN_PROGRESS
+        );
+
+        round.setStartedAt(
+                LocalDateTime.now()
+        );
+
+
+        roundRepository.save(
+                round
+        );
+
+
+        resolveAutomaticResults(
+                tournament,
+                matches
+        );
+
+
+        handleRoundCompletion(
+                tournament
+        );
+
+
+        tournament.touch();
+
+        return tournament;
     }
 }

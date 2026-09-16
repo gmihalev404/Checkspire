@@ -1725,6 +1725,96 @@ class TournamentServiceTest {
         );
     }
 
+    @Test
+    void forfeitDuringRoundBreakShouldOnlyMarkParticipantAsForfeited() {
+
+        Tournament tournament =
+                createTournament(
+                        TournamentStatus.IN_PROGRESS,
+                        TournamentFormat.SWISS
+                );
+
+        tournament.setCurrentRound(1);
+        tournament.setNumberOfRounds(3);
+
+
+        TournamentParticipant participant =
+                createParticipant(
+                        tournament,
+                        player
+                );
+
+
+        TournamentMatch completedMatch =
+                TournamentMatch.builder()
+                        .tournament(tournament)
+                        .whiteParticipant(
+                                participant
+                        )
+                        .blackParticipant(
+                                createParticipant(
+                                        tournament,
+                                        creator
+                                )
+                        )
+                        .roundNumber(1)
+                        .boardNumber(1)
+                        .status(
+                                TournamentMatchStatus.COMPLETED
+                        )
+                        .whiteScore(0.0)
+                        .blackScore(1.0)
+                        .build();
+
+
+        when(
+                participantRepository
+                        .findByTournamentAndUser(
+                                tournament,
+                                player
+                        )
+        ).thenReturn(
+                Optional.of(participant)
+        );
+
+        when(
+                matchRepository
+                        .findByTournamentAndRoundNumberOrderByBoardNumber(
+                                tournament,
+                                1
+                        )
+        ).thenReturn(
+                List.of(completedMatch)
+        );
+
+
+        tournamentService.forfeit(
+                tournament,
+                player
+        );
+
+
+        assertEquals(
+                TournamentParticipantStatus.FORFEITED,
+                participant.getStatus()
+        );
+
+        assertEquals(
+                1,
+                tournament.getCurrentRound()
+        );
+
+        verify(
+                pairingService,
+                never()
+        ).createNextRound(
+                any(),
+                anyList(),
+                anyList(),
+                anyInt()
+        );
+    }
+
     // =========================================================
     // CANCEL
     // =========================================================
@@ -4159,6 +4249,140 @@ class TournamentServiceTest {
         assertEquals(
                 TournamentMatchStatus.PENDING,
                 normalMatch.getStatus()
+        );
+    }
+
+    @Test
+    void startScheduledRoundNowShouldAllowCreatorToStartRoundEarly() {
+
+        Tournament tournament =
+                createTournament(
+                        TournamentStatus.IN_PROGRESS,
+                        TournamentFormat.ROUND_ROBIN
+                );
+
+        tournament.setCurrentRound(1);
+
+        TournamentRound round =
+                TournamentRound.builder()
+                        .tournament(tournament)
+                        .roundNumber(2)
+                        .status(
+                                TournamentRoundStatus.SCHEDULED
+                        )
+                        .scheduledAt(
+                                LocalDateTime.now()
+                                        .plusHours(1)
+                        )
+                        .build();
+
+        TournamentParticipant white =
+                createParticipant(
+                        tournament,
+                        creator
+                );
+
+        TournamentParticipant black =
+                createParticipant(
+                        tournament,
+                        player
+                );
+
+        TournamentMatch match =
+                TournamentMatch.builder()
+                        .tournament(tournament)
+                        .whiteParticipant(white)
+                        .blackParticipant(black)
+                        .roundNumber(2)
+                        .boardNumber(1)
+                        .status(
+                                TournamentMatchStatus.PENDING
+                        )
+                        .build();
+
+
+        when(
+                roundRepository
+                        .findByTournamentAndRoundNumber(
+                                tournament,
+                                2
+                        )
+        ).thenReturn(
+                Optional.of(round)
+        );
+
+        when(
+                matchRepository
+                        .findByTournamentAndRoundNumberOrderByBoardNumber(
+                                tournament,
+                                2
+                        )
+        ).thenReturn(
+                List.of(match)
+        );
+
+
+        Tournament result =
+                tournamentService
+                        .startScheduledRoundNow(
+                                tournament,
+                                2,
+                                creator
+                        );
+
+
+        assertSame(
+                tournament,
+                result
+        );
+
+        assertEquals(
+                2,
+                tournament.getCurrentRound()
+        );
+
+        assertEquals(
+                TournamentRoundStatus.IN_PROGRESS,
+                round.getStatus()
+        );
+
+        assertNotNull(
+                round.getStartedAt()
+        );
+    }
+
+    @Test
+    void startScheduledRoundNowShouldRejectNonCreator() {
+
+        Tournament tournament =
+                createTournament(
+                        TournamentStatus.IN_PROGRESS,
+                        TournamentFormat.ROUND_ROBIN
+                );
+
+        tournament.setCurrentRound(1);
+
+
+        IllegalStateException exception =
+                assertThrows(
+                        IllegalStateException.class,
+                        () ->
+                                tournamentService
+                                        .startScheduledRoundNow(
+                                                tournament,
+                                                2,
+                                                player
+                                        )
+                );
+
+
+        assertEquals(
+                "Only the tournament creator can perform this action.",
+                exception.getMessage()
+        );
+
+        verifyNoInteractions(
+                roundRepository
         );
     }
 
