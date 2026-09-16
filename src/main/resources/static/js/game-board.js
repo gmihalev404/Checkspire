@@ -4,6 +4,11 @@ let orientation;
 let gameId;
 let gameStatus;
 
+let selectedSquare = null;
+let stompClient = null;
+
+let promotionMenu = null;
+
 let moveHistory = [];
 let reviewPly = null;
 
@@ -42,9 +47,6 @@ let rejectDrawButton;
 let drawStatus;
 let drawDefaultActions;
 let drawResponseActions;
-
-let selectedSquare = null;
-let stompClient = null;
 
 let whiteClockMillis = 0;
 let blackClockMillis = 0;
@@ -826,6 +828,10 @@ function handleSquareClick(
         return;
     }
 
+    if (promotionMenu) {
+        return;
+    }
+
     if (
         reviewPly !== null
     ) {
@@ -938,6 +944,11 @@ function canDragPiece(
     if (!viewerParticipant) {
         return false;
     }
+
+    if (promotionMenu) {
+        return false;
+    }
+
 
     if (!piece) {
         return false;
@@ -1479,11 +1490,50 @@ function sendMove(
     }
 
 
-    const promotion =
-        resolvePromotion(
+    const promotionPawn =
+        getPromotionPawn(
             from,
             to
         );
+
+
+    if (promotionPawn) {
+
+        showPromotionMenu(
+            from,
+            to,
+            promotionPawn
+        );
+
+        return;
+    }
+
+
+    publishMove(
+        from,
+        to,
+        null
+    );
+}
+
+
+function publishMove(
+    from,
+    to,
+    promotion
+) {
+
+    if (
+        !stompClient
+        || !stompClient.connected
+    ) {
+
+        console.error(
+            "WebSocket is not connected."
+        );
+
+        return;
+    }
 
 
     stompClient.publish({
@@ -1507,7 +1557,11 @@ function sendMove(
 }
 
 
-function resolvePromotion(
+// =========================================================
+// PROMOTION
+// =========================================================
+
+function getPromotionPawn(
     from,
     to
 ) {
@@ -1516,6 +1570,7 @@ function resolvePromotion(
         parseFen(
             currentFen
         );
+
 
     const piece =
         position[from];
@@ -1542,47 +1597,241 @@ function resolvePromotion(
             : targetRank === 1;
 
 
-    if (!isPromotion) {
-        return null;
-    }
-
-
-    const answer =
-        window.prompt(
-            "Promote to Q, R, B or N:",
-            "Q"
-        );
-
-
-    return switchPromotion(
-        answer
-    );
+    return isPromotion
+        ? piece
+        : null;
 }
 
 
-function switchPromotion(
-    value
+function showPromotionMenu(
+    from,
+    to,
+    pawn
 ) {
 
-    switch (
-        value
-            ?.trim()
-            .toUpperCase()
-        ) {
+    closePromotionMenu();
 
-        case "R":
-            return "ROOK";
 
-        case "B":
-            return "BISHOP";
+    const targetSquare =
+        boardElement.querySelector(
+            `[data-square="${to}"]`
+        );
 
-        case "N":
-            return "KNIGHT";
 
-        case "Q":
-        default:
-            return "QUEEN";
+    if (!targetSquare) {
+
+        console.error(
+            "Promotion square not found."
+        );
+
+        return;
     }
+
+
+    const isWhite =
+        pawn === "P";
+
+
+    const pieceColor =
+        isWhite
+            ? "white"
+            : "black";
+
+
+    const pieces = [
+
+        {
+            promotion:
+                "QUEEN",
+
+            symbol:
+                isWhite
+                    ? PIECES.Q
+                    : PIECES.q,
+
+            label:
+                "Queen"
+        },
+
+        {
+            promotion:
+                "ROOK",
+
+            symbol:
+                isWhite
+                    ? PIECES.R
+                    : PIECES.r,
+
+            label:
+                "Rook"
+        },
+
+        {
+            promotion:
+                "BISHOP",
+
+            symbol:
+                isWhite
+                    ? PIECES.B
+                    : PIECES.b,
+
+            label:
+                "Bishop"
+        },
+
+        {
+            promotion:
+                "KNIGHT",
+
+            symbol:
+                isWhite
+                    ? PIECES.N
+                    : PIECES.n,
+
+            label:
+                "Knight"
+        }
+    ];
+
+
+    const menu =
+        document.createElement(
+            "div"
+        );
+
+
+    menu.classList.add(
+        "promotion-menu",
+        isWhite
+            ? "promotion-white"
+            : "promotion-black"
+    );
+
+
+    /*
+     * Decide which direction the menu should open
+     * based on where the promotion square is visually.
+     *
+     * This also works when the board is flipped.
+     */
+    const squareRect =
+        targetSquare
+            .getBoundingClientRect();
+
+
+    const boardRect =
+        boardElement
+            .getBoundingClientRect();
+
+
+    const squareIsInTopHalf =
+        squareRect.top
+        <
+        boardRect.top
+        + boardRect.height / 2;
+
+
+    menu.classList.add(
+        squareIsInTopHalf
+            ? "promotion-menu-down"
+            : "promotion-menu-up"
+    );
+
+
+    pieces.forEach(
+        option => {
+
+            const button =
+                document.createElement(
+                    "button"
+                );
+
+
+            button.type =
+                "button";
+
+
+            button.classList.add(
+                "promotion-choice"
+            );
+
+
+            button.setAttribute(
+                "aria-label",
+                `Promote to ${option.label}`
+            );
+
+
+            const piece =
+                document.createElement(
+                    "span"
+                );
+
+
+            piece.classList.add(
+                "chess-piece",
+                pieceColor
+            );
+
+
+            piece.textContent =
+                option.symbol;
+
+
+            button.appendChild(
+                piece
+            );
+
+
+            button.addEventListener(
+                "click",
+                event => {
+
+                    event.preventDefault();
+                    event.stopPropagation();
+
+
+                    closePromotionMenu();
+
+
+                    publishMove(
+                        from,
+                        to,
+                        option.promotion
+                    );
+                }
+            );
+
+
+            menu.appendChild(
+                button
+            );
+        }
+    );
+
+
+    targetSquare.appendChild(
+        menu
+    );
+
+
+    promotionMenu =
+        menu;
+}
+
+
+function closePromotionMenu() {
+
+    if (!promotionMenu) {
+        return;
+    }
+
+
+    promotionMenu.remove();
+
+
+    promotionMenu =
+        null;
 }
 
 

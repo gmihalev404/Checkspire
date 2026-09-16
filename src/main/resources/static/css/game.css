@@ -504,3 +504,133 @@
     }
 
 }
+
+/* =========================================================
+   PROMOTION
+   ========================================================= */
+
+.promotion-menu {
+
+    position: absolute;
+
+    left: 0;
+
+    width: 100%;
+
+    display: flex;
+
+    flex-direction: column;
+
+    z-index: 500;
+
+    border-radius: 0.3rem;
+
+    overflow: hidden;
+
+    box-shadow:
+            0 8px 24px
+            rgba(
+                    0,
+                    0,
+                    0,
+                    0.45
+            );
+}
+
+
+.promotion-menu-down {
+
+    top: 0;
+}
+
+
+.promotion-menu-up {
+
+    bottom: 0;
+
+    flex-direction:
+            column-reverse;
+}
+
+
+.promotion-choice {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 100%;
+
+    aspect-ratio: 1;
+
+    padding: 0;
+
+    border: 0;
+
+    cursor: pointer;
+
+    transition:
+            background-color 0.12s ease,
+            transform 0.12s ease;
+}
+
+
+/*
+ * White promotion pieces need
+ * a dark background.
+ */
+.promotion-white
+.promotion-choice {
+
+    background:
+            #30343b;
+}
+
+
+/*
+ * Black promotion pieces need
+ * a light background.
+ */
+.promotion-black
+.promotion-choice {
+
+    background:
+            #e5dfd5;
+}
+
+
+.promotion-choice:hover,
+.promotion-choice:focus {
+
+    background:
+            var(--cf-primary);
+
+    outline: none;
+}
+
+
+.promotion-choice:hover
+.chess-piece,
+.promotion-choice:focus
+.chess-piece {
+
+    transform:
+            scale(1.08);
+}
+
+
+.promotion-choice
+.chess-piece {
+
+    font-size:
+            clamp(
+                    1.7rem,
+                    6vw,
+                    3.2rem
+            );
+
+    transition:
+            transform 0.12s ease;
+}
