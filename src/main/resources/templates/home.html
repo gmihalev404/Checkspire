@@ -105,6 +105,134 @@
 
     </section>
 
+    <!-- ===================================================== -->
+    <!-- RATINGS -->
+    <!-- ===================================================== -->
+
+    <section th:if="${currentUser != null}"
+             class="cf-section">
+
+        <div class="d-flex
+                justify-content-between
+                align-items-end
+                mb-3">
+
+            <div>
+
+                <h2 class="h4 cf-section-title">
+                    Your Ratings
+                </h2>
+
+                <p class="cf-section-description mb-0">
+                    Your current rating for every time control.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="cf-rating-grid">
+
+
+            <!-- BULLET -->
+            <div class="cf-rating-card">
+
+                <div class="cf-rating-icon">
+
+                <span class="cf-bullet-icon">
+                </span>
+
+                </div>
+
+                <div>
+
+                    <div class="cf-rating-type">
+                        Bullet
+                    </div>
+
+                    <div class="cf-rating-value"
+                         th:text="${currentUser.bulletRating}">
+                        400
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- BLITZ -->
+            <div class="cf-rating-card">
+
+                <div class="cf-rating-icon">
+                    ⚡
+                </div>
+
+                <div>
+
+                    <div class="cf-rating-type">
+                        Blitz
+                    </div>
+
+                    <div class="cf-rating-value"
+                         th:text="${currentUser.blitzRating}">
+                        400
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- RAPID -->
+            <div class="cf-rating-card">
+
+                <div class="cf-rating-icon">
+                    ◷
+                </div>
+
+                <div>
+
+                    <div class="cf-rating-type">
+                        Rapid
+                    </div>
+
+                    <div class="cf-rating-value"
+                         th:text="${currentUser.rapidRating}">
+                        400
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- CLASSICAL -->
+            <div class="cf-rating-card">
+
+                <div class="cf-rating-icon">
+                    ⌛
+                </div>
+
+                <div>
+
+                    <div class="cf-rating-type">
+                        Classical
+                    </div>
+
+                    <div class="cf-rating-value"
+                         th:text="${currentUser.classicalRating}">
+                        400
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
 
     <!-- ===================================================== -->
     <!-- MAIN AREAS -->
