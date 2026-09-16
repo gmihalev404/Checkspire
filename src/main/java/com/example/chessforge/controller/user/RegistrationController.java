@@ -65,7 +65,7 @@ public class RegistrationController {
             return "register";
         }
 
-        return "redirect:/login";
+        return "redirect:/";
     }
 
     private boolean passwordsMatch(
