@@ -1,16 +1,26 @@
 package com.example.chessforge.controller.user;
 
 import com.example.chessforge.controller.user.dto.RegisterRequest;
+import com.example.chessforge.service.user.ChessForgeUserDetailsService;
 import com.example.chessforge.service.user.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.ui.Model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -20,7 +30,17 @@ class RegistrationControllerTest {
     private UserService userService;
 
     @Mock
+    private ChessForgeUserDetailsService
+            userDetailsService;
+
+    @Mock
     private Model model;
+
+    @Mock
+    private HttpServletRequest httpRequest;
+
+    @Mock
+    private HttpSession session;
 
     private RegistrationController controller;
 
@@ -29,8 +49,16 @@ class RegistrationControllerTest {
 
         controller =
                 new RegistrationController(
-                        userService
+                        userService,
+                        userDetailsService
                 );
+    }
+
+    @AfterEach
+    void tearDown() {
+
+        SecurityContextHolder
+                .clearContext();
     }
 
     @Test
@@ -54,19 +82,44 @@ class RegistrationControllerTest {
     }
 
     @Test
-    void registerShouldCreateUserAndRedirectToLogin() {
+    void registerShouldCreateAuthenticateAndRedirectHome() {
 
         RegisterRequest request =
                 createRequest();
 
+        UserDetails userDetails =
+                org.springframework.security.core.userdetails.User
+                        .withUsername("georgi")
+                        .password("encoded-password")
+                        .authorities("USER")
+                        .build();
+
+        when(
+                userDetailsService
+                        .loadUserByUsername(
+                                "georgi"
+                        )
+        ).thenReturn(
+                userDetails
+        );
+
+        when(
+                httpRequest.getSession(
+                        true
+                )
+        ).thenReturn(
+                session
+        );
+
         String result =
                 controller.register(
                         request,
-                        model
+                        model,
+                        httpRequest
                 );
 
         assertEquals(
-                "redirect:/login",
+                "redirect:/",
                 result
         );
 
@@ -76,6 +129,37 @@ class RegistrationControllerTest {
                         "georgi@test.com",
                         "secret123"
                 );
+
+        verify(userDetailsService)
+                .loadUserByUsername(
+                        "georgi"
+                );
+
+        verify(httpRequest)
+                .changeSessionId();
+
+        verify(session)
+                .setAttribute(
+                        eq(
+                                HttpSessionSecurityContextRepository
+                                        .SPRING_SECURITY_CONTEXT_KEY
+                        ),
+                        any(SecurityContext.class)
+                );
+
+        assertNotNull(
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication()
+        );
+
+        assertEquals(
+                "georgi",
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication()
+                        .getName()
+        );
     }
 
     @Test
@@ -91,7 +175,8 @@ class RegistrationControllerTest {
         String result =
                 controller.register(
                         request,
-                        model
+                        model,
+                        httpRequest
                 );
 
         assertEquals(
@@ -107,6 +192,10 @@ class RegistrationControllerTest {
 
         verifyNoInteractions(
                 userService
+        );
+
+        verifyNoInteractions(
+                userDetailsService
         );
     }
 
@@ -130,7 +219,8 @@ class RegistrationControllerTest {
         String result =
                 controller.register(
                         request,
-                        model
+                        model,
+                        httpRequest
                 );
 
         assertEquals(
@@ -143,6 +233,10 @@ class RegistrationControllerTest {
                         "error",
                         "Username is already taken."
                 );
+
+        verifyNoInteractions(
+                userDetailsService
+        );
     }
 
     private RegisterRequest createRequest() {

@@ -1,8 +1,16 @@
 package com.example.chessforge.controller.user;
 
 import com.example.chessforge.controller.user.dto.RegisterRequest;
+import com.example.chessforge.service.user.ChessForgeUserDetailsService;
 import com.example.chessforge.service.user.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +22,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 public class RegistrationController {
 
     private final UserService userService;
+
+    private final ChessForgeUserDetailsService
+            userDetailsService;
 
     @GetMapping("/register")
     public String showRegisterPage(
@@ -31,7 +42,8 @@ public class RegistrationController {
     @PostMapping("/register")
     public String register(
             @ModelAttribute RegisterRequest request,
-            Model model
+            Model model,
+            HttpServletRequest httpRequest
     ) {
 
         if (!passwordsMatch(request)) {
@@ -52,6 +64,11 @@ public class RegistrationController {
                     request.getPassword()
             );
 
+            authenticateRegisteredUser(
+                    request.getUsername(),
+                    httpRequest
+            );
+
         } catch (
                 IllegalArgumentException
                 | IllegalStateException exception
@@ -66,6 +83,52 @@ public class RegistrationController {
         }
 
         return "redirect:/";
+    }
+
+    private void authenticateRegisteredUser(
+            String username,
+            HttpServletRequest request
+    ) {
+
+        UserDetails userDetails =
+                userDetailsService
+                        .loadUserByUsername(
+                                username
+                        );
+
+        UsernamePasswordAuthenticationToken
+                authentication =
+                UsernamePasswordAuthenticationToken
+                        .authenticated(
+                                userDetails,
+                                null,
+                                userDetails.getAuthorities()
+                        );
+
+        SecurityContext securityContext =
+                SecurityContextHolder
+                        .createEmptyContext();
+
+        securityContext.setAuthentication(
+                authentication
+        );
+
+        SecurityContextHolder.setContext(
+                securityContext
+        );
+
+        HttpSession session =
+                request.getSession(
+                        true
+                );
+
+        request.changeSessionId();
+
+        session.setAttribute(
+                HttpSessionSecurityContextRepository
+                        .SPRING_SECURITY_CONTEXT_KEY,
+                securityContext
+        );
     }
 
     private boolean passwordsMatch(
