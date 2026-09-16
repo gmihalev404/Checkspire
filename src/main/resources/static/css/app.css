@@ -920,6 +920,15 @@ a {
 
 .cf-game-opponent {
 
+    display:
+            flex;
+
+    flex-direction:
+            column;
+
+    gap:
+            0.15rem;
+
     min-width:
             0;
 
@@ -929,11 +938,24 @@ a {
     text-overflow:
             ellipsis;
 
-    white-space:
-            nowrap;
-
     font-size:
             0.95rem;
+}
+
+
+.cf-game-date {
+
+    color:
+            var(--cf-text-muted);
+
+    font-size:
+            0.72rem;
+
+    font-weight:
+            400;
+
+    white-space:
+            nowrap;
 }
 
 
@@ -1113,7 +1135,7 @@ a {
    show tooltips below so they are not clipped
    by the scroll container. */
 
-.cf-game-row:first-child
+.cf-game-row:first-child,
 .cf-tooltip::after {
 
     top:

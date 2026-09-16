@@ -122,6 +122,20 @@
                     opponent
                 </strong>
 
+                <span th:if="${game.startedAt != null}"
+                      class="cf-game-date"
+                      th:text="${#temporals.format(
+              game.startedAt,
+              'dd MMM yyyy HH:mm'
+          )}">
+        16 Sep 2026 18:30
+    </span>
+
+                <span th:if="${game.startedAt == null}"
+                      class="cf-game-date">
+        Not started
+    </span>
+
             </div>
 
 
