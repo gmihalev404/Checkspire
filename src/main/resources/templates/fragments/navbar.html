@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<body>
+
+<nav th:fragment="navbar"
+     class="cf-navbar navbar navbar-expand-lg">
+
+    <div class="container cf-container">
+
+        <!-- Brand -->
+        <a class="navbar-brand cf-brand"
+           th:href="@{/}">
+
+            <span class="cf-brand-icon">
+                ♞
+            </span>
+
+            <span>
+                Chess<span class="cf-brand-accent">Forge</span>
+            </span>
+
+        </a>
+
+
+        <!-- Mobile toggle -->
+        <button class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#mainNavbar"
+                aria-controls="mainNavbar"
+                aria-expanded="false"
+                aria-label="Toggle navigation">
+
+            <span class="navbar-toggler-icon"></span>
+
+        </button>
+
+
+        <div class="collapse navbar-collapse"
+             id="mainNavbar">
+
+            <!-- Main navigation -->
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+                <li class="nav-item"
+                    sec:authorize="isAuthenticated()">
+
+                    <a class="nav-link cf-nav-link"
+                       th:href="@{/games}">
+                        Games
+                    </a>
+
+                </li>
+
+                <li class="nav-item"
+                    sec:authorize="isAuthenticated()">
+
+                    <a class="nav-link cf-nav-link"
+                       th:href="@{/challenges}">
+                        Challenges
+                    </a>
+
+                </li>
+
+                <li class="nav-item"
+                    sec:authorize="isAuthenticated()">
+
+                    <a class="nav-link cf-nav-link"
+                       th:href="@{/tournaments}">
+                        Tournaments
+                    </a>
+
+                </li>
+
+            </ul>
+
+
+            <!-- Authenticated user -->
+            <div sec:authorize="isAuthenticated()"
+                 class="d-flex flex-column flex-lg-row
+                        align-items-lg-center gap-3">
+
+                <div class="cf-user-chip">
+
+                    <span class="cf-user-avatar">
+                        ♟
+                    </span>
+
+                    <span sec:authentication="name"
+                          class="cf-user-name">
+                        username
+                    </span>
+
+                </div>
+
+
+                <form th:action="@{/logout}"
+                      method="post"
+                      class="m-0">
+
+                    <button type="submit"
+                            class="btn cf-btn-ghost btn-sm">
+                        Log out
+                    </button>
+
+                </form>
+
+            </div>
+
+
+            <!-- Guest -->
+            <div sec:authorize="isAnonymous()"
+                 class="d-flex gap-2">
+
+                <a th:href="@{/login}"
+                   class="btn cf-btn-ghost">
+                    Log in
+                </a>
+
+                <a th:href="@{/register}"
+                   class="btn cf-btn-primary">
+                    Create account
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</nav>
+
+</body>
+</html>

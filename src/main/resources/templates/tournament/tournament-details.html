@@ -1,6 +1,8 @@
 <!DOCTYPE html>
+
 <html lang="en"
-      xmlns:th="http://www.thymeleaf.org">
+      xmlns:th="http://www.thymeleaf.org"
+      data-bs-theme="dark">
 
 <head>
 
@@ -16,23 +18,30 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
           rel="stylesheet">
 
+    <link th:href="@{/css/app.css}"
+          rel="stylesheet">
+
 </head>
 
 <body>
 
-<div class="container py-4"
-     style="max-width: 960px;">
+
+<div th:replace="~{fragments/navbar :: navbar}">
+</div>
+
+
+<main class="container cf-container cf-page">
 
 
     <!-- ===================================================== -->
     <!-- BACK -->
     <!-- ===================================================== -->
 
-    <div class="mb-4">
+    <div class="mb-3">
 
         <a th:href="@{/tournaments}"
-           class="text-decoration-none">
-            ← Tournaments
+           class="cf-muted text-decoration-none">
+            ← Back to Tournaments
         </a>
 
     </div>
@@ -55,275 +64,400 @@
 
 
     <!-- ===================================================== -->
-    <!-- TOURNAMENT INFORMATION -->
+    <!-- TOURNAMENT HEADER -->
     <!-- ===================================================== -->
 
-    <div class="card mb-4">
+    <section class="cf-card cf-tournament-hero mb-4">
 
-        <div class="card-body">
 
-            <div class="d-flex
-                        justify-content-between
-                        align-items-start
-                        gap-3">
+        <div class="d-flex
+                    flex-column
+                    flex-md-row
+                    justify-content-between
+                    align-items-md-start
+                    gap-3">
 
-                <div>
+            <div>
 
-                    <h1 class="h3 mb-1"
-                        th:text="${tournament.name}">
-                        Tournament
-                    </h1>
-
-                    <div class="text-body-secondary">
-
-                        Created by
-
-                        <strong th:text="${tournament.creatorUsername}">
-                            creator
-                        </strong>
-
-                    </div>
-
-                </div>
-
-                <span class="badge text-bg-secondary"
-                      th:text="${tournament.status}">
-                    REGISTRATION
+                <span class="cf-eyebrow">
+                    Tournament
                 </span>
 
+                <h1 class="h2 fw-bold mb-1"
+                    th:text="${tournament.name}">
+                    Tournament
+                </h1>
+
+                <div class="cf-muted">
+
+                    Created by
+
+                    <strong class="text-light"
+                            th:text="${tournament.creatorUsername}">
+                        creator
+                    </strong>
+
+                </div>
+
             </div>
 
-            <hr>
 
-            <div class="row g-3">
+            <span class="cf-tournament-status"
+                  th:classappend="${tournament.status.name() == 'REGISTRATION'
+                      ? ' cf-tournament-registration'
+                      : tournament.status.name() == 'IN_PROGRESS'
+                          ? ' cf-tournament-live'
+                          : tournament.status.name() == 'FINISHED'
+                              ? ' cf-tournament-finished'
+                              : ' cf-tournament-cancelled'}"
+                  th:text="${#strings.replace(
+                      tournament.status.name(),
+                      '_',
+                      ' '
+                  )}">
+                REGISTRATION
+            </span>
 
-                <!-- Format -->
-                <div class="col-6 col-md-3">
+        </div>
 
-                    <div class="text-body-secondary small">
-                        Format
-                    </div>
 
-                    <strong th:text="${#strings.replace(
-                            tournament.format.name(),
-                            '_',
-                            ' '
-                    )}">
-                        SWISS
+        <!-- Information -->
+        <div class="cf-tournament-info-grid">
+
+
+            <div class="cf-info-block">
+
+                <span class="cf-meta-label">
+                    Format
+                </span>
+
+                <strong th:text="${#strings.replace(
+                    tournament.format.name(),
+                    '_',
+                    ' '
+                )}">
+                    SWISS
+                </strong>
+
+            </div>
+
+
+            <div class="cf-info-block">
+
+                <span class="cf-meta-label">
+                    Time control
+                </span>
+
+                <div class="d-flex align-items-center gap-2">
+
+                    <span class="cf-time-icon"
+                          th:switch="${tournament.timeControl.type.name()}">
+
+<span th:case="'BULLET'"
+      class="cf-bullet-icon"
+      aria-label="Bullet">
+</span>>
+                        <span th:case="'BLITZ'">⚡</span>
+                        <span th:case="'RAPID'">◷</span>
+                        <span th:case="'CLASSICAL'">⌛</span>
+
+                    </span>
+
+                    <strong th:text="${tournament.timeControl.displayTime}">
+                        3 + 2
                     </strong>
 
                 </div>
 
+            </div>
 
-                <!-- Time control -->
-                <div class="col-6 col-md-3">
 
-                    <div class="text-body-secondary small">
-                        Time control
-                    </div>
+            <div class="cf-info-block">
 
-                    <strong th:text="${#strings.replace(
-                            tournament.timeControl.name(),
-                            '_',
-                            ' '
-                    )}">
-                        BLITZ
-                    </strong>
+                <span class="cf-meta-label">
+                    Type
+                </span>
 
-                </div>
+                <strong th:text="${tournament.rated
+                    ? 'Rated'
+                    : 'Casual'}">
+                    Rated
+                </strong>
 
-                <!-- Rated -->
-                <div class="col-6 col-md-3">
+            </div>
 
-                    <div class="text-body-secondary small">
-                        Rated
-                    </div>
 
-                    <strong th:text="${tournament.rated
-                            ? 'Yes'
-                            : 'No'}">
-                        Yes
-                    </strong>
+            <div class="cf-info-block">
 
-                </div>
+                <span class="cf-meta-label">
+                    Players
+                </span>
 
-                <!-- Players -->
-                <div class="col-6 col-md-3">
+                <strong>
 
-                    <div class="text-body-secondary small">
-                        Players
-                    </div>
+                    <span th:text="${#lists.size(tournament.participants)}">
+                        0
+                    </span>
 
-                    <strong>
-
-                        <span th:text="${#lists.size(
-                                tournament.participants
-                        )}">
-                            0
+                    <span th:if="${tournament.maxPlayers != null}">
+                        /
+                        <span th:text="${tournament.maxPlayers}">
+                            16
                         </span>
+                    </span>
 
-                        <span th:if="${tournament.maxPlayers != null}">/<span th:text="${tournament.maxPlayers}">
-                                16
-                            </span>
+                </strong>
 
-                        </span>
-
-                    </strong>
-
-                </div>
+            </div>
 
 
-                <!-- Start date -->
-                <div class="col-md-6"
-                     th:if="${tournament.startsAt != null}">
+            <div class="cf-info-block"
+                 th:if="${tournament.startsAt != null}">
 
-                    <div class="text-body-secondary small">
-                        Starts
-                    </div>
+                <span class="cf-meta-label">
+                    Starts
+                </span>
 
+                <strong th:text="${#temporals.format(
+                    tournament.startsAt,
+                    'dd MMM yyyy HH:mm'
+                )}">
+                    16 Sep 20:00
+                </strong>
 
-                    <strong th:text="${#temporals.format(
-                            tournament.startsAt,
-                            'dd MMM yyyy HH:mm'
-                    )}">
-                    </strong>
-
-                </div>
-
-                <div class="col-md-6">
-
-                    <div class="text-body-secondary small">
-                        Automatic start
-                    </div>
-
-                    <strong th:text="${tournament.automaticStart
-            ? 'Yes'
-            : 'No'}">
-                        Yes
-                    </strong>
-
-                </div>
+            </div>
 
 
-                <div class="col-md-6">
+            <div class="cf-info-block">
 
-                    <div class="text-body-secondary small">
-                        Break between rounds
-                    </div>
+                <span class="cf-meta-label">
+                    Automatic start
+                </span>
 
-                    <strong>
-        <span th:text="${tournament.roundBreakMinutes}">
-            5
-        </span>
-                        min
-                    </strong>
+                <strong th:text="${tournament.automaticStart
+                    ? 'Yes'
+                    : 'No'}">
+                    Yes
+                </strong>
 
-                </div>
+            </div>
 
 
-                <!-- Swiss rounds -->
-                <div class="col-md-6"
-                     th:if="${tournament.format.name() == 'SWISS'}">
+            <div class="cf-info-block">
 
-                    <div class="text-body-secondary small">
-                        Rounds
-                    </div>
+                <span class="cf-meta-label">
+                    Round break
+                </span>
 
-                    <strong th:text="${tournament.numberOfRounds}">
+                <strong>
+                    <span th:text="${tournament.roundBreakMinutes}">
                         5
-                    </strong>
-
-                </div>
+                    </span>
+                    min
+                </strong>
 
             </div>
 
-            <!-- ================================================= -->
-            <!-- REGISTRATION ACTIONS -->
-            <!-- ================================================= -->
 
-            <div th:if="${tournament.status.name() == 'REGISTRATION'}">
+            <div class="cf-info-block"
+                 th:if="${tournament.format.name() == 'SWISS'}">
 
-                <hr>
+                <span class="cf-meta-label">
+                    Rounds
+                </span>
 
-                <div class="d-flex flex-wrap gap-2">
+                <strong th:text="${tournament.numberOfRounds}">
+                    5
+                </strong>
 
-                    <!-- Join -->
-                    <form th:if="${!tournament.viewerJoined}"
-                          th:action="@{/tournaments/{id}/join(
-                              id=${tournament.id}
-                          )}"
-                          method="post">
+            </div>
 
-                        <button type="submit"
-                                class="btn btn-primary">
-                            Join Tournament
-                        </button>
+        </div>
 
-                    </form>
 
-                    <!-- Withdraw -->
-                    <form th:if="${tournament.viewerJoined}"
-                          th:action="@{/tournaments/{id}/withdraw(
-                              id=${tournament.id}
-                          )}"
-                          method="post">
+        <!-- Registration actions -->
+        <div th:if="${tournament.status.name() == 'REGISTRATION'}"
+             class="cf-tournament-actions">
 
-                        <button type="submit"
-                                class="btn btn-outline-danger">
-                            Withdraw
-                        </button>
 
-                    </form>
+            <form th:if="${!tournament.viewerJoined}"
+                  th:action="@{/tournaments/{id}/join(
+                      id=${tournament.id}
+                  )}"
+                  method="post">
 
-                    <!-- Creator actions -->
-                    <div th:if="${tournament.viewerCreator}"
-                         class="d-flex flex-wrap gap-2">
+                <button type="submit"
+                        class="btn cf-btn-primary">
+                    Join Tournament
+                </button>
 
-                        <!-- Start -->
-                        <form th:action="@{/tournaments/{id}/start(
-                                  id=${tournament.id}
-                              )}"
-                              method="post">
+            </form>
 
-                            <button type="submit"
-                                    class="btn btn-success"
-                                    onclick="return confirm(
-                                        'Start this tournament now? Registration will be closed.'
-                                    );">
 
-                                Start Now
+            <form th:if="${tournament.viewerJoined}"
+                  th:action="@{/tournaments/{id}/withdraw(
+                      id=${tournament.id}
+                  )}"
+                  method="post">
 
-                            </button>
+                <button type="submit"
+                        class="btn btn-outline-danger">
+                    Withdraw
+                </button>
 
-                        </form>
+            </form>
 
-                        <!-- Cancel -->
-                        <form th:action="@{/tournaments/{id}/cancel(
-                                  id=${tournament.id}
-                              )}"
-                              method="post">
 
-                            <button type="submit"
-                                    class="btn btn-outline-danger"
-                                    onclick="return confirm(
-                                        'Cancel this tournament?'
-                                    );">
+            <div th:if="${tournament.viewerCreator}"
+                 class="d-flex flex-wrap gap-2">
 
-                                Cancel Tournament
 
-                            </button>
+                <form th:action="@{/tournaments/{id}/start(
+                          id=${tournament.id}
+                      )}"
+                      method="post">
 
-                        </form>
+                    <button type="submit"
+                            class="btn btn-success"
+                            onclick="return confirm(
+                                'Start this tournament now? Registration will be closed.'
+                            );">
 
-                    </div>
+                        Start Now
 
+                    </button>
+
+                </form>
+
+
+                <form th:action="@{/tournaments/{id}/cancel(
+                          id=${tournament.id}
+                      )}"
+                      method="post">
+
+                    <button type="submit"
+                            class="btn btn-outline-danger"
+                            onclick="return confirm(
+                                'Cancel this tournament?'
+                            );">
+
+                        Cancel Tournament
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ===================================================== -->
+    <!-- STANDINGS -->
+    <!-- ===================================================== -->
+
+    <section class="cf-card mb-4"
+             th:if="${tournament.status.name() == 'IN_PROGRESS'
+                     or tournament.status.name() == 'FINISHED'}">
+
+
+        <div class="cf-section-header">
+
+            <div>
+
+                <h2 class="h5 fw-bold mb-1"
+                    th:text="${tournament.status.name() == 'FINISHED'
+                        ? 'Final Standings'
+                        : 'Standings'}">
+
+                    Standings
+
+                </h2>
+
+                <div class="cf-muted small">
+                    Current tournament ranking.
                 </div>
 
             </div>
 
         </div>
 
-    </div>
+
+        <div th:if="${#lists.isEmpty(tournament.standings)}"
+             class="p-4 cf-muted">
+
+            No standings available.
+
+        </div>
+
+
+        <div th:unless="${#lists.isEmpty(tournament.standings)}"
+             class="cf-ranking-list">
+
+
+            <div th:each="participant, stat : ${tournament.standings}"
+                 class="cf-ranking-row">
+
+
+                <div class="cf-ranking-position">
+
+                    <span th:text="${participant.finalRank != null
+                            ? participant.finalRank
+                            : stat.count}">
+                        1
+                    </span>
+
+                </div>
+
+
+                <div class="cf-ranking-player">
+
+                    <strong th:text="${participant.username}">
+                        player
+                    </strong>
+
+                    <span class="cf-muted small">
+                        Rating
+                        <span th:text="${participant.rating}">
+                            1400
+                        </span>
+                    </span>
+
+                </div>
+
+
+                <div class="cf-ranking-score">
+
+                    <span class="cf-meta-label">
+                        Score
+                    </span>
+
+                    <strong th:text="${participant.score != null
+                            ? participant.score
+                            : 0}">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <span class="badge text-bg-secondary"
+                      th:text="${#strings.replace(
+                          participant.status.name(),
+                          '_',
+                          ' '
+                      )}">
+                    ACTIVE
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
 
     <!-- ===================================================== -->
     <!-- ROUNDS -->
@@ -331,57 +465,90 @@
 
     <div th:if="${!#lists.isEmpty(tournament.rounds)}">
 
-        <div class="card mb-4"
-             th:each="round : ${tournament.rounds}">
 
-            <div class="card-header
-        d-flex
-        justify-content-between
-        align-items-center">
+        <div th:each="round : ${tournament.rounds}"
+             class="cf-card cf-round-card mb-4">
+
+
+            <!-- Round header -->
+            <div class="cf-round-header">
+
 
                 <div>
 
-                    <strong>
-                        Round
-                        <span th:text="${round.roundNumber}">
-                1
-            </span>
-                    </strong>
+                    <div class="d-flex align-items-center gap-2">
 
-                    <span th:if="${round.current}"
-                          class="badge text-bg-primary ms-2">
-            Current
-        </span>
+                        <h2 class="h5 fw-bold mb-0">
+
+                            Round
+
+                            <span th:text="${round.roundNumber}">
+                                1
+                            </span>
+
+                        </h2>
+
+
+                        <span th:if="${round.current}"
+                              class="badge text-bg-warning">
+
+                            Current
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="cf-muted small mt-1"
+                         th:if="${round.scheduledAt != null}">
+
+                        Scheduled
+
+                        <span th:text="${#temporals.format(
+                            round.scheduledAt,
+                            'dd MMM HH:mm'
+                        )}">
+                        </span>
+
+                    </div>
 
                 </div>
 
 
-                <div class="d-flex align-items-center gap-2">
+                <div class="d-flex
+                            flex-wrap
+                            justify-content-end
+                            align-items-center
+                            gap-2">
 
-        <span class="badge text-bg-secondary"
-              th:text="${#strings.replace(
-                  round.status.name(),
-                  '_',
-                  ' '
-              )}">
-            SCHEDULED
-        </span>
+
+                    <span class="badge text-bg-secondary"
+                          th:text="${#strings.replace(
+                              round.status.name(),
+                              '_',
+                              ' '
+                          )}">
+                        SCHEDULED
+                    </span>
+
 
                     <form th:if="${tournament.viewerCreator
-                      and tournament.status.name() == 'IN_PROGRESS'
-                      and round.status.name() == 'SCHEDULED'}"
+                                  and tournament.status.name() == 'IN_PROGRESS'
+                                  and round.status.name() == 'SCHEDULED'}"
                           th:action="@{/tournaments/{id}/rounds/{roundNumber}/start(
-                  id=${tournament.id},
-                  roundNumber=${round.roundNumber}
-              )}"
+                              id=${tournament.id},
+                              roundNumber=${round.roundNumber}
+                          )}"
                           method="post">
 
                         <button type="submit"
                                 class="btn btn-sm btn-success"
                                 onclick="return confirm(
-                        'Start this round now? The remaining break time will be skipped.'
-                    );">
+                                    'Start this round now? The remaining break time will be skipped.'
+                                );">
+
                             Start Round Now
+
                         </button>
 
                     </form>
@@ -390,108 +557,95 @@
 
             </div>
 
-            <!-- Round timing -->
-            <div class="card-body border-bottom"
-                 th:if="${round.scheduledAt != null
-                     or round.startedAt != null
-                     or round.completedAt != null}">
 
-                <div class="row g-3 small">
+            <!-- Timing -->
+            <div class="cf-round-times"
+                 th:if="${round.startedAt != null
+                          or round.completedAt != null}">
 
-                    <div class="col-md-4"
-                         th:if="${round.scheduledAt != null}">
 
-                        <div class="text-body-secondary">
-                            Scheduled
-                        </div>
+                <div th:if="${round.startedAt != null}">
 
-                        <strong th:text="${#temporals.format(
-                            round.scheduledAt,
-                            'dd MMM yyyy HH:mm'
+                    <span class="cf-meta-label">
+                        Started
+                    </span>
+
+                    <strong th:text="${#temporals.format(
+                        round.startedAt,
+                        'dd MMM HH:mm'
                     )}">
-                        </strong>
+                    </strong>
 
-                    </div>
+                </div>
 
-                    <div class="col-md-4"
-                         th:if="${round.startedAt != null}">
 
-                        <div class="text-body-secondary">
-                            Started
-                        </div>
+                <div th:if="${round.completedAt != null}">
 
-                        <strong th:text="${#temporals.format(
-                            round.startedAt,
-                            'dd MMM yyyy HH:mm'
+                    <span class="cf-meta-label">
+                        Completed
+                    </span>
+
+                    <strong th:text="${#temporals.format(
+                        round.completedAt,
+                        'dd MMM HH:mm'
                     )}">
-                        </strong>
-
-                    </div>
-
-                    <div class="col-md-4"
-                         th:if="${round.completedAt != null}">
-
-                        <div class="text-body-secondary">
-                            Completed
-                        </div>
-
-                        <strong th:text="${#temporals.format(
-                            round.completedAt,
-                            'dd MMM yyyy HH:mm'
-                    )}">
-                        </strong>
-
-                    </div>
+                    </strong>
 
                 </div>
 
             </div>
 
-            <!-- No matches -->
-            <div class="card-body text-body-secondary"
-                 th:if="${#lists.isEmpty(round.matches)}">
+
+            <!-- Empty -->
+            <div th:if="${#lists.isEmpty(round.matches)}"
+                 class="p-4 cf-muted">
 
                 No matches for this round.
 
             </div>
 
+
             <!-- Matches -->
-            <div class="table-responsive"
-                 th:unless="${#lists.isEmpty(round.matches)}">
+            <div th:unless="${#lists.isEmpty(round.matches)}"
+                 class="cf-match-list">
 
-                <table class="table
-                          table-hover
-                          align-middle
-                          mb-0">
 
-                    <thead>
+                <div th:each="match : ${round.matches}"
+                     class="cf-match-row">
 
-                    <tr>
-                        <th>Board</th>
-                        <th>White</th>
-                        <th>Black</th>
-                        <th>Score</th>
-                        <th>Status</th>
-                        <th>Game</th>
-                    </tr>
 
-                    </thead>
+                    <div class="cf-match-board">
 
-                    <tbody>
+                        <span class="cf-meta-label">
+                            Board
+                        </span>
 
-                    <tr th:each="match : ${round.matches}">
-
-                        <td th:text="${match.boardNumber}">
+                        <strong th:text="${match.boardNumber}">
                             1
-                        </td>
+                        </strong>
 
-                        <td>
+                    </div>
+
+
+                    <div class="cf-match-players">
+
+
+                        <div class="cf-match-player">
+
+                            <span class="cf-color-square cf-color-white">
+                            </span>
+
                             <strong th:text="${match.whiteUsername}">
                                 White
                             </strong>
-                        </td>
 
-                        <td>
+                        </div>
+
+
+                        <div class="cf-match-player">
+
+                            <span class="cf-color-square cf-color-black">
+                            </span>
 
                             <strong th:text="${match.blackUsername != null
                                 ? match.blackUsername
@@ -499,56 +653,73 @@
                                 Black
                             </strong>
 
-                        </td>
+                        </div>
 
-                        <td>
+                    </div>
+
+
+                    <div class="cf-match-score">
 
                         <span th:if="${match.whiteScore != null}">
 
-                            <span th:text="${match.whiteScore}">
+                            <strong th:text="${match.whiteScore}">
                                 1
-                            </span>-<span th:text="${match.blackScore != null
-                                    ? match.blackScore
-                                    : 0}">
-                                0
+                            </strong>
+
+                            <span class="cf-muted">
+                                –
                             </span>
 
+                            <strong th:text="${match.blackScore != null
+                                ? match.blackScore
+                                : 0}">
+                                0
+                            </strong>
+
                         </span>
-                            <span th:if="${match.whiteScore == null}">-</span>
 
-                        </td>
 
-                        <td>
-
-                        <span class="badge text-bg-secondary"
-                              th:text="${match.status}">
-                            COMPLETED
+                        <span th:if="${match.whiteScore == null}"
+                              class="cf-muted">
+                            —
                         </span>
-                        </td>
 
-                        <td>
+                    </div>
 
-                            <a th:if="${match.gameId != null}"
-                               th:href="@{/games/{id}(
+
+                    <div class="cf-match-actions">
+
+                        <span class="cf-status-dot cf-status-finished cf-tooltip"
+                              th:classappend="${match.status.name() == 'IN_PROGRESS'
+                                  ? ' cf-status-live'
+                                  : match.status.name() == 'PENDING'
+                                      ? ' cf-status-waiting'
+                                      : ' cf-status-finished'}"
+                              th:attr="data-tooltip=${#strings.replace(
+                                  match.status.name(),
+                                  '_',
+                                  ' '
+                              )}"
+                              tabindex="0">
+                        </span>
+
+
+                        <a th:if="${match.gameId != null}"
+                           th:href="@{/games/{id}(
                                id=${match.gameId}
                            )}"
-                               class="btn btn-sm btn-outline-primary"
-                               th:text="${round.current
-                                   ? 'Open Game'
-                                   : 'View Game'}">Open Game</a>
+                           class="btn btn-sm cf-btn-ghost"
+                           th:text="${round.current
+                               ? 'Open'
+                               : 'View'}">
 
-                            <span th:if="${match.gameId == null}"
-                                  class="text-body-secondary">
-    —
-</span>
+                            Open
 
-                        </td>
+                        </a>
 
-                    </tr>
+                    </div>
 
-                    </tbody>
-
-                </table>
+                </div>
 
             </div>
 
@@ -556,20 +727,25 @@
 
     </div>
 
+
+    <!-- ===================================================== -->
+    <!-- FORFEIT -->
+    <!-- ===================================================== -->
+
     <div th:if="${tournament.status.name() == 'IN_PROGRESS'
-             and tournament.viewerJoined}"
-         class="mt-3">
+                 and tournament.viewerJoined}"
+         class="mb-4">
 
         <form th:action="@{/tournaments/{id}/forfeit(
-              id=${tournament.id}
-          )}"
+                  id=${tournament.id}
+              )}"
               method="post">
 
             <button type="submit"
                     class="btn btn-outline-danger"
                     onclick="return confirm(
-                    'Forfeit this tournament? You will not be able to return.'
-                );">
+                        'Forfeit this tournament? You will not be able to return.'
+                    );">
 
                 Forfeit Tournament
 
@@ -579,241 +755,106 @@
 
     </div>
 
-    <!-- ===================================================== -->
-    <!-- STANDINGS -->
-    <!-- ===================================================== -->
-
-    <div class="card mb-4"
-         th:if="${tournament.status.name() == 'IN_PROGRESS'
-                 or tournament.status.name() == 'FINISHED'}">
-
-        <div class="card-header">
-
-            <strong th:text="${tournament.status.name() == 'FINISHED'
-                    ? 'Final Standings'
-                    : 'Standings'}">
-
-                Standings
-
-            </strong>
-
-        </div>
-
-        <!-- Empty standings -->
-        <div th:if="${#lists.isEmpty(tournament.standings)}"
-             class="card-body text-body-secondary">
-
-            No standings available.
-
-        </div>
-
-        <!-- Standings table -->
-        <div class="table-responsive"
-             th:unless="${#lists.isEmpty(tournament.standings)}">
-
-            <table class="table
-                          table-hover
-                          align-middle
-                          mb-0">
-
-                <thead>
-
-                <tr>
-
-                    <th>
-                        Place
-                    </th>
-
-                    <th>
-                        Player
-                    </th>
-
-                    <th>
-                        Score
-                    </th>
-
-                    <th>
-                        Rating
-                    </th>
-
-                    <th>
-                        Status
-                    </th>
-
-                </tr>
-
-                </thead>
-
-                <tbody>
-
-                <tr th:each="participant, stat : ${tournament.standings}">
-
-
-                    <!-- Place -->
-                    <td>
-
-                        <strong th:text="${participant.finalRank != null
-                                ? participant.finalRank
-                                : stat.count}">
-                            1
-                        </strong>
-
-                    </td>
-
-                    <!-- Player -->
-                    <td>
-
-                        <strong th:text="${participant.username}">
-                            player
-                        </strong>
-
-                    </td>
-
-                    <!-- Score -->
-                    <td th:text="${participant.score != null
-                            ? participant.score
-                            : 0}">
-                        0
-                    </td>
-
-                    <!-- Rating -->
-                    <td th:text="${participant.rating}">
-                        400
-                    </td>
-
-                    <!-- Status -->
-                    <td>
-
-                        <span class="badge text-bg-secondary"
-                              th:text="${participant.status}">
-                            ACTIVE
-                        </span>
-
-                    </td>
-
-                </tr>
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    </div>
 
     <!-- ===================================================== -->
     <!-- PARTICIPANTS -->
-    <!-- Only needed during registration -->
     <!-- ===================================================== -->
 
-    <div class="card"
-         th:if="${tournament.status.name() == 'REGISTRATION'}">
+    <section class="cf-card"
+             th:if="${tournament.status.name() == 'REGISTRATION'}">
 
-        <div class="card-header">
 
-            <strong>
-                Participants
-            </strong>
+        <div class="cf-section-header">
+
+            <div>
+
+                <h2 class="h5 fw-bold mb-1">
+                    Participants
+                </h2>
+
+                <div class="cf-muted small">
+
+                    <span th:text="${#lists.size(tournament.participants)}">
+                        0
+                    </span>
+
+                    registered players
+
+                </div>
+
+            </div>
 
         </div>
 
-        <!-- No participants -->
+
         <div th:if="${#lists.isEmpty(tournament.participants)}"
-             class="card-body text-body-secondary">
+             class="p-4 cf-muted">
 
             No participants yet.
 
         </div>
 
-        <!-- Participants -->
-        <div class="table-responsive"
-             th:unless="${#lists.isEmpty(tournament.participants)}">
 
-            <table class="table
-                          table-hover
-                          align-middle
-                          mb-0">
+        <div th:unless="${#lists.isEmpty(tournament.participants)}"
+             class="cf-participant-list">
 
-                <thead>
 
-                <tr>
+            <div th:each="participant, stat : ${tournament.participants}"
+                 class="cf-participant-row">
 
-                    <th>
-                        #
-                    </th>
 
-                    <th>
-                        Player
-                    </th>
+                <div class="cf-participant-seed">
 
-                    <th>
-                        Rating
-                    </th>
-
-                    <th>
-                        Score
-                    </th>
-
-                    <th>
-                        Status
-                    </th>
-
-                </tr>
-
-                </thead>
-
-                <tbody>
-
-                <tr th:each="participant, stat : ${tournament.participants}">
-
-                    <!-- Seed -->
-                    <td th:text="${participant.seed != null
-                            ? participant.seed
-                            : stat.count}">
+                    <span th:text="${participant.seed != null
+                        ? participant.seed
+                        : stat.count}">
                         1
-                    </td>
+                    </span>
 
-                    <!-- Username -->
-                    <td>
-                        <strong th:text="${participant.username}">
-                            player
-                        </strong>
+                </div>
 
-                    </td>
 
-                    <!-- Rating -->
-                    <td th:text="${participant.rating}">
-                        400
-                    </td>
+                <div class="cf-ranking-player">
 
-                    <!-- Score -->
-                    <td th:text="${participant.score != null
-                            ? participant.score
-                            : 0}">
-                        0
-                    </td>
+                    <strong th:text="${participant.username}">
+                        player
+                    </strong>
 
-                    <!-- Status -->
-                    <td>
+                    <span class="cf-muted small">
 
-                        <span class="badge text-bg-secondary"
-                              th:text="${participant.status}">
-                            ACTIVE
+                        Rating
+
+                        <span th:text="${participant.rating}">
+                            1400
                         </span>
 
-                    </td>
+                    </span>
 
-                </tr>
+                </div>
 
-                </tbody>
 
-            </table>
+                <span class="badge text-bg-secondary"
+                      th:text="${#strings.replace(
+                          participant.status.name(),
+                          '_',
+                          ' '
+                      )}">
+                    ACTIVE
+                </span>
+
+            </div>
 
         </div>
 
-    </div>
+    </section>
 
-</div>
+
+</main>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+</script>
+
 
 </body>
 

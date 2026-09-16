@@ -1,9 +1,12 @@
 <!DOCTYPE html>
+
 <html lang="en"
       xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
       data-bs-theme="dark">
 
 <head>
+
     <meta charset="UTF-8">
 
     <meta name="viewport"
@@ -11,122 +14,184 @@
 
     <title>ChessForge</title>
 
+
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
           rel="stylesheet"
           integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
           crossorigin="anonymous">
+
+
+    <!-- ChessForge -->
+    <link th:href="@{/css/app.css}"
+          rel="stylesheet">
+
 </head>
 
-<body class="bg-body-tertiary">
 
-<nav class="navbar navbar-expand-lg bg-body border-bottom">
+<body>
 
-    <div class="container">
 
-        <a class="navbar-brand fw-bold"
-           th:href="@{/}">
-            ChessForge
-        </a>
+<!-- ========================================================= -->
+<!-- NAVBAR -->
+<!-- ========================================================= -->
 
-        <a th:href="@{/challenges}"
-           class="btn btn-outline-primary btn-sm">
-            Challenges
-        </a>
+<div th:replace="~{fragments/navbar :: navbar}">
+</div>
 
-        <a th:href="@{/tournaments}"
-           class="btn btn-outline-primary btn-sm">
-            Tournaments
-        </a>
 
-        <div th:if="${username != null}"
-             class="d-flex align-items-center gap-3">
+<!-- ========================================================= -->
+<!-- AUTHENTICATED HOME -->
+<!-- ========================================================= -->
 
-            <span class="text-body-secondary">
-                Logged in as
-                <strong th:text="${username}">
-                    username
-                </strong>
+<main sec:authorize="isAuthenticated()"
+      class="container cf-container cf-page">
+
+
+    <!-- HERO -->
+    <section class="cf-hero mb-5">
+
+        <span class="cf-eyebrow">
+            Competitive online chess
+        </span>
+
+        <h1 class="cf-hero-title">
+
+            Your board.
+            <br>
+
+            Your rating.
+            <br>
+
+            <span class="cf-brand-accent">
+                Your forge.
             </span>
 
-            <form th:action="@{/logout}"
-                  method="post"
-                  class="m-0">
+        </h1>
 
-                <button type="submit"
-                        class="btn btn-outline-danger btn-sm">
-                    Log out
-                </button>
 
-            </form>
+        <p class="cf-hero-text">
 
-        </div>
+            Play competitive chess, challenge other players
+            and fight your way through tournaments.
 
-        <div th:if="${username == null}"
-             class="d-flex gap-2">
+        </p>
 
-            <a th:href="@{/login}"
-               class="btn btn-outline-primary">
-                Log in
+
+        <div class="d-flex
+                    flex-wrap
+                    gap-2">
+
+            <a th:href="@{/games}"
+               class="btn
+                      cf-btn-primary
+                      btn-lg">
+
+                Play Chess
+
             </a>
 
-            <a th:href="@{/register}"
-               class="btn btn-primary">
-                Register
+
+            <a th:href="@{/challenges}"
+               class="btn
+                      cf-btn-ghost
+                      btn-lg">
+
+                Challenges
+
             </a>
 
         </div>
 
-    </div>
+    </section>
 
-</nav>
 
-<main class="container py-5">
+    <!-- ===================================================== -->
+    <!-- MAIN AREAS -->
+    <!-- ===================================================== -->
 
-    <div th:if="${username != null}">
+    <section class="cf-section">
 
-        <div class="p-5 mb-4 bg-body rounded-3 shadow-sm">
+        <h2 class="h4 cf-section-title">
+            ChessForge
+        </h2>
 
-            <div class="container-fluid py-3">
+        <p class="cf-section-description">
+            Everything you need to play and compete.
+        </p>
 
-                <h1 class="display-5 fw-bold">
-                    Welcome to ChessForge
-                </h1>
-
-                <p class="col-md-8 fs-5 text-body-secondary">
-                    Play chess, challenge friends,
-                    improve your rating and compete
-                    in tournaments.
-                </p>
-
-                <button class="btn btn-primary btn-lg"
-                        type="button">
-                    Play Chess
-                </button>
-
-            </div>
-
-        </div>
 
         <div class="row g-4">
 
-            <div class="col-md-4">
 
-                <div class="card h-100 shadow-sm">
+            <!-- GAMES -->
+            <div class="col-md-6 col-xl-4">
 
-                    <div class="card-body">
+                <div class="cf-card
+                            cf-card-hover
+                            cf-feature-card">
 
-                        <h5 class="card-title">
-                            Play
-                        </h5>
+                    <div class="cf-feature-icon">
+                        ♟
+                    </div>
+
+                    <h3 class="cf-feature-title">
+                        Games
+                    </h3>
+
+                    <p class="cf-feature-description">
+
+                        Continue active games
+                        and review your completed matches.
+
+                    </p>
+
+                    <div>
 
                         <a th:href="@{/games}"
-                           class="btn btn-outline-primary">
-                            View games
+                           class="btn cf-btn-primary">
+
+                            View Games
+
                         </a>
 
-                        <p class="card-text text-body-secondary">
-                            Start or continue your chess games.
-                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- CHALLENGES -->
+            <div class="col-md-6 col-xl-4">
+
+                <div class="cf-card
+                            cf-card-hover
+                            cf-feature-card">
+
+                    <div class="cf-feature-icon">
+                        ⚔
+                    </div>
+
+                    <h3 class="cf-feature-title">
+                        Challenges
+                    </h3>
+
+                    <p class="cf-feature-description">
+
+                        Send challenges to other players
+                        and manage incoming invitations.
+
+                    </p>
+
+                    <div>
+
+                        <a th:href="@{/challenges}"
+                           class="btn cf-btn-ghost">
+
+                            View Challenges
+
+                        </a>
 
                     </div>
 
@@ -134,19 +199,38 @@
 
             </div>
 
-            <div class="col-md-4">
 
-                <div class="card h-100 shadow-sm">
+            <!-- TOURNAMENTS -->
+            <div class="col-md-6 col-xl-4">
 
-                    <div class="card-body">
+                <div class="cf-card
+                            cf-card-hover
+                            cf-feature-card">
 
-                        <h5 class="card-title">
-                            Friends
-                        </h5>
+                    <div class="cf-feature-icon">
+                        ♜
+                    </div>
 
-                        <p class="card-text text-body-secondary">
-                            Find players and manage your friends.
-                        </p>
+                    <h3 class="cf-feature-title">
+                        Tournaments
+                    </h3>
+
+                    <p class="cf-feature-description">
+
+                        Compete in Swiss,
+                        Round Robin and
+                        Single Elimination events.
+
+                    </p>
+
+                    <div>
+
+                        <a th:href="@{/tournaments}"
+                           class="btn cf-btn-ghost">
+
+                            Browse Tournaments
+
+                        </a>
 
                     </div>
 
@@ -154,64 +238,90 @@
 
             </div>
 
-            <div class="col-md-4">
-
-                <div class="card h-100 shadow-sm">
-
-                    <div class="card-body">
-
-                        <h5 class="card-title">
-                            Tournaments
-                        </h5>
-
-                        <p class="card-text text-body-secondary">
-                            Join tournaments and compete for first place.
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </div>
 
         </div>
 
-    </div>
+    </section>
 
-
-    <div th:if="${username == null}"
-         class="text-center py-5">
-
-        <h1 class="display-3 fw-bold">
-            ChessForge
-        </h1>
-
-        <p class="lead text-body-secondary mb-4">
-            Competitive online chess built for players.
-        </p>
-
-        <div class="d-flex justify-content-center gap-2">
-
-            <a th:href="@{/register}"
-               class="btn btn-primary btn-lg">
-                Get started
-            </a>
-
-            <a th:href="@{/login}"
-               class="btn btn-outline-primary btn-lg">
-                Log in
-            </a>
-
-        </div>
-
-    </div>
 
 </main>
+
+
+<!-- ========================================================= -->
+<!-- GUEST HOME -->
+<!-- ========================================================= -->
+
+<main sec:authorize="isAnonymous()"
+      class="container cf-container cf-page">
+
+    <section class="cf-hero">
+
+        <span class="cf-eyebrow">
+            Welcome to ChessForge
+        </span>
+
+
+        <h1 class="cf-hero-title">
+
+            Forge your game.
+
+            <br>
+
+            <span class="cf-brand-accent">
+                Play to win.
+            </span>
+
+        </h1>
+
+
+        <p class="cf-hero-text">
+
+            Competitive online chess with
+            challenges, ratings and tournaments.
+
+        </p>
+
+
+        <div class="d-flex
+                    flex-wrap
+                    gap-2">
+
+            <a th:href="@{/register}"
+               class="btn
+                      cf-btn-primary
+                      btn-lg">
+
+                Create account
+
+            </a>
+
+
+            <a th:href="@{/login}"
+               class="btn
+                      cf-btn-ghost
+                      btn-lg">
+
+                Log in
+
+            </a>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- ========================================================= -->
+<!-- SCRIPTS -->
+<!-- ========================================================= -->
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
         crossorigin="anonymous">
 </script>
 
+
 </body>
+
 </html>

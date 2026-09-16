@@ -1,12 +1,12 @@
 package com.example.chessforge.service.game;
 
-import com.example.chessforge.service.game.dto.GameStateResponse;
 import com.example.chessforge.model.entity.game.Game;
 import com.example.chessforge.model.entity.user.User;
 import com.example.chessforge.model.enums.game.GameResult;
 import com.example.chessforge.model.enums.game.GameStatus;
 import com.example.chessforge.model.enums.game.GameTermination;
 import com.example.chessforge.model.enums.timeControl.TimeControl;
+import com.example.chessforge.service.game.dto.GameStateResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -81,11 +81,17 @@ class GameStateMapperTest {
         when(whitePlayer.getUsername())
                 .thenReturn("white");
 
+        when(game.getWhiteRatingBefore())
+                .thenReturn(1425);
+
         when(blackPlayer.getId())
                 .thenReturn(2L);
 
         when(blackPlayer.getUsername())
                 .thenReturn("black");
+
+        when(game.getBlackRatingBefore())
+                .thenReturn(1375);
 
         when(game.getTimeControl())
                 .thenReturn(timeControl);
@@ -149,6 +155,11 @@ class GameStateMapperTest {
         );
 
         assertEquals(
+                1425,
+                response.whiteRatingBefore()
+        );
+
+        assertEquals(
                 2L,
                 response.blackPlayerId()
         );
@@ -156,6 +167,11 @@ class GameStateMapperTest {
         assertEquals(
                 "black",
                 response.blackUsername()
+        );
+
+        assertEquals(
+                1375,
+                response.blackRatingBefore()
         );
 
         assertEquals(

@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en"
       xmlns:th="http://www.thymeleaf.org"
       data-bs-theme="dark">
@@ -15,67 +16,63 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
           rel="stylesheet">
 
+    <link th:href="@{/css/app.css}"
+          rel="stylesheet">
+
 </head>
 
-<body class="bg-body-tertiary">
-
-<nav class="navbar navbar-expand-lg bg-body border-bottom">
-
-    <div class="container">
-
-        <a class="navbar-brand fw-bold"
-           th:href="@{/}">
-            ChessForge
-        </a>
-
-        <div class="d-flex align-items-center gap-3">
-
-            <a th:href="@{/games}"
-               class="btn btn-outline-secondary btn-sm">
-                My Games
-            </a>
-
-            <a th:href="@{/challenges}"
-               class="btn btn-outline-primary btn-sm">
-                Challenges
-            </a>
-
-            <span th:text="${username}">
-                username
-            </span>
-
-        </div>
-
-    </div>
-
-</nav>
+<body>
 
 
-<main class="container py-5">
+<div th:replace="~{fragments/navbar :: navbar}">
+</div>
 
-    <div class="d-flex justify-content-between
-                align-items-center mb-4">
+
+<main class="container cf-container cf-page">
+
+
+    <!-- ===================================================== -->
+    <!-- HEADER -->
+    <!-- ===================================================== -->
+
+    <div class="d-flex
+                flex-column
+                flex-md-row
+                justify-content-between
+                align-items-md-center
+                gap-3
+                mb-4">
 
         <div>
 
-            <h1 class="fw-bold">
+            <span class="cf-eyebrow">
+                Matchmaking
+            </span>
+
+            <h1 class="fw-bold mb-1">
                 Challenges
             </h1>
 
-            <p class="text-body-secondary mb-0">
-                Challenge another ChessForge player.
+            <p class="cf-muted mb-0">
+                Challenge another player or respond to an invitation.
             </p>
 
         </div>
 
 
         <a th:href="@{/challenges/new}"
-           class="btn btn-primary">
+           class="btn cf-btn-primary">
+
             New Challenge
+
         </a>
 
     </div>
 
+
+    <!-- ===================================================== -->
+    <!-- MESSAGES -->
+    <!-- ===================================================== -->
 
     <div th:if="${success}"
          class="alert alert-success"
@@ -88,204 +85,335 @@
     </div>
 
 
+    <!-- ===================================================== -->
+    <!-- COLUMNS -->
+    <!-- ===================================================== -->
+
     <div class="row g-4">
 
 
-        <!-- ===================== -->
+        <!-- ================================================= -->
         <!-- INCOMING -->
-        <!-- ===================== -->
+        <!-- ================================================= -->
 
         <div class="col-12 col-lg-6">
 
-            <div class="card border-0 shadow-sm h-100">
+            <section class="cf-card h-100">
 
-                <div class="card-body">
+                <div class="p-4">
 
-                    <h4 class="mb-4">
-                        Incoming
-                    </h4>
+                    <div class="d-flex
+                                justify-content-between
+                                align-items-center
+                                mb-4">
+
+                        <div>
+
+                            <h2 class="h4 fw-bold mb-1">
+                                Incoming
+                            </h2>
+
+                            <div class="cf-muted small">
+                                Challenges waiting for your response.
+                            </div>
+
+                        </div>
 
 
-                    <div th:if="${#lists.isEmpty(incoming)}"
-                         class="text-body-secondary">
-
-                        No incoming challenges.
+                        <span class="badge text-bg-secondary"
+                              th:text="${#lists.size(incoming)}">
+                            0
+                        </span>
 
                     </div>
 
 
-                    <div th:each="challenge : ${incoming}"
-                         class="border rounded p-3 mb-3">
+                    <!-- Empty -->
+                    <div th:if="${#lists.isEmpty(incoming)}"
+                         class="text-center py-5">
+
+                        <div class="cf-feature-icon mx-auto">
+                            ♙
+                        </div>
+
+                        <div class="cf-muted">
+                            No incoming challenges.
+                        </div>
+
+                    </div>
 
 
-                        <div class="d-flex
-                                    justify-content-between
-                                    align-items-start mb-3">
+                    <!-- Scrollable list -->
+                    <div th:unless="${#lists.isEmpty(incoming)}"
+                         class="cf-challenge-scroll">
 
-                            <div>
 
-                                <strong th:text="${challenge.otherUsername}">
-                                    player
+                        <div th:each="challenge : ${incoming}"
+                             class="cf-challenge-item">
+
+
+                            <div class="d-flex
+                                        justify-content-between
+                                        align-items-start
+                                        gap-3
+                                        mb-3">
+
+                                <div>
+
+                                    <div class="fw-bold fs-5"
+                                         th:text="${challenge.otherUsername}">
+                                        player
+                                    </div>
+
+
+                                    <div class="cf-muted small mt-1">
+
+                                        <span th:text="${challenge.timeControl.displayTime}">
+                                            1 + 0
+                                        </span>
+
+                                        <span class="mx-1">
+                                            ·
+                                        </span>
+
+                                        <span th:text="${challenge.rated
+                                                ? 'Rated'
+                                                : 'Casual'}">
+                                            Casual
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+
+                                <span class="badge"
+                                      th:classappend="${challenge.rated
+                                          ? ' text-bg-warning'
+                                          : ' text-bg-secondary'}"
+                                      th:text="${challenge.rated
+                                          ? 'Rated'
+                                          : 'Casual'}">
+
+                                    Casual
+
+                                </span>
+
+                            </div>
+
+
+                            <div class="small cf-muted mb-3">
+
+                                Challenger wants
+
+                                <strong class="text-light"
+                                        th:text="${#strings.replace(
+                                            challenge.colorPreference.name(),
+                                            '_',
+                                            ' '
+                                        )}">
+                                    RANDOM
                                 </strong>
 
-                                <div class="text-body-secondary small">
+                            </div>
 
-                                    <span th:text="${challenge.timeControl}">
-                                        RAPID_10_0
-                                    </span>
 
-                                    ·
+                            <div class="d-flex gap-2">
 
-                                    <span th:text="${challenge.rated
-                                                    ? 'Rated'
-                                                    : 'Casual'}">
-                                        Casual
-                                    </span>
+                                <form th:action="@{/challenges/{id}/accept(
+                                        id=${challenge.challengeId}
+                                    )}"
+                                      method="post">
+
+                                    <button type="submit"
+                                            class="btn btn-success btn-sm">
+
+                                        Accept
+
+                                    </button>
+
+                                </form>
+
+
+                                <form th:action="@{/challenges/{id}/decline(
+                                        id=${challenge.challengeId}
+                                    )}"
+                                      method="post">
+
+                                    <button type="submit"
+                                            class="btn btn-outline-danger btn-sm">
+
+                                        Decline
+
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- OUTGOING -->
+        <!-- ================================================= -->
+
+        <div class="col-12 col-lg-6">
+
+            <section class="cf-card h-100">
+
+                <div class="p-4">
+
+                    <div class="d-flex
+                                justify-content-between
+                                align-items-center
+                                mb-4">
+
+                        <div>
+
+                            <h2 class="h4 fw-bold mb-1">
+                                Outgoing
+                            </h2>
+
+                            <div class="cf-muted small">
+                                Challenges waiting for another player.
+                            </div>
+
+                        </div>
+
+
+                        <span class="badge text-bg-secondary"
+                              th:text="${#lists.size(outgoing)}">
+                            0
+                        </span>
+
+                    </div>
+
+
+                    <!-- Empty -->
+                    <div th:if="${#lists.isEmpty(outgoing)}"
+                         class="text-center py-5">
+
+                        <div class="cf-feature-icon mx-auto">
+                            ♟
+                        </div>
+
+                        <div class="cf-muted">
+                            No outgoing challenges.
+                        </div>
+
+                    </div>
+
+
+                    <!-- Scrollable list -->
+                    <div th:unless="${#lists.isEmpty(outgoing)}"
+                         class="cf-challenge-scroll">
+
+
+                        <div th:each="challenge : ${outgoing}"
+                             class="cf-challenge-item">
+
+
+                            <div class="d-flex
+                                        justify-content-between
+                                        align-items-start
+                                        gap-3
+                                        mb-3">
+
+                                <div>
+
+                                    <div class="fw-bold fs-5"
+                                         th:text="${challenge.otherUsername}">
+                                        player
+                                    </div>
+
+
+                                    <div class="cf-muted small mt-1">
+
+                                        <span th:text="${challenge.timeControl.displayTime}">
+                                            1 + 0
+                                        </span>
+
+                                        <span class="mx-1">
+                                            ·
+                                        </span>
+
+                                        <span th:text="${challenge.rated
+                                                ? 'Rated'
+                                                : 'Casual'}">
+                                            Casual
+                                        </span>
+
+                                    </div>
 
                                 </div>
 
                             </div>
 
-                        </div>
 
+                            <div class="small cf-muted mb-3">
 
-                        <div class="small mb-3">
+                                Requested color:
 
-                            Challenger wants:
-
-                            <strong th:text="${challenge.colorPreference}">
-                                RANDOM
-                            </strong>
-
-                        </div>
-
-
-                        <div class="d-flex gap-2">
-
-                            <form th:action="@{/challenges/{id}/accept(
-                                    id=${challenge.challengeId})}"
-                                  method="post">
-
-                                <button type="submit"
-                                        class="btn btn-success btn-sm">
-                                    Accept
-                                </button>
-
-                            </form>
-
-
-                            <form th:action="@{/challenges/{id}/decline(
-                                    id=${challenge.challengeId})}"
-                                  method="post">
-
-                                <button type="submit"
-                                        class="btn btn-outline-danger btn-sm">
-                                    Decline
-                                </button>
-
-                            </form>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- ===================== -->
-        <!-- OUTGOING -->
-        <!-- ===================== -->
-
-        <div class="col-12 col-lg-6">
-
-            <div class="card border-0 shadow-sm h-100">
-
-                <div class="card-body">
-
-                    <h4 class="mb-4">
-                        Outgoing
-                    </h4>
-
-
-                    <div th:if="${#lists.isEmpty(outgoing)}"
-                         class="text-body-secondary">
-
-                        No outgoing challenges.
-
-                    </div>
-
-
-                    <div th:each="challenge : ${outgoing}"
-                         class="border rounded p-3 mb-3">
-
-
-                        <div class="mb-3">
-
-                            <strong th:text="${challenge.otherUsername}">
-                                player
-                            </strong>
-
-                            <div class="text-body-secondary small">
-
-                                <span th:text="${challenge.timeControl}">
-                                    RAPID_10_0
-                                </span>
-
-                                ·
-
-                                <span th:text="${challenge.rated
-                                                ? 'Rated'
-                                                : 'Casual'}">
-                                    Casual
-                                </span>
+                                <strong class="text-light"
+                                        th:text="${#strings.replace(
+                                            challenge.colorPreference.name(),
+                                            '_',
+                                            ' '
+                                        )}">
+                                    RANDOM
+                                </strong>
 
                             </div>
 
+
+                            <form th:action="@{/challenges/{id}/cancel(
+                                    id=${challenge.challengeId}
+                                )}"
+                                  method="post">
+
+                                <button type="submit"
+                                        class="btn cf-btn-ghost btn-sm">
+
+                                    Cancel Challenge
+
+                                </button>
+
+                            </form>
+
                         </div>
-
-
-                        <div class="small mb-3">
-
-                            Your requested color:
-
-                            <strong th:text="${challenge.colorPreference}">
-                                RANDOM
-                            </strong>
-
-                        </div>
-
-
-                        <form th:action="@{/challenges/{id}/cancel(
-                                id=${challenge.challengeId})}"
-                              method="post">
-
-                            <button type="submit"
-                                    class="btn btn-outline-secondary btn-sm">
-                                Cancel
-                            </button>
-
-                        </form>
 
                     </div>
 
                 </div>
 
-            </div>
+            </section>
 
         </div>
 
     </div>
 
 </main>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.2.1/bundles/stomp.umd.min.js">
 </script>
 
 <script th:src="@{/js/challenges.js(v=2)}">
 </script>
+
+
 </body>
 
 </html>

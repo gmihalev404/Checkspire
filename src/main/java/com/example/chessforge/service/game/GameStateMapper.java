@@ -26,9 +26,11 @@ public class GameStateMapper {
 
                 whitePlayer.getId(),
                 whitePlayer.getUsername(),
+                game.getWhiteRatingBefore(),
 
                 blackPlayer.getId(),
                 blackPlayer.getUsername(),
+                game.getBlackRatingBefore(),
 
                 game.getTimeControl(),
                 game.isRated(),

@@ -1,9 +1,11 @@
 <!DOCTYPE html>
+
 <html lang="en"
       xmlns:th="http://www.thymeleaf.org"
       data-bs-theme="dark">
 
 <head>
+
     <meta charset="UTF-8">
 
     <meta name="viewport"
@@ -12,167 +14,306 @@
     <title>Games | ChessForge</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-          rel="stylesheet"
-          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-          crossorigin="anonymous">
+          rel="stylesheet">
+
+    <link th:href="@{/css/app.css}"
+          rel="stylesheet">
+
 </head>
 
-<body class="bg-body-tertiary">
-
-<nav class="navbar navbar-expand-lg bg-body border-bottom">
-
-    <div class="container">
-
-        <a class="navbar-brand fw-bold"
-           th:href="@{/}">
-            ChessForge
-        </a>
-
-        <div class="d-flex align-items-center gap-3">
-
-            <span class="text-body-secondary">
-                <strong th:text="${username}">
-                    username
-                </strong>
-            </span>
-
-            <form th:action="@{/logout}"
-                  method="post"
-                  class="m-0">
-
-                <button type="submit"
-                        class="btn btn-outline-danger btn-sm">
-                    Log out
-                </button>
-
-            </form>
-
-        </div>
-
-    </div>
-
-</nav>
+<body>
 
 
-<main class="container py-5">
+<div th:replace="~{fragments/navbar :: navbar}">
+</div>
 
-    <div class="d-flex justify-content-between
-                align-items-center mb-4">
+
+<main class="container cf-container cf-page">
+
+
+    <!-- ===================================================== -->
+    <!-- HEADER -->
+    <!-- ===================================================== -->
+
+    <div class="d-flex
+                flex-column
+                flex-md-row
+                justify-content-between
+                align-items-md-center
+                gap-3
+                mb-4">
 
         <div>
+
+            <span class="cf-eyebrow">
+                Your chess
+            </span>
 
             <h1 class="fw-bold mb-1">
                 My Games
             </h1>
 
-            <p class="text-body-secondary mb-0">
-                Your active and previous ChessForge games.
+            <p class="cf-muted mb-0">
+                Continue active games and review previous matches.
             </p>
 
         </div>
 
+
         <a th:href="@{/challenges/new}"
-           class="btn btn-primary">
+           class="btn cf-btn-primary">
+
             New Game
+
         </a>
 
     </div>
 
 
+    <!-- ===================================================== -->
+    <!-- EMPTY -->
+    <!-- ===================================================== -->
+
     <div th:if="${#lists.isEmpty(games)}"
-         class="card border-0 shadow-sm">
+         class="cf-card">
 
-        <div class="card-body text-center py-5">
+        <div class="text-center py-5 px-3">
 
-            <h4>
+            <div class="cf-feature-icon mx-auto">
+                ♟
+            </div>
+
+            <h2 class="h5 fw-bold">
                 No games yet
-            </h4>
+            </h2>
 
-            <p class="text-body-secondary mb-0">
+            <p class="cf-muted mb-4">
                 Your games will appear here once you start playing.
             </p>
+
+            <a th:href="@{/challenges/new}"
+               class="btn cf-btn-primary">
+
+                Start a Game
+
+            </a>
 
         </div>
 
     </div>
 
 
+    <!-- ===================================================== -->
+    <!-- GAME LIST -->
+    <!-- ===================================================== -->
+
     <div th:unless="${#lists.isEmpty(games)}"
-         class="card border-0 shadow-sm">
+         class="cf-game-list">
 
-        <div class="table-responsive">
 
-            <table class="table table-hover align-middle mb-0">
+        <div th:each="game : ${games}"
+             class="cf-game-row">
 
-                <thead>
-                <tr>
-                    <th>Opponent</th>
-                    <th>Color</th>
-                    <th>Time Control</th>
-                    <th>Type</th>
-                    <th>Status</th>
-                    <th>Result</th>
-                    <th></th>
-                </tr>
-                </thead>
 
-                <tbody>
+            <!-- Opponent -->
+            <div class="cf-game-opponent">
 
-                <tr th:each="game : ${games}">
+                <strong th:text="${game.opponentUsername}">
+                    opponent
+                </strong>
 
-                    <td>
-                        <strong th:text="${game.opponentUsername}">
-                            opponent
-                        </strong>
-                    </td>
+            </div>
 
-                    <td th:text="${game.white ? 'White' : 'Black'}">
-                        White
-                    </td>
 
-                    <td th:text="${game.timeControl}">
-                        RAPID
-                    </td>
+            <!-- Metadata -->
+            <div class="cf-game-meta">
 
-                    <td>
-                        <span th:if="${game.rated}"
-                              class="badge text-bg-warning">
-                            Rated
+
+                <!-- Color -->
+                <span class="cf-color-square
+                             cf-tooltip"
+                      th:classappend="${game.white
+                          ? ' cf-color-white'
+                          : ' cf-color-black'}"
+                      th:attr="data-tooltip=${game.white
+                          ? 'White'
+                          : 'Black'}"
+                      tabindex="0">
+                </span>
+
+
+                <!-- Time control -->
+                <span class="cf-time-control
+                             cf-tooltip"
+                      th:attr="data-tooltip=${game.timeControl.type
+                          + ' · '
+                          + game.timeControl.displayTime}"
+                      tabindex="0">
+
+
+                    <span class="cf-time-icon"
+                          th:switch="${game.timeControl.type.name()}">
+
+<span th:case="'BULLET'"
+      class="cf-bullet-icon"
+      aria-label="Bullet">
+</span>
+
+                        <span th:case="'BLITZ'">
+                            ⚡
                         </span>
 
-                        <span th:unless="${game.rated}"
-                              class="badge text-bg-secondary">
-                            Casual
+                        <span th:case="'RAPID'">
+                            ◷
                         </span>
-                    </td>
 
-                    <td>
-                        <span class="badge text-bg-primary"
-                              th:text="${game.status}">
-                            IN_PROGRESS
+                        <span th:case="'CLASSICAL'">
+                            ⌛
                         </span>
-                    </td>
 
-                    <td th:text="${game.result != null
-                                ? game.result
-                                : '-'}">
-                        -
-                    </td>
+                    </span>
 
-                    <td class="text-end">
 
-                        <a th:href="@{/games/{id}(id=${game.gameId})}"
-                           class="btn btn-outline-primary btn-sm">
-                            Open
-                        </a>
+                    <span th:text="${game.timeControl.displayTime}">
+                        1 + 0
+                    </span>
 
-                    </td>
+                </span>
 
-                </tr>
 
-                </tbody>
+                <!-- Rated / Casual -->
+                <span class="cf-game-indicator
+                             cf-tooltip"
+                      th:classappend="${game.rated
+                          ? ' cf-rated'
+                          : ' cf-casual'}"
+                      th:attr="data-tooltip=${game.rated
+                          ? 'Rated'
+                          : 'Casual'}"
+                      tabindex="0">
 
-            </table>
+                    <span th:text="${game.rated
+                        ? '◆'
+                        : '◇'}">
+                        ◆
+                    </span>
+
+                </span>
+
+
+                <!-- Status -->
+                <span th:switch="${game.status.name()}">
+
+                    <span th:case="'WAITING'"
+                          class="cf-status-dot
+                                 cf-status-waiting
+                                 cf-tooltip"
+                          data-tooltip="Waiting"
+                          tabindex="0">
+                    </span>
+
+                    <span th:case="'IN_PROGRESS'"
+                          class="cf-status-dot
+                                 cf-status-live
+                                 cf-tooltip"
+                          data-tooltip="In progress"
+                          tabindex="0">
+                    </span>
+
+                    <span th:case="'FINISHED'"
+                          class="cf-status-dot
+                                 cf-status-finished
+                                 cf-tooltip"
+                          data-tooltip="Finished"
+                          tabindex="0">
+                    </span>
+
+                    <span th:case="'ABORTED'"
+                          class="cf-status-dot
+                                 cf-status-aborted
+                                 cf-tooltip"
+                          data-tooltip="Aborted"
+                          tabindex="0">
+                    </span>
+
+                </span>
+
+
+                <!-- No result -->
+                <span th:if="${game.result == null}"
+                      class="cf-game-result
+                             cf-result-pending
+                             cf-tooltip"
+                      data-tooltip="No result"
+                      tabindex="0">
+                    —
+                </span>
+
+
+                <!-- Draw -->
+                <span th:if="${game.result != null
+                              and game.result.name() == 'DRAW'}"
+                      class="cf-game-result
+                             cf-result-draw
+                             cf-tooltip"
+                      data-tooltip="Draw"
+                      tabindex="0">
+                    ½
+                </span>
+
+
+                <!-- Win -->
+                <span th:if="${game.result != null
+                              and game.result.name() != 'DRAW'
+                              and (
+                                  (game.white
+                                   and game.result.name() == 'WHITE_WIN')
+                                  or
+                                  (!game.white
+                                   and game.result.name() == 'BLACK_WIN')
+                              )}"
+                      class="cf-game-result
+                             cf-result-win
+                             cf-tooltip"
+                      data-tooltip="Win"
+                      tabindex="0">
+                    ✓
+                </span>
+
+
+                <!-- Loss -->
+                <span th:if="${game.result != null
+                              and game.result.name() != 'DRAW'
+                              and (
+                                  (game.white
+                                   and game.result.name() == 'BLACK_WIN')
+                                  or
+                                  (!game.white
+                                   and game.result.name() == 'WHITE_WIN')
+                              )}"
+                      class="cf-game-result
+                             cf-result-loss
+                             cf-tooltip"
+                      data-tooltip="Loss"
+                      tabindex="0">
+                    ×
+                </span>
+
+            </div>
+
+
+            <!-- Open -->
+            <a th:href="@{/games/{id}(
+                   id=${game.gameId}
+               )}"
+               class="btn
+                      btn-sm
+                      cf-btn-ghost
+                      cf-game-open">
+
+                Open
+
+            </a>
 
         </div>
 
@@ -181,10 +322,10 @@
 </main>
 
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-        crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
 </script>
 
+
 </body>
+
 </html>

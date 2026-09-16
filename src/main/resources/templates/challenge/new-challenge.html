@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en"
       xmlns:th="http://www.thymeleaf.org"
       data-bs-theme="dark">
@@ -15,51 +16,53 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
           rel="stylesheet">
 
+    <link th:href="@{/css/app.css}"
+          rel="stylesheet">
+
 </head>
 
-<body class="bg-body-tertiary">
-
-<nav class="navbar bg-body border-bottom">
-
-    <div class="container">
-
-        <a class="navbar-brand fw-bold"
-           th:href="@{/}">
-            ChessForge
-        </a>
-
-        <div class="d-flex gap-3 align-items-center">
-
-            <a th:href="@{/challenges}"
-               class="btn btn-outline-secondary btn-sm">
-                Challenges
-            </a>
-
-            <span th:text="${username}">
-                username
-            </span>
-
-        </div>
-
-    </div>
-
-</nav>
+<body>
 
 
-<main class="container py-5">
+<div th:replace="~{fragments/navbar :: navbar}">
+</div>
+
+
+<main class="container cf-container cf-page">
 
     <div class="row justify-content-center">
 
-        <div class="col-12 col-md-8 col-lg-6">
+        <div class="col-12 col-md-9 col-lg-7 col-xl-6">
 
 
-            <div class="card border-0 shadow-sm">
+            <!-- Back -->
+            <div class="mb-3">
 
-                <div class="card-body p-4 p-md-5">
+                <a th:href="@{/challenges}"
+                   class="text-decoration-none cf-muted">
 
-                    <h2 class="fw-bold mb-4">
-                        New Challenge
-                    </h2>
+                    ← Back to Challenges
+
+                </a>
+
+            </div>
+
+
+            <section class="cf-card">
+
+                <div class="p-4 p-md-5">
+
+                    <span class="cf-eyebrow">
+                        New match
+                    </span>
+
+                    <h1 class="h2 fw-bold mb-2">
+                        Create Challenge
+                    </h1>
+
+                    <p class="cf-muted mb-4">
+                        Choose an opponent and configure your game.
+                    </p>
 
 
                     <div th:if="${error}"
@@ -73,10 +76,11 @@
                           method="post">
 
 
-                        <div class="mb-3">
+                        <!-- Opponent -->
+                        <div class="mb-4">
 
                             <label for="opponentUsername"
-                                   class="form-label">
+                                   class="form-label fw-semibold">
 
                                 Opponent username
 
@@ -86,15 +90,17 @@
                                    type="text"
                                    class="form-control"
                                    th:field="*{opponentUsername}"
+                                   placeholder="Enter username"
                                    required>
 
                         </div>
 
 
-                        <div class="mb-3">
+                        <!-- Time control -->
+                        <div class="mb-4">
 
                             <label for="timeControl"
-                                   class="form-label">
+                                   class="form-label fw-semibold">
 
                                 Time control
 
@@ -106,7 +112,11 @@
 
                                 <option th:each="control : ${timeControls}"
                                         th:value="${control}"
-                                        th:text="${control}">
+                                        th:text="${#strings.replace(
+                                            control.name(),
+                                            '_',
+                                            ' '
+                                        )}">
                                 </option>
 
                             </select>
@@ -114,10 +124,11 @@
                         </div>
 
 
-                        <div class="mb-3">
+                        <!-- Color -->
+                        <div class="mb-4">
 
                             <label for="colorPreference"
-                                   class="form-label">
+                                   class="form-label fw-semibold">
 
                                 Your color
 
@@ -129,7 +140,11 @@
 
                                 <option th:each="color : ${colorPreferences}"
                                         th:value="${color}"
-                                        th:text="${color}">
+                                        th:text="${#strings.replace(
+                                            color.name(),
+                                            '_',
+                                            ' '
+                                        )}">
                                 </option>
 
                             </select>
@@ -137,27 +152,42 @@
                         </div>
 
 
-                        <div class="form-check mb-4">
+                        <!-- Rated -->
+                        <div class="cf-challenge-option mb-4">
 
-                            <input id="rated"
-                                   type="checkbox"
-                                   class="form-check-input"
-                                   th:field="*{rated}">
+                            <div>
 
-                            <label for="rated"
-                                   class="form-check-label">
+                                <label for="rated"
+                                       class="fw-semibold mb-1">
 
-                                Rated game
+                                    Rated game
 
-                            </label>
+                                </label>
+
+                                <div class="small cf-muted">
+                                    The result will affect both players' ratings.
+                                </div>
+
+                            </div>
+
+
+                            <div class="form-check form-switch m-0">
+
+                                <input id="rated"
+                                       type="checkbox"
+                                       class="form-check-input"
+                                       th:field="*{rated}">
+
+                            </div>
 
                         </div>
 
 
+                        <!-- Submit -->
                         <div class="d-grid">
 
                             <button type="submit"
-                                    class="btn btn-primary">
+                                    class="btn cf-btn-primary btn-lg">
 
                                 Send Challenge
 
@@ -169,7 +199,7 @@
 
                 </div>
 
-            </div>
+            </section>
 
         </div>
 
@@ -177,5 +207,11 @@
 
 </main>
 
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+</script>
+
+
 </body>
+
 </html>

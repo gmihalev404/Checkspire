@@ -1,21 +1,41 @@
 .chess-board {
+
     display: grid;
-    grid-template-columns: repeat(8, 1fr);
+
+    grid-template-columns:
+            repeat(8, 1fr);
+
     width: 100%;
-    max-width: 630px;
+
+    /*
+     * 520px maximum,
+     * but shrink further when the viewport is short.
+     */
+    max-width:
+            min(
+                    520px,
+                    calc(100vh - 240px)
+            );
+
     aspect-ratio: 1;
+
     margin-left: auto;
     margin-right: auto;
+
     overflow: hidden;
-    border-radius: .5rem;
+
+    border-radius: 0.5rem;
 
     touch-action: manipulation;
 }
 
+
 .chess-square {
+
     position: relative;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
@@ -24,19 +44,37 @@
     user-select: none;
 
     touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
+
+    -webkit-tap-highlight-color:
+            transparent;
+
+    cursor: pointer;
 }
+
 
 .chess-square.light {
-    background-color: #f0d9b5;
+
+    background-color:
+            #f0d9b5;
 }
+
 
 .chess-square.dark {
-    background-color: #b58863;
+
+    background-color:
+            #b58863;
 }
 
+
 .chess-piece {
-    font-size: clamp(2rem, 6vw, 4.5rem);
+
+    font-size:
+            clamp(
+                    1.7rem,
+                    7vw,
+                    3.35rem
+            );
+
     line-height: 1;
 
     cursor: default;
@@ -45,192 +83,424 @@
             "Segoe UI Symbol",
             "Arial Unicode MS",
             sans-serif;
+
+    pointer-events: none;
+
+    user-select: none;
+
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
 }
 
 .file-label,
 .rank-label {
+
     position: absolute;
 
     font-size: 0.7rem;
+
     font-weight: 700;
 
     opacity: 0.75;
 }
 
+
 .file-label {
+
     bottom: 2px;
+
     right: 4px;
 }
 
+
 .rank-label {
+
     top: 2px;
+
     left: 4px;
 }
 
+
+/* =========================================================
+   PLAYER BARS
+   ========================================================= */
+
 .game-player-bar {
+
     display: flex;
 
-    justify-content: space-between;
-    align-items: center;
+    justify-content:
+            space-between;
 
-    max-width: 630px;
+    align-items:
+            center;
 
-    margin-left: auto;
-    margin-right: auto;
+    max-width:
+            min(
+                    520px,
+                    calc(100vh - 240px)
+            );
 
-    padding: 0.75rem 1rem;
+    margin-left:
+            auto;
 
-    background: var(--bs-body-bg);
+    margin-right:
+            auto;
 
-    border-radius: 0.5rem;
+    padding:
+            0.65rem 0.85rem;
+
+    background:
+            var(--cf-surface);
+
+    border:
+            1px solid var(--cf-border);
+
+    border-radius:
+            0.5rem;
 }
 
-.game-player-bar strong {
-    display: block;
+
+.game-player-identity {
+
+    display: flex;
+
+    align-items:
+            center;
+
+    gap:
+            0.65rem;
 }
+
+
+.game-player-identity strong {
+
+    display:
+            inline;
+
+    font-size:
+            0.95rem;
+}
+
+
+.game-player-rating {
+
+    margin-left:
+            0.4rem;
+
+    color:
+            var(--cf-text-muted);
+
+    font-size:
+            0.83rem;
+
+    font-weight:
+            500;
+}
+
 
 .game-clock {
-    font-size: 1.5rem;
-    font-weight: 700;
 
-    font-variant-numeric: tabular-nums;
+    font-size:
+            1.45rem;
+
+    font-weight:
+            700;
+
+    font-variant-numeric:
+            tabular-nums;
 }
 
-.chess-square {
-    cursor: pointer;
-}
+
+/* =========================================================
+   BOARD INTERACTION
+   ========================================================= */
 
 .chess-square.selected {
+
     box-shadow:
             inset 0 0 0 5px
-            rgba(255, 215, 0, 0.85);
+            rgba(
+                    255,
+                    215,
+                    0,
+                    0.85
+            );
 }
+
 
 .chess-square:hover {
-    filter: brightness(1.08);
+
+    filter:
+            brightness(1.08);
 }
 
-.chess-piece {
-    pointer-events: none;
-}
 
 .chess-piece.white {
-    color: #f4f1e8;
+
+    color:
+            #f4f1e8;
 
     text-shadow:
-            0 1px 2px rgba(0, 0, 0, 0.65);
+            0 1px 2px
+            rgba(
+                    0,
+                    0,
+                    0,
+                    0.65
+            );
 }
+
 
 .chess-piece.black {
-    color: #202428;
+
+    color:
+            #202428;
 
     text-shadow:
-            0 1px 1px rgba(255, 255, 255, 0.30);
+            0 1px 1px
+            rgba(
+                    255,
+                    255,
+                    255,
+                    0.30
+            );
 }
+
+
+/* =========================================================
+   MOVE HISTORY
+   ========================================================= */
 
 .move-history-card {
-    border: 1px solid var(--bs-border-color);
-    border-radius: 0.5rem;
-    overflow: hidden;
+
+    border:
+            1px solid
+            var(--cf-border);
+
+    border-radius:
+            0.5rem;
+
+    overflow:
+            hidden;
 }
+
 
 .move-history-header {
-    padding: 0.75rem 1rem;
-    font-weight: 600;
-    border-bottom: 1px solid var(--bs-border-color);
+
+    padding:
+            0.75rem 1rem;
+
+    font-weight:
+            600;
+
+    border-bottom:
+            1px solid
+            var(--cf-border);
 }
+
 
 .move-history {
-    max-height: 220px;
-    overflow-y: auto;
+
+    max-height:
+            220px;
+
+    overflow-y:
+            auto;
 }
+
 
 .move-history-row {
-    display: grid;
-    grid-template-columns: 3rem 1fr 1fr;
-    gap: 0.5rem;
-    padding: 0.45rem 1rem;
+
+    display:
+            grid;
+
+    grid-template-columns:
+            3rem
+            1fr
+            1fr;
+
+    gap:
+            0.5rem;
+
+    padding:
+            0.45rem 1rem;
 }
+
 
 .move-history-row:nth-child(even) {
-    background-color: rgba(128, 128, 128, 0.08);
+
+    background-color:
+            rgba(
+                    128,
+                    128,
+                    128,
+                    0.08
+            );
 }
+
 
 .move-number {
-    opacity: 0.65;
+
+    opacity:
+            0.65;
 }
+
 
 .move-san {
-    font-weight: 500;
+
+    font-weight:
+            500;
 }
 
+
 .move-history-empty {
-    padding: 1rem;
-    opacity: 0.65;
-    text-align: center;
+
+    padding:
+            1rem;
+
+    opacity:
+            0.65;
+
+    text-align:
+            center;
 }
+
+
+/* =========================================================
+   DRAGGING
+   ========================================================= */
 
 .chess-board,
 #chess-board {
-    user-select: none;
-    -webkit-user-select: none;
-    touch-action: none;
+
+    user-select:
+            none;
+
+    -webkit-user-select:
+            none;
+
+    touch-action:
+            none;
 }
 
-.chess-square {
-    position: relative;
-}
-
-.chess-piece {
-    /*
-     * Самият Unicode символ не обработва pointer events.
-     * Interaction-ът се обработва от квадрата.
-     */
-    pointer-events: none;
-
-    user-select: none;
-    -webkit-user-select: none;
-    -webkit-user-drag: none;
-}
 
 .chess-square.draggable-piece {
-    cursor: grab;
+
+    cursor:
+            grab;
 }
+
 
 #chess-board.is-dragging,
-#chess-board.is-dragging .chess-square {
-    cursor: grabbing;
+#chess-board.is-dragging
+.chess-square {
+
+    cursor:
+            grabbing;
 }
 
-.chess-square.drag-source .chess-piece {
-    opacity: 0.30;
+
+.chess-square.drag-source
+.chess-piece {
+
+    opacity:
+            0.30;
 }
+
 
 .chess-square.drag-target {
+
     box-shadow:
             inset 0 0 0 4px
-            rgba(255, 255, 255, 0.45);
+            rgba(
+                    255,
+                    255,
+                    255,
+                    0.45
+            );
 }
+
 
 .chess-piece.drag-ghost {
-    pointer-events: none;
 
-    user-select: none;
-    -webkit-user-select: none;
+    pointer-events:
+            none;
 
-    margin: 0;
+    user-select:
+            none;
+
+    -webkit-user-select:
+            none;
+
+    margin:
+            0;
 }
+
+
+/* =========================================================
+   LAST MOVE
+   ========================================================= */
 
 .chess-square.last-move {
+
     box-shadow:
             inset 0 0 0 9999px
-            rgba(255, 215, 0, 0.22);
+            rgba(
+                    255,
+                    215,
+                    0,
+                    0.22
+            );
 }
 
+
 .chess-square.last-move.drag-target {
+
     box-shadow:
             inset 0 0 0 9999px
-            rgba(255, 215, 0, 0.22),
+            rgba(
+                    255,
+                    215,
+                    0,
+                    0.22
+            ),
+
             inset 0 0 0 4px
-            rgba(255, 255, 255, 0.55);
+            rgba(
+                    255,
+                    255,
+                    255,
+                    0.55
+            );
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 575.98px) {
+
+    .game-player-bar {
+
+        padding:
+                0.55rem 0.65rem;
+
+    }
+
+    .game-clock {
+
+        font-size:
+                1.25rem;
+
+    }
+
+    .game-player-identity strong {
+
+        font-size:
+                0.9rem;
+
+    }
+
 }

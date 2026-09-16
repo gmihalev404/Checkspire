@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en"
       xmlns:th="http://www.thymeleaf.org"
       data-bs-theme="dark">
@@ -15,140 +16,200 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
           rel="stylesheet">
 
+    <link th:href="@{/css/app.css}"
+          rel="stylesheet">
+
     <link th:href="@{/css/game.css}"
           rel="stylesheet">
 
 </head>
 
-<body class="bg-body-tertiary">
+<body>
 
-<nav class="navbar navbar-expand-lg bg-body border-bottom">
 
-    <div class="container">
+<div th:replace="~{fragments/navbar :: navbar}">
+</div>
 
-        <a class="navbar-brand fw-bold"
-           th:href="@{/}">
-            ChessForge
-        </a>
 
-        <div class="d-flex align-items-center gap-3">
+<main class="container cf-container cf-page cf-game-page">
 
-            <a th:href="@{/games}"
-               class="btn btn-outline-secondary btn-sm">
-                My Games
-            </a>
+    <div th:if="${!viewerParticipant
+            and game.status.name() == 'IN_PROGRESS'}"
+         class="text-center mb-3">
 
-            <span class="text-body-secondary"
-                  th:text="${username}">
-                username
-            </span>
-
-        </div>
+        <span class="badge text-bg-secondary">
+            Spectating
+        </span>
 
     </div>
 
-</nav>
-
-
-<main class="container py-4">
 
     <div class="row g-4 justify-content-center">
-            <span th:if="${!viewerParticipant
-        and game.status.name() == 'IN_PROGRESS'}"
-                  class="badge text-bg-secondary mb-2">
-    Spectating
-</span>
-        <!-- ========================= -->
+
+
+        <!-- ================================================= -->
         <!-- BOARD -->
-        <!-- ========================= -->
+        <!-- ================================================= -->
 
         <div class="col-12 col-lg-8">
 
+
+            <!-- TOP PLAYER -->
             <div class="game-player-bar mb-2">
 
-                <div th:if="${viewerColor == 'WHITE'}">
-                    <strong th:text="${game.blackUsername}">
-                        Black
-                    </strong>
 
-                    <span class="text-body-secondary">
-                        Black
+                <div th:if="${viewerColor == 'WHITE'}"
+                     class="game-player-identity">
+
+                    <span class="cf-color-square
+                                 cf-color-black
+                                 cf-tooltip"
+                          data-tooltip="Black"
+                          tabindex="0">
                     </span>
+
+                    <div>
+
+                        <strong th:text="${game.blackUsername}">
+                            Black
+                        </strong>
+
+                        <span class="game-player-rating"
+                              th:text="${game.blackRatingBefore != null
+                                  ? game.blackRatingBefore
+                                  : '—'}">
+                            1400
+                        </span>
+
+                    </div>
+
                 </div>
 
-                <div th:if="${viewerColor == 'BLACK'}">
-                    <strong th:text="${game.whiteUsername}">
-                        White
-                    </strong>
 
-                    <span class="text-body-secondary">
-                        White
+                <div th:if="${viewerColor == 'BLACK'}"
+                     class="game-player-identity">
+
+                    <span class="cf-color-square
+                                 cf-color-white
+                                 cf-tooltip"
+                          data-tooltip="White"
+                          tabindex="0">
                     </span>
+
+                    <div>
+
+                        <strong th:text="${game.whiteUsername}">
+                            White
+                        </strong>
+
+                        <span class="game-player-rating"
+                              th:text="${game.whiteRatingBefore != null
+                                  ? game.whiteRatingBefore
+                                  : '—'}">
+                            1400
+                        </span>
+
+                    </div>
+
                 </div>
 
 
                 <div class="game-clock">
 
-    <span id="top-clock"
-          th:attr="data-time=${viewerColor == 'WHITE'
-                  ? blackTimeRemainingMillis
-                  : whiteTimeRemainingMillis}">
-        --:--
-    </span>
+                    <span id="top-clock"
+                          th:attr="data-time=${viewerColor == 'WHITE'
+                              ? blackTimeRemainingMillis
+                              : whiteTimeRemainingMillis}">
+                        --:--
+                    </span>
 
                 </div>
 
             </div>
 
 
+            <!-- BOARD -->
             <div id="chess-board"
                  class="chess-board shadow-lg"
                  th:attr="
-        data-game-id=${game.gameId},
-        data-fen=${game.currentFen},
-        data-orientation=${viewerColor},
-        data-status=${game.status},
-        data-result=${game.result},
-        data-termination=${game.termination},
-        data-viewer-participant=${viewerParticipant}">
+                    data-game-id=${game.gameId},
+                    data-fen=${game.currentFen},
+                    data-orientation=${viewerColor},
+                    data-status=${game.status},
+                    data-result=${game.result},
+                    data-termination=${game.termination},
+                    data-viewer-participant=${viewerParticipant}">
             </div>
 
 
+            <!-- BOTTOM PLAYER -->
             <div class="game-player-bar mt-2">
 
-                <div th:if="${viewerColor == 'WHITE'}">
 
-                    <strong th:text="${game.whiteUsername}">
-                        White
-                    </strong>
+                <div th:if="${viewerColor == 'WHITE'}"
+                     class="game-player-identity">
 
-                    <span class="text-body-secondary">
-                        White
+                    <span class="cf-color-square
+                                 cf-color-white
+                                 cf-tooltip"
+                          data-tooltip="White"
+                          tabindex="0">
                     </span>
+
+                    <div>
+
+                        <strong th:text="${game.whiteUsername}">
+                            White
+                        </strong>
+
+                        <span class="game-player-rating"
+                              th:text="${game.whiteRatingBefore != null
+                                  ? game.whiteRatingBefore
+                                  : '—'}">
+                            1400
+                        </span>
+
+                    </div>
 
                 </div>
 
-                <div th:if="${viewerColor == 'BLACK'}">
 
-                    <strong th:text="${game.blackUsername}">
-                        Black
-                    </strong>
+                <div th:if="${viewerColor == 'BLACK'}"
+                     class="game-player-identity">
 
-                    <span class="text-body-secondary">
-                        Black
+                    <span class="cf-color-square
+                                 cf-color-black
+                                 cf-tooltip"
+                          data-tooltip="Black"
+                          tabindex="0">
                     </span>
+
+                    <div>
+
+                        <strong th:text="${game.blackUsername}">
+                            Black
+                        </strong>
+
+                        <span class="game-player-rating"
+                              th:text="${game.blackRatingBefore != null
+                                  ? game.blackRatingBefore
+                                  : '—'}">
+                            1400
+                        </span>
+
+                    </div>
 
                 </div>
 
 
                 <div class="game-clock">
 
-    <span id="bottom-clock"
-          th:attr="data-time=${viewerColor == 'WHITE'
-                  ? whiteTimeRemainingMillis
-                  : blackTimeRemainingMillis}">
-        --:--
-    </span>
+                    <span id="bottom-clock"
+                          th:attr="data-time=${viewerColor == 'WHITE'
+                              ? whiteTimeRemainingMillis
+                              : blackTimeRemainingMillis}">
+                        --:--
+                    </span>
 
                 </div>
 
@@ -157,74 +218,113 @@
         </div>
 
 
-        <!-- ========================= -->
+        <!-- ================================================= -->
         <!-- GAME INFO -->
-        <!-- ========================= -->
+        <!-- ================================================= -->
 
         <div class="col-12 col-lg-4">
 
-            <div class="card border-0 shadow-sm">
+            <div class="cf-card">
 
-                <div class="card-body">
+                <div class="p-4">
 
-                    <h4 class="card-title mb-4">
-                        Game
-                    </h4>
+                    <div class="d-flex
+                                justify-content-between
+                                align-items-center
+                                mb-4">
 
+                        <h2 class="h4 fw-bold mb-0">
+                            Game
+                        </h2>
 
-                    <div class="mb-3">
-
-                        <div class="text-body-secondary small">
-                            Time control
-                        </div>
-
-                        <strong th:text="${game.timeControl}">
-                            RAPID
-                        </strong>
+                        <span class="badge text-bg-secondary"
+                              th:text="${#strings.replace(
+                                  game.status.name(),
+                                  '_',
+                                  ' '
+                              )}">
+                            IN PROGRESS
+                        </span>
 
                     </div>
 
 
+                    <!-- Time control -->
                     <div class="mb-3">
 
-                        <div class="text-body-secondary small">
+                        <div class="cf-muted small">
+                            Time control
+                        </div>
+
+                        <div class="d-flex
+                                    align-items-center
+                                    gap-2
+                                    mt-1">
+
+                            <span class="cf-time-icon"
+                                  th:switch="${game.timeControl.type.name()}">
+
+<span th:case="'BULLET'"
+      class="cf-bullet-icon"
+      aria-label="Bullet">
+</span>
+
+                                <span th:case="'BLITZ'">
+                                    ⚡
+                                </span>
+
+                                <span th:case="'RAPID'">
+                                    ◷
+                                </span>
+
+                                <span th:case="'CLASSICAL'">
+                                    ⌛
+                                </span>
+
+                            </span>
+
+                            <strong th:text="${game.timeControl.displayTime}">
+                                1 + 0
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Rated -->
+                    <div class="mb-3">
+
+                        <div class="cf-muted small">
                             Type
                         </div>
 
                         <span th:if="${game.rated}"
-                              class="badge text-bg-warning">
+                              class="badge text-bg-warning mt-1">
                             Rated
                         </span>
 
                         <span th:unless="${game.rated}"
-                              class="badge text-bg-secondary">
+                              class="badge text-bg-secondary mt-1">
                             Casual
                         </span>
 
                     </div>
 
 
-                    <div class="mb-3">
-
-                        <div class="text-body-secondary small">
-                            Status
-                        </div>
-
-                        <strong th:text="${game.status}">
-                            IN_PROGRESS
-                        </strong>
-
-                    </div>
-
-
+                    <!-- Result -->
                     <div th:if="${game.result != null}"
                          class="mb-3">
 
-                        <div class="text-body-secondary small">
+                        <div class="cf-muted small">
                             Result
                         </div>
 
-                        <strong th:text="${game.result}">
+                        <strong th:text="${#strings.replace(
+                            game.result.name(),
+                            '_',
+                            ' '
+                        )}">
                         </strong>
 
                     </div>
@@ -232,63 +332,77 @@
 
                     <hr>
 
+
+                    <!-- ================================================= -->
+                    <!-- MOVE HISTORY -->
+                    <!-- ================================================= -->
+
                     <div class="move-history-card mt-3">
 
                         <div class="move-history-header
-            d-flex
-            justify-content-between
-            align-items-center">
+                                    d-flex
+                                    justify-content-between
+                                    align-items-center">
 
-    <span>
-        Moves
-    </span>
+                            <span>
+                                Moves
+                            </span>
 
                             <button id="copy-pgn-button"
                                     type="button"
-                                    class="btn btn-sm btn-outline-secondary">
+                                    class="btn btn-sm cf-btn-ghost">
+
                                 Copy PGN
+
                             </button>
 
                         </div>
 
+
                         <div id="move-review-controls"
-                             class="d-flex justify-content-center align-items-center gap-2 mt-3">
+                             class="d-flex
+                                    justify-content-center
+                                    align-items-center
+                                    gap-2
+                                    mt-3">
 
                             <button id="review-first-button"
                                     type="button"
-                                    class="btn btn-sm btn-outline-secondary"
+                                    class="btn btn-sm cf-btn-ghost"
                                     title="Initial position">
                                 ⏮
                             </button>
 
                             <button id="review-previous-button"
                                     type="button"
-                                    class="btn btn-sm btn-outline-secondary"
+                                    class="btn btn-sm cf-btn-ghost"
                                     title="Previous move">
                                 ◀
                             </button>
 
                             <span id="review-position-label"
-                                  class="small text-body-secondary text-center"
+                                  class="small cf-muted text-center"
                                   style="min-width: 70px;">
-        Live
-    </span>
+                                Live
+                            </span>
 
                             <button id="review-next-button"
                                     type="button"
-                                    class="btn btn-sm btn-outline-secondary"
+                                    class="btn btn-sm cf-btn-ghost"
                                     title="Next move">
                                 ▶
                             </button>
 
                             <button id="review-live-button"
                                     type="button"
-                                    class="btn btn-sm btn-outline-secondary"
+                                    class="btn btn-sm cf-btn-ghost"
                                     title="Return to live position">
                                 ⏭
                             </button>
 
                         </div>
+
+
                         <div id="move-history"
                              class="move-history">
 
@@ -301,8 +415,15 @@
                     </div>
 
 
+                    <!-- ================================================= -->
+                    <!-- RESULT -->
+                    <!-- ================================================= -->
+
                     <div id="game-result"
-                         class="alert alert-secondary text-center d-none mt-3"
+                         class="alert alert-secondary
+                                text-center
+                                d-none
+                                mt-3"
                          role="status">
 
                         <div id="game-result-score"
@@ -312,12 +433,14 @@
                         <div id="game-result-reason"
                              class="small mt-1">
                         </div>
+
+
                         <a id="return-to-tournament"
                            th:if="${tournamentId != null}"
                            th:href="@{/tournaments/{id}(
-       id=${tournamentId}
-   )}"
-                           class="btn btn-primary mt-3 d-none">
+                               id=${tournamentId}
+                           )}"
+                           class="btn cf-btn-primary mt-3 d-none">
 
                             Return to Tournament
 
@@ -326,39 +449,54 @@
                     </div>
 
 
+                    <!-- ================================================= -->
+                    <!-- GAME ACTIONS -->
+                    <!-- ================================================= -->
+
                     <div id="game-actions"
                          class="d-flex flex-column gap-2 mt-3"
-                         th:classappend="${!viewerParticipant} ? ' d-none'"
+                         th:classappend="${!viewerParticipant}
+                             ? ' d-none'"
                          th:attr="
-        data-viewer-user-id=${currentUserId},
-        data-draw-offer-by-user-id=${game.drawOfferByUserId}">
+                            data-viewer-user-id=${currentUserId},
+                            data-draw-offer-by-user-id=${game.drawOfferByUserId}">
+
 
                         <div id="draw-status"
-                             class="small text-body-secondary text-center"
+                             class="small cf-muted text-center"
                              aria-live="polite">
                         </div>
 
+
                         <div id="draw-default-actions"
                              class="d-flex gap-2">
+
                             <button id="abort-button"
                                     type="button"
                                     class="btn btn-outline-warning flex-fill">
+
                                 Abort
+
                             </button>
 
                             <button id="draw-button"
                                     type="button"
-                                    class="btn btn-outline-secondary flex-fill">
+                                    class="btn cf-btn-ghost flex-fill">
+
                                 Offer Draw
+
                             </button>
 
                             <button id="resign-button"
                                     type="button"
                                     class="btn btn-outline-danger flex-fill">
+
                                 Resign
+
                             </button>
 
                         </div>
+
 
                         <div id="draw-response-actions"
                              class="d-none gap-2">
@@ -366,13 +504,17 @@
                             <button id="accept-draw-button"
                                     type="button"
                                     class="btn btn-success flex-fill">
+
                                 Accept Draw
+
                             </button>
 
                             <button id="reject-draw-button"
                                     type="button"
                                     class="btn btn-outline-danger flex-fill">
+
                                 Decline
+
                             </button>
 
                         </div>
@@ -388,11 +530,18 @@
     </div>
 
 </main>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+</script>
+
 <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs/bundles/stomp.umd.min.js">
 </script>
 
 <script th:src="@{/js/game-board.js}">
 </script>
 
+
 </body>
+
 </html>

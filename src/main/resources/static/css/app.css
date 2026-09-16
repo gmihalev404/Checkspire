@@ -1,0 +1,2462 @@
+/* =========================================================
+   CHESSFORGE - GLOBAL DESIGN SYSTEM
+   ========================================================= */
+
+
+/* =========================================================
+   ROOT
+   ========================================================= */
+
+:root {
+
+    --cf-bg: #0f1115;
+    --cf-bg-soft: #13161b;
+
+    --cf-surface: #171a20;
+    --cf-surface-raised: #1d2128;
+    --cf-surface-hover: #232830;
+
+    --cf-border: #2b3038;
+    --cf-border-light: #363c46;
+
+    --cf-text: #f2f3f5;
+    --cf-text-muted: #9aa1ac;
+
+    --cf-primary: #d98a2b;
+    --cf-primary-hover: #eba044;
+    --cf-primary-dark: #aa6519;
+
+    --cf-success: #4caf72;
+    --cf-danger: #d75c5c;
+
+    --cf-radius-sm: 0.5rem;
+    --cf-radius: 0.75rem;
+    --cf-radius-lg: 1rem;
+
+    --cf-shadow:
+            0 14px 35px
+            rgba(
+                    0,
+                    0,
+                    0,
+                    0.22
+            );
+}
+
+
+/* =========================================================
+   BASE
+   ========================================================= */
+
+html {
+    min-height: 100%;
+}
+
+
+body {
+
+    min-height:
+            100vh;
+
+    background:
+            radial-gradient(
+                    circle at top,
+                    rgba(
+                            217,
+                            138,
+                            43,
+                            0.08
+                    ),
+                    transparent 32rem
+            ),
+            var(--cf-bg);
+
+    color:
+            var(--cf-text);
+
+    font-family:
+            Inter,
+            system-ui,
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            sans-serif;
+}
+
+
+a {
+    color: inherit;
+}
+
+
+::selection {
+
+    background:
+            rgba(
+                    217,
+                    138,
+                    43,
+                    0.32
+            );
+}
+
+
+/* =========================================================
+   LAYOUT
+   ========================================================= */
+
+.cf-container {
+
+    max-width:
+            1180px;
+}
+
+
+.cf-page {
+
+    padding-top:
+            3rem;
+
+    padding-bottom:
+            4rem;
+}
+
+
+.cf-section {
+
+    margin-bottom:
+            3rem;
+}
+
+
+/* =========================================================
+   NAVBAR
+   ========================================================= */
+
+.cf-navbar {
+
+    min-height:
+            72px;
+
+    background:
+            rgba(
+                    15,
+                    17,
+                    21,
+                    0.90
+            );
+
+    border-bottom:
+            1px solid
+            var(--cf-border);
+
+    backdrop-filter:
+            blur(16px);
+
+    position:
+            sticky;
+
+    top:
+            0;
+
+    z-index:
+            1000;
+}
+
+
+.cf-brand {
+
+    display:
+            flex;
+
+    align-items:
+            center;
+
+    gap:
+            0.55rem;
+
+    margin-right:
+            2.5rem;
+
+    color:
+            var(--cf-text);
+
+    font-size:
+            1.3rem;
+
+    font-weight:
+            750;
+
+    letter-spacing:
+            -0.03em;
+}
+
+
+.cf-brand:hover {
+
+    color:
+            var(--cf-text);
+}
+
+
+.cf-brand-icon {
+
+    display:
+            inline-flex;
+
+    align-items:
+            center;
+
+    justify-content:
+            center;
+
+    width:
+            2rem;
+
+    height:
+            2rem;
+
+    border-radius:
+            0.55rem;
+
+    background:
+            linear-gradient(
+                    145deg,
+                    var(--cf-primary-hover),
+                    var(--cf-primary-dark)
+            );
+
+    color:
+            #111318;
+
+    font-size:
+            1.35rem;
+
+    box-shadow:
+            0 0 18px
+            rgba(
+                    217,
+                    138,
+                    43,
+                    0.20
+            );
+}
+
+
+.cf-brand-accent {
+
+    color:
+            var(--cf-primary);
+}
+
+
+.cf-nav-link {
+
+    margin-right:
+            0.35rem;
+
+    padding-left:
+            0.9rem !important;
+
+    padding-right:
+            0.9rem !important;
+
+    border-radius:
+            var(--cf-radius-sm);
+
+    color:
+            var(--cf-text-muted);
+
+    font-weight:
+            550;
+
+    transition:
+            color 0.15s ease,
+            background-color 0.15s ease;
+}
+
+
+.cf-nav-link:hover {
+
+    color:
+            var(--cf-text);
+
+    background:
+            var(--cf-surface-hover);
+}
+
+
+.cf-user-chip {
+
+    display:
+            flex;
+
+    align-items:
+            center;
+
+    gap:
+            0.55rem;
+
+    color:
+            var(--cf-text-muted);
+}
+
+
+.cf-user-avatar {
+
+    display:
+            inline-flex;
+
+    align-items:
+            center;
+
+    justify-content:
+            center;
+
+    width:
+            2rem;
+
+    height:
+            2rem;
+
+    background:
+            var(--cf-surface-raised);
+
+    border:
+            1px solid
+            var(--cf-border);
+
+    border-radius:
+            50%;
+
+    color:
+            var(--cf-primary);
+}
+
+
+.cf-user-name {
+
+    color:
+            var(--cf-text);
+
+    font-size:
+            0.9rem;
+
+    font-weight:
+            600;
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.cf-btn-primary {
+
+    background:
+            var(--cf-primary);
+
+    border:
+            1px solid
+            var(--cf-primary);
+
+    color:
+            #111318;
+
+    font-weight:
+            650;
+}
+
+
+.cf-btn-primary:hover,
+.cf-btn-primary:focus {
+
+    background:
+            var(--cf-primary-hover);
+
+    border-color:
+            var(--cf-primary-hover);
+
+    color:
+            #111318;
+}
+
+
+.cf-btn-ghost {
+
+    background:
+            transparent;
+
+    border:
+            1px solid
+            var(--cf-border-light);
+
+    color:
+            var(--cf-text-muted);
+}
+
+
+.cf-btn-ghost:hover {
+
+    background:
+            var(--cf-surface-hover);
+
+    border-color:
+            var(--cf-border-light);
+
+    color:
+            var(--cf-text);
+}
+
+
+/* =========================================================
+   CARDS
+   ========================================================= */
+
+.cf-card {
+
+    height:
+            100%;
+
+    background:
+            linear-gradient(
+                    145deg,
+                    var(--cf-surface-raised),
+                    var(--cf-surface)
+            );
+
+    border:
+            1px solid
+            var(--cf-border);
+
+    border-radius:
+            var(--cf-radius-lg);
+
+    box-shadow:
+            var(--cf-shadow);
+}
+
+
+.cf-card-hover {
+
+    transition:
+            transform 0.18s ease,
+            border-color 0.18s ease,
+            background-color 0.18s ease;
+}
+
+
+.cf-card-hover:hover {
+
+    transform:
+            translateY(-3px);
+
+    border-color:
+            rgba(
+                    217,
+                    138,
+                    43,
+                    0.45
+            );
+}
+
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.cf-hero {
+
+    position:
+            relative;
+
+    overflow:
+            hidden;
+
+    padding:
+            clamp(
+                    2.5rem,
+                    6vw,
+                    5rem
+            );
+
+    background:
+            linear-gradient(
+                    135deg,
+                    rgba(
+                            29,
+                            33,
+                            40,
+                            0.96
+                    ),
+                    rgba(
+                            18,
+                            21,
+                            26,
+                            0.98
+                    )
+            );
+
+    border:
+            1px solid
+            var(--cf-border);
+
+    border-radius:
+            1.25rem;
+
+    box-shadow:
+            var(--cf-shadow);
+}
+
+
+.cf-hero::after {
+
+    content:
+            "";
+
+    position:
+            absolute;
+
+    width:
+            22rem;
+
+    height:
+            22rem;
+
+    right:
+            -8rem;
+
+    top:
+            -10rem;
+
+    border-radius:
+            50%;
+
+    background:
+            radial-gradient(
+                    circle,
+                    rgba(
+                            217,
+                            138,
+                            43,
+                            0.18
+                    ),
+                    transparent 70%
+            );
+
+    pointer-events:
+            none;
+}
+
+
+.cf-eyebrow {
+
+    display:
+            inline-block;
+
+    margin-bottom:
+            1rem;
+
+    color:
+            var(--cf-primary);
+
+    font-size:
+            0.75rem;
+
+    font-weight:
+            750;
+
+    letter-spacing:
+            0.16em;
+
+    text-transform:
+            uppercase;
+}
+
+
+.cf-hero-title {
+
+    max-width:
+            760px;
+
+    margin-bottom:
+            1rem;
+
+    font-size:
+            clamp(
+                    2.3rem,
+                    5vw,
+                    4.6rem
+            );
+
+    font-weight:
+            800;
+
+    letter-spacing:
+            -0.055em;
+
+    line-height:
+            0.98;
+}
+
+
+.cf-hero-text {
+
+    max-width:
+            650px;
+
+    margin-bottom:
+            1.8rem;
+
+    color:
+            var(--cf-text-muted);
+
+    font-size:
+            clamp(
+                    1rem,
+                    2vw,
+                    1.18rem
+            );
+
+    line-height:
+            1.7;
+}
+
+
+/* =========================================================
+   FEATURE CARDS
+   ========================================================= */
+
+.cf-feature-card {
+
+    display:
+            flex;
+
+    flex-direction:
+            column;
+
+    padding:
+            1.4rem;
+}
+
+
+.cf-feature-icon {
+
+    display:
+            inline-flex;
+
+    align-items:
+            center;
+
+    justify-content:
+            center;
+
+    width:
+            2.7rem;
+
+    height:
+            2.7rem;
+
+    margin-bottom:
+            1rem;
+
+    background:
+            rgba(
+                    217,
+                    138,
+                    43,
+                    0.10
+            );
+
+    border:
+            1px solid
+            rgba(
+                    217,
+                    138,
+                    43,
+                    0.22
+            );
+
+    border-radius:
+            0.75rem;
+
+    color:
+            var(--cf-primary);
+
+    font-size:
+            1.25rem;
+}
+
+
+.cf-feature-title {
+
+    margin-bottom:
+            0.45rem;
+
+    font-size:
+            1.05rem;
+
+    font-weight:
+            700;
+}
+
+
+.cf-feature-description {
+
+    flex-grow:
+            1;
+
+    margin-bottom:
+            1.2rem;
+
+    color:
+            var(--cf-text-muted);
+
+    line-height:
+            1.6;
+}
+
+
+/* =========================================================
+   TYPOGRAPHY
+   ========================================================= */
+
+.cf-muted {
+
+    color:
+            var(--cf-text-muted);
+}
+
+
+.cf-section-title {
+
+    margin-bottom:
+            0.4rem;
+
+    font-weight:
+            750;
+
+    letter-spacing:
+            -0.025em;
+}
+
+
+.cf-section-description {
+
+    margin-bottom:
+            1.4rem;
+
+    color:
+            var(--cf-text-muted);
+}
+
+
+/* =========================================================
+   COLOR INDICATOR
+   ========================================================= */
+
+.cf-color-square {
+
+    display:
+            inline-block;
+
+    flex-shrink:
+            0;
+
+    width:
+            0.85rem;
+
+    height:
+            0.85rem;
+
+    border-radius:
+            0.18rem;
+}
+
+
+.cf-color-white {
+
+    background:
+            #f2f0e8;
+
+    border:
+            1px solid
+            #ffffff;
+}
+
+
+.cf-color-black {
+
+    background:
+            #17191e;
+
+    border:
+            1px solid
+            #777d87;
+}
+
+
+/* =========================================================
+   TIME CONTROL
+   ========================================================= */
+
+.cf-time-control {
+
+    display:
+            inline-flex;
+
+    align-items:
+            center;
+
+    gap:
+            0.35rem;
+
+    min-width:
+            4.8rem;
+
+    color:
+            var(--cf-text);
+
+    font-size:
+            0.83rem;
+
+    font-weight:
+            600;
+}
+
+
+.cf-time-icon {
+
+    display:
+            inline-flex;
+
+    align-items:
+            center;
+
+    justify-content:
+            center;
+
+    width:
+            1rem;
+
+    color:
+            var(--cf-primary);
+
+    text-align:
+            center;
+}
+
+
+/* =========================================================
+   GAME LIST
+   ========================================================= */
+
+.cf-game-list {
+
+    overflow:
+            visible;
+
+    background:
+            var(--cf-surface);
+
+    border:
+            1px solid
+            var(--cf-border);
+
+    border-radius:
+            var(--cf-radius-lg);
+}
+
+
+.cf-game-row {
+
+    display:
+            grid;
+
+    grid-template-columns:
+            minmax(0, 1fr)
+            auto
+            auto;
+
+    align-items:
+            center;
+
+    gap:
+            1rem;
+
+    padding:
+            0.8rem 1rem;
+}
+
+
+.cf-game-row:not(:last-child) {
+
+    border-bottom:
+            1px solid
+            var(--cf-border);
+}
+
+
+.cf-game-row:hover {
+
+    background:
+            rgba(
+                    255,
+                    255,
+                    255,
+                    0.018
+            );
+}
+
+
+.cf-game-opponent {
+
+    min-width:
+            0;
+
+    overflow:
+            hidden;
+
+    text-overflow:
+            ellipsis;
+
+    white-space:
+            nowrap;
+
+    font-size:
+            0.95rem;
+}
+
+
+.cf-game-meta {
+
+    display:
+            flex;
+
+    align-items:
+            center;
+
+    justify-content:
+            flex-end;
+
+    gap:
+            0.65rem;
+}
+
+
+.cf-game-indicator {
+
+    display:
+            inline-flex;
+
+    align-items:
+            center;
+
+    justify-content:
+            center;
+
+    width:
+            1.35rem;
+
+    height:
+            1.35rem;
+
+    font-size:
+            0.8rem;
+}
+
+
+.cf-rated {
+
+    color:
+            var(--cf-primary);
+}
+
+
+.cf-casual {
+
+    color:
+            var(--cf-text-muted);
+}
+
+
+/* Game status */
+
+.cf-status-dot {
+
+    display:
+            inline-block;
+
+    width:
+            0.55rem;
+
+    height:
+            0.55rem;
+
+    border-radius:
+            50%;
+}
+
+
+.cf-status-waiting {
+
+    background:
+            var(--cf-primary);
+}
+
+
+.cf-status-live {
+
+    background:
+            var(--cf-success);
+
+    box-shadow:
+            0 0 7px
+            rgba(
+                    76,
+                    175,
+                    114,
+                    0.45
+            );
+}
+
+
+.cf-status-finished {
+
+    background:
+            var(--cf-text-muted);
+}
+
+
+.cf-status-aborted {
+
+    background:
+            var(--cf-danger);
+}
+
+
+/* Game result */
+
+.cf-game-result {
+
+    display:
+            inline-flex;
+
+    align-items:
+            center;
+
+    justify-content:
+            center;
+
+    width:
+            1.2rem;
+
+    font-size:
+            0.95rem;
+
+    font-weight:
+            700;
+}
+
+
+.cf-result-win {
+
+    color:
+            var(--cf-success);
+}
+
+
+.cf-result-loss {
+
+    color:
+            var(--cf-danger);
+}
+
+
+.cf-result-draw {
+
+    color:
+            var(--cf-primary);
+}
+
+
+.cf-result-pending {
+
+    color:
+            var(--cf-text-muted);
+}
+
+
+/* =========================================================
+   TOOLTIPS
+   ========================================================= */
+
+.cf-tooltip {
+
+    position:
+            relative;
+
+    cursor:
+            default;
+}
+
+
+.cf-tooltip::after {
+
+    content:
+            attr(data-tooltip);
+
+    position:
+            absolute;
+
+    left:
+            50%;
+
+    bottom:
+            calc(100% + 0.55rem);
+
+    transform:
+            translate(
+                    -50%,
+                    4px
+            );
+
+    padding:
+            0.35rem 0.55rem;
+
+    background:
+            #08090b;
+
+    border:
+            1px solid
+            var(--cf-border-light);
+
+    border-radius:
+            0.4rem;
+
+    color:
+            var(--cf-text);
+
+    font-size:
+            0.72rem;
+
+    font-weight:
+            500;
+
+    white-space:
+            nowrap;
+
+    opacity:
+            0;
+
+    visibility:
+            hidden;
+
+    pointer-events:
+            none;
+
+    z-index:
+            1200;
+
+    transition:
+            opacity 0.12s ease,
+            transform 0.12s ease;
+}
+
+
+.cf-tooltip:hover::after,
+.cf-tooltip:focus::after {
+
+    opacity:
+            1;
+
+    visibility:
+            visible;
+
+    transform:
+            translate(
+                    -50%,
+                    0
+            );
+}
+
+
+/* =========================================================
+   CHALLENGES
+   ========================================================= */
+
+.cf-challenge-item {
+
+    padding:
+            1.15rem;
+
+    margin-bottom:
+            0.9rem;
+
+    background:
+            var(--cf-bg-soft);
+
+    border:
+            1px solid
+            var(--cf-border);
+
+    border-radius:
+            var(--cf-radius);
+
+    transition:
+            border-color 0.15s ease,
+            background-color 0.15s ease;
+}
+
+
+.cf-challenge-item:last-child {
+
+    margin-bottom:
+            0;
+}
+
+
+.cf-challenge-item:hover {
+
+    background:
+            var(--cf-surface-hover);
+
+    border-color:
+            var(--cf-border-light);
+}
+
+
+.cf-challenge-scroll {
+
+    max-height:
+            460px;
+
+    overflow-y:
+            auto;
+
+    overflow-x:
+            hidden;
+
+    padding-right:
+            0.35rem;
+
+    overscroll-behavior:
+            contain;
+}
+
+
+.cf-challenge-scroll::-webkit-scrollbar {
+
+    width:
+            6px;
+}
+
+
+.cf-challenge-scroll::-webkit-scrollbar-thumb {
+
+    background:
+            var(--cf-border-light);
+
+    border-radius:
+            10px;
+}
+
+
+.cf-challenge-option {
+
+    display:
+            flex;
+
+    justify-content:
+            space-between;
+
+    align-items:
+            center;
+
+    gap:
+            1rem;
+
+    padding:
+            1rem;
+
+    background:
+            var(--cf-bg-soft);
+
+    border:
+            1px solid
+            var(--cf-border);
+
+    border-radius:
+            var(--cf-radius);
+}
+
+
+.cf-challenge-option
+.form-check-input {
+
+    width:
+            2.6rem;
+
+    height:
+            1.35rem;
+
+    cursor:
+            pointer;
+}
+
+
+.cf-challenge-option
+.form-check-input:checked {
+
+    background-color:
+            var(--cf-primary);
+
+    border-color:
+            var(--cf-primary);
+}
+
+
+/* =========================================================
+   BOOTSTRAP OVERRIDES
+   ========================================================= */
+
+.card {
+
+    --bs-card-bg:
+            var(--cf-surface);
+
+    --bs-card-border-color:
+            var(--cf-border);
+}
+
+
+.table {
+
+    --bs-table-bg:
+            transparent;
+
+    --bs-table-color:
+            var(--cf-text);
+
+    --bs-table-border-color:
+            var(--cf-border);
+}
+
+
+.form-control,
+.form-select {
+
+    background-color:
+            var(--cf-surface);
+
+    border-color:
+            var(--cf-border);
+
+    color:
+            var(--cf-text);
+}
+
+
+.form-control:focus,
+.form-select:focus {
+
+    background-color:
+            var(--cf-surface);
+
+    border-color:
+            var(--cf-primary);
+
+    color:
+            var(--cf-text);
+
+    box-shadow:
+            0 0 0 0.2rem
+            rgba(
+                    217,
+                    138,
+                    43,
+                    0.14
+            );
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 991.98px) {
+
+    .cf-navbar
+    .navbar-collapse {
+
+        padding-top:
+                1rem;
+
+        padding-bottom:
+                0.5rem;
+    }
+
+
+    .cf-nav-link {
+
+        margin-bottom:
+                0.25rem;
+    }
+
+}
+
+
+@media (max-width: 575.98px) {
+
+    .cf-page {
+
+        padding-top:
+                1.75rem;
+    }
+
+
+    .cf-hero {
+
+        padding:
+                2rem 1.4rem;
+    }
+
+
+    .cf-game-row {
+
+        grid-template-columns:
+                minmax(0, 1fr)
+                auto;
+
+        gap:
+                0.6rem 1rem;
+
+        padding:
+                0.85rem;
+    }
+
+
+    .cf-game-meta {
+
+        grid-column:
+                1 / -1;
+
+        grid-row:
+                2;
+
+        justify-content:
+                flex-start;
+
+        gap:
+                0.8rem;
+    }
+
+
+    .cf-game-open {
+
+        grid-column:
+                2;
+
+        grid-row:
+                1;
+    }
+
+
+    .cf-challenge-scroll {
+
+        max-height:
+                360px;
+    }
+}
+
+/* =========================================================
+   TOURNAMENTS
+   ========================================================= */
+
+.cf-tournament-card {
+
+    display: flex;
+    flex-direction: column;
+
+    min-height: 100%;
+
+    padding: 1.4rem;
+}
+
+
+.cf-tournament-status {
+
+    flex-shrink: 0;
+
+    padding: 0.38rem 0.65rem;
+
+    border-radius: 999px;
+
+    font-size: 0.7rem;
+    font-weight: 700;
+
+    letter-spacing: 0.04em;
+
+    text-transform: uppercase;
+}
+
+
+.cf-tournament-registration {
+
+    background:
+            rgba(217, 138, 43, 0.12);
+
+    border:
+            1px solid rgba(217, 138, 43, 0.28);
+
+    color:
+            var(--cf-primary);
+}
+
+
+.cf-tournament-live {
+
+    background:
+            rgba(76, 175, 114, 0.12);
+
+    border:
+            1px solid rgba(76, 175, 114, 0.25);
+
+    color:
+            var(--cf-success);
+}
+
+
+.cf-tournament-finished {
+
+    background:
+            rgba(154, 161, 172, 0.12);
+
+    border:
+            1px solid var(--cf-border-light);
+
+    color:
+            var(--cf-text-muted);
+}
+
+
+.cf-tournament-cancelled {
+
+    background:
+            rgba(215, 92, 92, 0.10);
+
+    border:
+            1px solid rgba(215, 92, 92, 0.25);
+
+    color:
+            var(--cf-danger);
+}
+
+
+.cf-tournament-meta {
+
+    display: grid;
+
+    grid-template-columns:
+            repeat(4, minmax(0, 1fr));
+
+    gap: 1rem;
+
+    margin-top: 1.4rem;
+
+    padding-top: 1.2rem;
+
+    border-top:
+            1px solid var(--cf-border);
+}
+
+
+.cf-tournament-meta-item,
+.cf-info-block {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 0.25rem;
+
+    min-width: 0;
+}
+
+
+.cf-meta-label {
+
+    display: block;
+
+    color:
+            var(--cf-text-muted);
+
+    font-size: 0.7rem;
+
+    font-weight: 600;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.055em;
+}
+
+
+.cf-tournament-dates {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 1.5rem;
+
+    margin-top: 1.2rem;
+
+    color:
+            var(--cf-text);
+
+    font-size: 0.82rem;
+}
+
+
+.cf-tournament-dates > div {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 0.2rem;
+}
+
+
+/* =========================================================
+   TOURNAMENT DETAILS
+   ========================================================= */
+
+.cf-tournament-hero {
+
+    padding: 1.5rem;
+}
+
+
+.cf-tournament-info-grid {
+
+    display: grid;
+
+    grid-template-columns:
+            repeat(4, minmax(0, 1fr));
+
+    gap: 1.4rem;
+
+    margin-top: 1.5rem;
+
+    padding-top: 1.5rem;
+
+    border-top:
+            1px solid var(--cf-border);
+}
+
+
+.cf-tournament-actions {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 0.65rem;
+
+    margin-top: 1.5rem;
+
+    padding-top: 1.5rem;
+
+    border-top:
+            1px solid var(--cf-border);
+}
+
+
+.cf-section-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 1rem;
+
+    padding: 1.2rem 1.4rem;
+
+    border-bottom:
+            1px solid var(--cf-border);
+}
+
+
+/* =========================================================
+   ROUNDS
+   ========================================================= */
+
+.cf-round-card {
+
+    overflow: hidden;
+}
+
+
+.cf-round-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 1rem;
+
+    padding: 1rem 1.25rem;
+
+    background:
+            rgba(255, 255, 255, 0.018);
+
+    border-bottom:
+            1px solid var(--cf-border);
+}
+
+
+.cf-round-times {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 2rem;
+
+    padding: 0.8rem 1.25rem;
+
+    border-bottom:
+            1px solid var(--cf-border);
+}
+
+
+.cf-round-times > div {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 0.2rem;
+}
+
+
+/* =========================================================
+   MATCHES
+   ========================================================= */
+
+.cf-match-list {
+
+    display: flex;
+
+    flex-direction: column;
+}
+
+
+.cf-match-row {
+
+    display: grid;
+
+    grid-template-columns:
+            3rem
+            minmax(0, 1fr)
+            auto
+            auto;
+
+    align-items: center;
+
+    gap: 1rem;
+
+    padding: 0.85rem 1.25rem;
+}
+
+
+.cf-match-row:not(:last-child) {
+
+    border-bottom:
+            1px solid var(--cf-border);
+}
+
+
+.cf-match-row:hover {
+
+    background:
+            rgba(255, 255, 255, 0.015);
+}
+
+
+.cf-match-board {
+
+    display: flex;
+
+    flex-direction: column;
+
+    text-align: center;
+}
+
+
+.cf-match-players {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 0.35rem;
+
+    min-width: 0;
+}
+
+
+.cf-match-player {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 0.55rem;
+
+    min-width: 0;
+}
+
+
+.cf-match-player strong {
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+}
+
+
+.cf-match-score {
+
+    min-width: 3rem;
+
+    text-align: center;
+}
+
+
+.cf-match-actions {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 0.75rem;
+}
+
+
+/* =========================================================
+   RANKING / PARTICIPANTS
+   ========================================================= */
+
+.cf-ranking-list,
+.cf-participant-list {
+
+    max-height: 520px;
+
+    overflow-y: auto;
+
+    overscroll-behavior: contain;
+}
+
+
+.cf-ranking-row {
+
+    display: grid;
+
+    grid-template-columns:
+            2.5rem
+            minmax(0, 1fr)
+            auto
+            auto;
+
+    align-items: center;
+
+    gap: 1rem;
+
+    padding: 0.8rem 1.25rem;
+}
+
+
+.cf-participant-row {
+
+    display: grid;
+
+    grid-template-columns:
+            2.5rem
+            minmax(0, 1fr)
+            auto;
+
+    align-items: center;
+
+    gap: 1rem;
+
+    padding: 0.8rem 1.25rem;
+}
+
+
+.cf-ranking-row:not(:last-child),
+.cf-participant-row:not(:last-child) {
+
+    border-bottom:
+            1px solid var(--cf-border);
+}
+
+
+.cf-ranking-position,
+.cf-participant-seed {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 2rem;
+    height: 2rem;
+
+    background:
+            var(--cf-bg-soft);
+
+    border:
+            1px solid var(--cf-border);
+
+    border-radius: 50%;
+
+    color:
+            var(--cf-text);
+
+    font-size: 0.8rem;
+
+    font-weight: 700;
+}
+
+
+.cf-ranking-player {
+
+    display: flex;
+
+    flex-direction: column;
+
+    min-width: 0;
+}
+
+
+.cf-ranking-player strong {
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+}
+
+
+.cf-ranking-score {
+
+    text-align: center;
+}
+
+
+/* =========================================================
+   FORMS
+   ========================================================= */
+
+.cf-form-section {
+
+    margin-bottom: 2rem;
+
+    padding-bottom: 2rem;
+
+    border-bottom:
+            1px solid var(--cf-border);
+}
+
+
+.cf-form-section-title {
+
+    margin-bottom: 1.25rem;
+
+    font-size: 1rem;
+
+    font-weight: 700;
+}
+
+
+.cf-setting-box {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 1rem;
+
+    padding: 1rem;
+
+    background:
+            var(--cf-bg-soft);
+
+    border:
+            1px solid var(--cf-border);
+
+    border-radius:
+            var(--cf-radius);
+}
+
+
+.cf-setting-box .form-check-input {
+
+    width: 2.6rem;
+
+    height: 1.35rem;
+
+    cursor: pointer;
+}
+
+
+.cf-setting-box .form-check-input:checked {
+
+    background-color:
+            var(--cf-primary);
+
+    border-color:
+            var(--cf-primary);
+}
+
+
+.cf-checkbox-grid {
+
+    display: grid;
+
+    grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+    gap: 0.65rem;
+}
+
+
+.cf-checkbox-option {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 0.65rem;
+
+    padding: 0.75rem;
+
+    background:
+            var(--cf-bg-soft);
+
+    border:
+            1px solid var(--cf-border);
+
+    border-radius:
+            var(--cf-radius-sm);
+
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   AUTH
+   ========================================================= */
+
+.cf-auth-body {
+
+    min-height: 100vh;
+}
+
+
+.cf-auth-layout {
+
+    display: grid;
+
+    grid-template-columns:
+            minmax(0, 1fr)
+            minmax(360px, 480px);
+
+    align-items: center;
+
+    gap: clamp(3rem, 8vw, 8rem);
+
+    min-height: 100vh;
+
+    padding:
+            3rem 1rem;
+}
+
+
+.cf-auth-brand {
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+}
+
+
+.cf-auth-heading {
+
+    max-width: 560px;
+
+    margin-bottom: 1.2rem;
+
+    font-size:
+            clamp(2.8rem, 6vw, 5.5rem);
+
+    font-weight: 800;
+
+    line-height: 0.95;
+
+    letter-spacing: -0.055em;
+}
+
+
+.cf-auth-description {
+
+    max-width: 520px;
+
+    color:
+            var(--cf-text-muted);
+
+    font-size: 1.05rem;
+
+    line-height: 1.7;
+}
+
+
+.cf-auth-card {
+
+    padding:
+            clamp(1.5rem, 4vw, 2.5rem);
+
+    background:
+            linear-gradient(
+                    145deg,
+                    var(--cf-surface-raised),
+                    var(--cf-surface)
+            );
+
+    border:
+            1px solid var(--cf-border);
+
+    border-radius:
+            1.25rem;
+
+    box-shadow:
+            var(--cf-shadow);
+}
+
+
+.cf-auth-divider {
+
+    display: flex;
+
+    align-items: center;
+
+    margin:
+            1.7rem 0;
+}
+
+
+.cf-auth-divider span {
+
+    width: 100%;
+
+    height: 1px;
+
+    background:
+            var(--cf-border);
+}
+
+
+.cf-auth-link {
+
+    color:
+            var(--cf-primary);
+
+    font-weight: 600;
+
+    text-decoration: none;
+}
+
+
+.cf-auth-link:hover {
+
+    color:
+            var(--cf-primary-hover);
+}
+
+
+/* =========================================================
+   TOURNAMENT RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 767.98px) {
+
+    .cf-tournament-meta {
+
+        grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+    }
+
+
+    .cf-tournament-info-grid {
+
+        grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+    }
+
+
+    .cf-round-header {
+
+        align-items: flex-start;
+    }
+
+
+    .cf-match-row {
+
+        grid-template-columns:
+                2.5rem
+                minmax(0, 1fr)
+                auto;
+
+        gap: 0.7rem;
+
+        padding:
+                0.85rem;
+    }
+
+
+    .cf-match-score {
+
+        grid-column:
+                2;
+
+        text-align:
+                left;
+    }
+
+
+    .cf-match-actions {
+
+        grid-column:
+                3;
+
+        grid-row:
+                1 / span 2;
+    }
+
+
+    .cf-ranking-row {
+
+        grid-template-columns:
+                2.3rem
+                minmax(0, 1fr)
+                auto;
+
+        gap:
+                0.7rem;
+
+        padding:
+                0.8rem;
+    }
+
+
+    .cf-ranking-score {
+
+        grid-column:
+                2;
+
+        text-align:
+                left;
+    }
+
+
+    .cf-ranking-row > .badge {
+
+        grid-column:
+                3;
+
+        grid-row:
+                1 / span 2;
+    }
+
+
+    .cf-participant-row {
+
+        grid-template-columns:
+                2.3rem
+                minmax(0, 1fr)
+                auto;
+
+        padding:
+                0.8rem;
+    }
+
+
+    .cf-checkbox-grid {
+
+        grid-template-columns:
+                1fr;
+    }
+
+}
+
+
+@media (max-width: 991.98px) {
+
+    .cf-auth-layout {
+
+        display: block;
+
+        max-width: 560px;
+
+        margin:
+                0 auto;
+
+        padding:
+                2rem 0.75rem;
+    }
+
+
+    .cf-auth-brand {
+
+        align-items: center;
+
+        margin-bottom: 2rem;
+
+        text-align: center;
+    }
+
+
+    .cf-auth-brand
+    .cf-brand {
+
+        margin-right: 0;
+
+        margin-bottom: 2rem !important;
+    }
+
+
+    .cf-auth-heading {
+
+        font-size:
+                clamp(2.3rem, 10vw, 4rem);
+    }
+
+}
+
+
+@media (max-width: 575.98px) {
+
+    .cf-tournament-hero {
+
+        padding:
+                1.1rem;
+    }
+
+
+    .cf-tournament-info-grid {
+
+        gap:
+                1rem;
+    }
+
+
+    .cf-tournament-actions {
+
+        flex-direction:
+                column;
+
+        align-items:
+                stretch;
+    }
+
+
+    .cf-tournament-actions form,
+    .cf-tournament-actions button {
+
+        width:
+                100%;
+    }
+
+
+    .cf-round-header {
+
+        flex-direction:
+                column;
+    }
+
+
+    .cf-round-header > div:last-child {
+
+        width:
+                100%;
+
+        justify-content:
+                space-between !important;
+    }
+
+
+    .cf-ranking-list,
+    .cf-participant-list {
+
+        max-height:
+                420px;
+    }
+
+
+    .cf-auth-card {
+
+        padding:
+                1.4rem;
+    }
+
+}
+/* =========================================================
+   BULLET TIME CONTROL ICON
+   ========================================================= */
+
+.cf-bullet-icon {
+
+    position: relative;
+
+    display: inline-block;
+
+    width: 0.55rem;
+    height: 0.24rem;
+
+    background: var(--cf-primary);
+
+    border-radius: 0.15rem 0.05rem 0.05rem 0.15rem;
+
+    vertical-align: middle;
+}
+
+.cf-bullet-icon::after {
+
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    right: -0.17rem;
+
+    width: 0;
+    height: 0;
+
+    border-top: 0.12rem solid transparent;
+    border-bottom: 0.12rem solid transparent;
+    border-left: 0.18rem solid var(--cf-primary);
+}

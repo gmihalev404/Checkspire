@@ -32,4 +32,11 @@ public enum TimeControl {
         this.type = type;
     }
 
+    public String getDisplayTime() {
+
+        return (initialTimeSeconds / 60)
+                + " + "
+                + incrementSeconds;
+    }
+
 }

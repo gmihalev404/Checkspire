@@ -12,9 +12,11 @@ public record GameStateResponse(
 
         Long whitePlayerId,
         String whiteUsername,
+        Integer whiteRatingBefore,
 
         Long blackPlayerId,
         String blackUsername,
+        Integer blackRatingBefore,
 
         TimeControl timeControl,
         boolean rated,
