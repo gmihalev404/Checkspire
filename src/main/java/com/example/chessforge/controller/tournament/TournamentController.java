@@ -39,6 +39,7 @@ public class TournamentController {
                 "tournaments",
                 tournamentApplicationService
                         .getTournaments()
+                        .stream().limit(30)
         );
 
         return "tournament/tournaments";

@@ -853,18 +853,27 @@ a {
 
 .cf-game-list {
 
-    overflow:
-            visible;
+    max-height: 620px;
 
-    background:
-            var(--cf-surface);
+    overflow-y: auto;
+    overflow-x: hidden;
 
-    border:
-            1px solid
-            var(--cf-border);
+    overscroll-behavior: contain;
 
-    border-radius:
-            var(--cf-radius-lg);
+    background: var(--cf-surface);
+
+    border: 1px solid var(--cf-border);
+
+    border-radius: var(--cf-radius-lg);
+}
+
+.cf-game-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.cf-game-list::-webkit-scrollbar-thumb {
+    background: var(--cf-border-light);
+    border-radius: 10px;
 }
 
 
@@ -1098,6 +1107,39 @@ a {
 
     cursor:
             default;
+}
+
+/* First game row:
+   show tooltips below so they are not clipped
+   by the scroll container. */
+
+.cf-game-row:first-child
+.cf-tooltip::after {
+
+    top:
+            calc(100% + 0.45rem);
+
+    bottom:
+            auto;
+
+    transform:
+            translate(
+                    -50%,
+                    -4px
+            );
+}
+
+
+.cf-game-row:first-child
+.cf-tooltip:hover::after,
+.cf-game-row:first-child
+.cf-tooltip:focus::after {
+
+    transform:
+            translate(
+                    -50%,
+                    0
+            );
 }
 
 
@@ -1481,6 +1523,35 @@ a {
     min-height: 100%;
 
     padding: 1.4rem;
+}
+
+.cf-tournament-scroll {
+
+    max-height: 900px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding-right: 0.4rem;
+
+    overscroll-behavior: contain;
+}
+
+.cf-tournament-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.cf-tournament-scroll::-webkit-scrollbar-thumb {
+    background: var(--cf-border-light);
+    border-radius: 10px;
+}
+.cf-tournament-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.cf-tournament-scroll::-webkit-scrollbar-thumb {
+    background: var(--cf-border-light);
+    border-radius: 10px;
 }
 
 

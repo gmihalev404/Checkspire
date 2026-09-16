@@ -106,63 +106,63 @@
     <!-- ===================================================== -->
 
     <div th:unless="${#lists.isEmpty(tournaments)}"
-         class="row g-4">
+         class="cf-tournament-scroll">
+
+        <div class="row g-4">
+
+            <div th:each="tournament : ${tournaments}"
+                 class="col-12 col-xl-6">
+
+                <article class="cf-card cf-tournament-card">
 
 
-        <div th:each="tournament : ${tournaments}"
-             class="col-12 col-xl-6">
-
-
-            <article class="cf-card cf-tournament-card">
-
-
-                <!-- Header -->
-                <div class="d-flex
+                    <!-- Header -->
+                    <div class="d-flex
                             justify-content-between
                             align-items-start
                             gap-3">
 
-                    <div class="min-w-0">
+                        <div class="min-w-0">
 
-                        <h2 class="h5 fw-bold mb-1">
+                            <h2 class="h5 fw-bold mb-1">
 
-                            <a th:href="@{/tournaments/{id}(
+                                <a th:href="@{/tournaments/{id}(
                                    id=${tournament.id}
                                )}"
-                               class="text-decoration-none">
+                                   class="text-decoration-none">
 
                                 <span th:text="${tournament.name}">
                                     Tournament
                                 </span>
 
-                            </a>
+                                </a>
 
-                        </h2>
+                            </h2>
 
 
-                        <div class="cf-muted small">
+                            <div class="cf-muted small">
 
-                            by
+                                by
 
-                            <strong class="text-light"
-                                    th:text="${tournament.creatorUsername}">
-                                creator
-                            </strong>
+                                <strong class="text-light"
+                                        th:text="${tournament.creatorUsername}">
+                                    creator
+                                </strong>
+
+                            </div>
 
                         </div>
 
-                    </div>
 
-
-                    <span class="cf-tournament-status"
-                          th:classappend="${tournament.status.name() == 'REGISTRATION'
+                        <span class="cf-tournament-status"
+                              th:classappend="${tournament.status.name() == 'REGISTRATION'
                               ? ' cf-tournament-registration'
                               : tournament.status.name() == 'IN_PROGRESS'
                                   ? ' cf-tournament-live'
                                   : tournament.status.name() == 'FINISHED'
                                       ? ' cf-tournament-finished'
                                       : ' cf-tournament-cancelled'}"
-                          th:text="${#strings.replace(
+                              th:text="${#strings.replace(
                               tournament.status.name(),
                               '_',
                               ' '
@@ -172,39 +172,39 @@
 
                     </span>
 
-                </div>
+                    </div>
 
 
-                <!-- Information -->
-                <div class="cf-tournament-meta">
+                    <!-- Information -->
+                    <div class="cf-tournament-meta">
 
 
-                    <!-- Format -->
-                    <div class="cf-tournament-meta-item">
+                        <!-- Format -->
+                        <div class="cf-tournament-meta-item">
 
                         <span class="cf-meta-label">
                             Format
                         </span>
 
-                        <strong th:text="${#strings.replace(
+                            <strong th:text="${#strings.replace(
                             tournament.format.name(),
                             '_',
                             ' '
                         )}">
-                            SWISS
-                        </strong>
+                                SWISS
+                            </strong>
 
-                    </div>
+                        </div>
 
 
-                    <!-- Time -->
-                    <div class="cf-tournament-meta-item">
+                        <!-- Time -->
+                        <div class="cf-tournament-meta-item">
 
                         <span class="cf-meta-label">
                             Time
                         </span>
 
-                        <div class="d-flex align-items-center gap-2">
+                            <div class="d-flex align-items-center gap-2">
 
                             <span class="cf-time-icon"
                                   th:switch="${tournament.timeControl.type.name()}">
@@ -219,8 +219,42 @@
 
                             </span>
 
-                            <strong th:text="${tournament.timeControl.displayTime}">
-                                3 + 2
+                                <strong th:text="${tournament.timeControl.displayTime}">
+                                    3 + 2
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Type -->
+                        <div class="cf-tournament-meta-item">
+
+                        <span class="cf-meta-label">
+                            Type
+                        </span>
+
+                            <strong th:text="${tournament.rated
+                            ? 'Rated'
+                            : 'Casual'}">
+                                Rated
+                            </strong>
+
+                        </div>
+
+
+                        <!-- Max players -->
+                        <div class="cf-tournament-meta-item">
+
+                        <span class="cf-meta-label">
+                            Players
+                        </span>
+
+                            <strong th:text="${tournament.maxPlayers != null
+                            ? tournament.maxPlayers
+                            : '∞'}">
+                                16
                             </strong>
 
                         </div>
@@ -228,92 +262,60 @@
                     </div>
 
 
-                    <!-- Type -->
-                    <div class="cf-tournament-meta-item">
+                    <!-- Dates -->
+                    <div class="cf-tournament-dates">
 
-                        <span class="cf-meta-label">
-                            Type
-                        </span>
-
-                        <strong th:text="${tournament.rated
-                            ? 'Rated'
-                            : 'Casual'}">
-                            Rated
-                        </strong>
-
-                    </div>
-
-
-                    <!-- Max players -->
-                    <div class="cf-tournament-meta-item">
-
-                        <span class="cf-meta-label">
-                            Players
-                        </span>
-
-                        <strong th:text="${tournament.maxPlayers != null
-                            ? tournament.maxPlayers
-                            : '∞'}">
-                            16
-                        </strong>
-
-                    </div>
-
-                </div>
-
-
-                <!-- Dates -->
-                <div class="cf-tournament-dates">
-
-                    <div th:if="${tournament.startsAt != null}">
+                        <div th:if="${tournament.startsAt != null}">
 
                         <span class="cf-meta-label">
                             Starts
                         </span>
 
-                        <span th:text="${#temporals.format(
+                            <span th:text="${#temporals.format(
                             tournament.startsAt,
                             'dd MMM yyyy HH:mm'
                         )}">
                             16 Sep 2026 20:00
                         </span>
 
-                    </div>
+                        </div>
 
 
-                    <div th:if="${tournament.updatedAt != null}">
+                        <div th:if="${tournament.updatedAt != null}">
 
                         <span class="cf-meta-label">
                             Updated
                         </span>
 
-                        <span th:text="${#temporals.format(
+                            <span th:text="${#temporals.format(
                             tournament.updatedAt,
                             'dd MMM HH:mm'
                         )}">
                             16 Sep 12:30
                         </span>
 
+                        </div>
+
                     </div>
 
-                </div>
 
+                    <!-- Action -->
+                    <div class="mt-auto pt-3">
 
-                <!-- Action -->
-                <div class="mt-auto pt-3">
-
-                    <a th:href="@{/tournaments/{id}(
+                        <a th:href="@{/tournaments/{id}(
                            id=${tournament.id}
                        )}"
-                       class="btn cf-btn-ghost w-100">
+                           class="btn cf-btn-ghost w-100">
 
-                        View Tournament
+                            View Tournament
 
-                    </a>
+                        </a>
 
-                </div>
+                    </div>
 
-            </article>
+                </article>
+
+            </div>
 
         </div>
 
