@@ -35,6 +35,7 @@ public class WebSocketConfiguration
                         "/ws"
                 )
                 .setAllowedOriginPatterns(
+                        "https://chessforge-production.up.railway.app",
                         "https://*.trycloudflare.com",
                         "http://localhost:*",
                         "http://127.0.0.1:*"
