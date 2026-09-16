@@ -41,7 +41,7 @@ public class GameController {
                 gameService.getGameSummariesForUser(
                         currentUser
                 )
-                        .stream().limit(100)
+                        .stream().limit(100).toList()
         );
 
         model.addAttribute(
