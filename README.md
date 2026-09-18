@@ -1,4 +1,4 @@
-# ♞ ChessForge
+# ♞ Checkspire
 
 ![Java](https://img.shields.io/badge/Java-17-orange)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.1-brightgreen)
@@ -6,7 +6,7 @@
 ![WebSocket](https://img.shields.io/badge/WebSocket-STOMP-purple)
 ![Thymeleaf](https://img.shields.io/badge/Thymeleaf-Server--Side%20UI-green)
 
-**ChessForge** is a full-stack web chess platform built with Spring Boot.
+**Checkspire** is a full-stack web chess platform built with Spring Boot.
 
 It supports real-time chess games, separate ratings for different time controls, player challenges, tournament management, spectating, game history, and responsive desktop/mobile gameplay.
 
@@ -16,8 +16,8 @@ The project was built as a complete multiplayer chess application rather than a 
 
 ## 🌐 Live Demo
 
-**ChessForge:**  
-https://chessforge-production.up.railway.app
+**Checkspire:**  
+https://Checkspire-production.up.railway.app
 
 ---
 
@@ -49,7 +49,7 @@ Only one game can be `IN_PROGRESS` for a player at a time.
 
 ### ⏱ Time Controls & Ratings
 
-ChessForge maintains independent ratings for:
+Checkspire maintains independent ratings for:
 
 - Bullet
 - Blitz
@@ -86,13 +86,13 @@ Players can:
 - Decline challenges
 - Cancel outgoing challenges
 
-When a challenge is accepted, ChessForge creates the game and redirects both players to the game board.
+When a challenge is accepted, Checkspire creates the game and redirects both players to the game board.
 
 ---
 
 ### 🏆 Tournaments
 
-ChessForge includes a complete tournament system with support for:
+Checkspire includes a complete tournament system with support for:
 
 - Swiss tournaments
 - Round Robin tournaments
@@ -165,7 +165,7 @@ It includes:
 - Responsive tournament pages
 - Scrollable challenge sections
 - Player rating overview
-- Dark ChessForge visual theme
+- Dark Checkspire visual theme
 
 ---
 
@@ -191,7 +191,7 @@ It includes:
 
 ## 🏗 Architecture
 
-ChessForge follows a layered Spring architecture:
+Checkspire follows a layered Spring architecture:
 
 ```text
 Browser
@@ -241,7 +241,7 @@ This keeps web concerns, business logic, and persistence responsibilities separa
 ```text
 src/
 ├── main/
-│   ├── java/com/example/chessforge/
+│   ├── java/com/example/Checkspire/
 │   │   ├── config/
 │   │   ├── controller/
 │   │   ├── model/
@@ -288,18 +288,18 @@ Maven installation is not required because the project includes the Maven Wrappe
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/gmihalev404/ChessForge.git
-cd ChessForge
+git clone https://github.com/gmihalev404/Checkspire.git
+cd Checkspire
 ```
 
 ---
 
 ### 2. Configure MySQL
 
-ChessForge uses a local MySQL database named:
+Checkspire uses a local MySQL database named:
 
 ```text
-chessforge
+Checkspire
 ```
 
 The application can create the database automatically if it does not already exist.
@@ -324,12 +324,12 @@ The default local configuration expects:
 Host: localhost
 Port: 3306
 Username: root
-Database: chessforge
+Database: Checkspire
 ```
 
 ---
 
-### 3. Start ChessForge
+### 3. Start Checkspire
 
 #### Windows
 
@@ -353,7 +353,7 @@ http://localhost:8080
 
 ## 🧪 Running Tests
 
-ChessForge contains unit and integration tests for the main application logic.
+Checkspire contains unit and integration tests for the main application logic.
 
 #### Windows
 
@@ -373,7 +373,7 @@ Tests use an H2 in-memory database and do not modify the development MySQL datab
 
 ## 🌍 Production
 
-ChessForge is deployed on **Railway**.
+Checkspire is deployed on **Railway**.
 
 Production consists of:
 
@@ -382,7 +382,7 @@ Internet
     │
     │ HTTPS / WSS
     ▼
-ChessForge
+Checkspire
 Spring Boot
     │
     │ Private Network
@@ -465,13 +465,13 @@ Final Round Completed
 Tournament Finished
 ```
 
-Depending on the tournament format, ChessForge generates the appropriate pairings and determines progression between rounds.
+Depending on the tournament format, Checkspire generates the appropriate pairings and determines progression between rounds.
 
 ---
 
 ## 🔐 Security
 
-ChessForge uses Spring Security and includes:
+Checkspire uses Spring Security and includes:
 
 - BCrypt password hashing
 - Authenticated game routes
@@ -488,7 +488,7 @@ Sensitive production configuration is supplied through environment variables.
 
 ## 🎯 Project Goals
 
-ChessForge was built to practice and demonstrate:
+Checkspire was built to practice and demonstrate:
 
 - Spring Boot application architecture
 - Complex relational domain modelling
@@ -527,6 +527,6 @@ Potential future additions include:
 
 ---
 
-## ♞ ChessForge
+## ♞ Checkspire
 
 > **Your board. Your rating. Your forge.**

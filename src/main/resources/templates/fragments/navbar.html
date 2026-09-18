@@ -10,7 +10,6 @@
 
     <div class="container cf-container">
 
-        <!-- Brand -->
         <a class="navbar-brand cf-brand"
            th:href="@{/}">
 
@@ -19,13 +18,12 @@
             </span>
 
             <span>
-                Chess<span class="cf-brand-accent">Forge</span>
+                Check<span class="cf-brand-accent">spire</span>
             </span>
 
         </a>
 
 
-        <!-- Mobile toggle -->
         <button class="navbar-toggler"
                 type="button"
                 data-bs-toggle="collapse"
@@ -42,8 +40,26 @@
         <div class="collapse navbar-collapse"
              id="mainNavbar">
 
-            <!-- Main navigation -->
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+                <li class="nav-item">
+
+                    <a class="nav-link cf-nav-link"
+                       th:href="@{/play}">
+                        Play
+                    </a>
+
+                </li>
+
+                <li class="nav-item">
+
+                    <a class="nav-link cf-nav-link"
+                       th:href="@{/tournaments}">
+                        Tournaments
+                    </a>
+
+                </li>
+
 
                 <li class="nav-item"
                     sec:authorize="isAuthenticated()">
@@ -55,6 +71,7 @@
 
                 </li>
 
+
                 <li class="nav-item"
                     sec:authorize="isAuthenticated()">
 
@@ -65,12 +82,12 @@
 
                 </li>
 
-                <li class="nav-item"
-                    sec:authorize="isAuthenticated()">
+
+                <li class="nav-item">
 
                     <a class="nav-link cf-nav-link"
-                       th:href="@{/tournaments}">
-                        Tournaments
+                       th:href="@{/about}">
+                        About
                     </a>
 
                 </li>
@@ -78,7 +95,6 @@
             </ul>
 
 
-            <!-- Authenticated user -->
             <div sec:authorize="isAuthenticated()"
                  class="d-flex flex-column flex-lg-row
                         align-items-lg-center gap-3">
@@ -111,7 +127,6 @@
             </div>
 
 
-            <!-- Guest -->
             <div sec:authorize="isAnonymous()"
                  class="d-flex gap-2">
 

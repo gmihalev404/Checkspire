@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      data-bs-theme="dark">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>Play Chess Online | Checkspire</title>
+
+    <meta name="description"
+          content="Play online chess on Checkspire. Find opponents, play casual games as a guest or use your account for competitive chess.">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <link th:href="@{/css/app.css}"
+          rel="stylesheet">
+
+</head>
+
+<body>
+
+
+<div th:replace="~{fragments/navbar :: navbar}">
+</div>
+
+
+<main class="container cf-container cf-page">
+
+
+    <!-- ===================================================== -->
+    <!-- GUEST -->
+    <!-- ===================================================== -->
+
+    <div sec:authorize="isAnonymous()">
+
+
+        <section class="cf-hero mb-5">
+
+            <span class="cf-eyebrow">
+                Play online chess
+            </span>
+
+            <h1 class="cf-hero-title">
+
+                Find a player.
+                <br>
+
+                <span class="cf-brand-accent">
+                    Start a game.
+                </span>
+
+            </h1>
+
+            <p class="cf-hero-text">
+
+                Play casual online chess without creating an account.
+
+                Guest matchmaking will connect you with another
+                available player and start a game directly
+                in your browser.
+
+            </p>
+
+        </section>
+
+
+        <section class="cf-section">
+
+            <div class="row justify-content-center">
+
+                <div class="col-lg-8">
+
+                    <div class="cf-card p-4 p-md-5">
+
+                        <div class="text-center">
+
+                            <div class="cf-feature-icon mx-auto mb-3">
+                                ♞
+                            </div>
+
+                            <span class="cf-eyebrow">
+                                Guest matchmaking
+                            </span>
+
+                            <h2 class="h3 fw-bold mb-3">
+                                Play without an account
+                            </h2>
+
+                            <p class="cf-muted mb-4">
+
+                                Enter the matchmaking queue and
+                                Checkspire will pair you with
+                                another guest looking for a casual game.
+
+                            </p>
+
+
+                            <button type="button"
+                                    class="btn cf-btn-primary btn-lg"
+                                    disabled>
+
+                                Find a Game
+
+                            </button>
+
+
+                            <p class="small cf-muted mt-3 mb-0">
+                                Guest matchmaking coming soon.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section class="cf-section">
+
+            <div class="row g-4">
+
+
+                <div class="col-md-4">
+
+                    <div class="cf-card cf-feature-card">
+
+                        <div class="cf-feature-icon">
+                            1
+                        </div>
+
+                        <h3 class="cf-feature-title">
+                            Enter the lobby
+                        </h3>
+
+                        <p class="cf-feature-description">
+
+                            No registration will be required
+                            for casual guest games.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <div class="cf-card cf-feature-card">
+
+                        <div class="cf-feature-icon">
+                            2
+                        </div>
+
+                        <h3 class="cf-feature-title">
+                            Find an opponent
+                        </h3>
+
+                        <p class="cf-feature-description">
+
+                            Match with another available
+                            guest player.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <div class="cf-card cf-feature-card">
+
+                        <div class="cf-feature-icon">
+                            3
+                        </div>
+
+                        <h3 class="cf-feature-title">
+                            Play instantly
+                        </h3>
+
+                        <p class="cf-feature-description">
+
+                            Start a live casual chess game
+                            directly in the browser.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+        <section class="cf-section">
+
+            <div class="cf-card text-center p-4">
+
+                <h2 class="h5 fw-bold">
+                    Want the full Checkspire experience?
+                </h2>
+
+                <p class="cf-muted">
+
+                    Create an account to track ratings,
+                    challenge players, keep your game history
+                    and compete in tournaments.
+
+                </p>
+
+                <a th:href="@{/register}"
+                   class="btn cf-btn-ghost">
+
+                    Create Account
+
+                </a>
+
+            </div>
+
+        </section>
+
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- AUTHENTICATED PLAYER -->
+    <!-- ===================================================== -->
+
+    <div sec:authorize="isAuthenticated()">
+
+
+        <section class="cf-hero mb-5">
+
+            <span class="cf-eyebrow">
+                Matchmaking
+            </span>
+
+            <h1 class="cf-hero-title">
+
+                Ready for
+                <br>
+
+                <span class="cf-brand-accent">
+                    your next game?
+                </span>
+
+            </h1>
+
+            <p class="cf-hero-text">
+
+                Find another Checkspire player
+                and start a game directly from the lobby.
+
+                Matchmaking will use your account,
+                allowing your games to become part
+                of your Checkspire profile.
+
+            </p>
+
+        </section>
+
+
+        <section class="cf-section">
+
+            <div class="row justify-content-center">
+
+                <div class="col-lg-8">
+
+                    <div class="cf-card p-4 p-md-5">
+
+
+                        <div class="d-flex
+                                    flex-column
+                                    flex-md-row
+                                    justify-content-between
+                                    align-items-md-center
+                                    gap-4">
+
+
+                            <div>
+
+                                <span class="cf-eyebrow">
+                                    Signed in
+                                </span>
+
+                                <h2 class="h3 fw-bold mb-2">
+
+                                    <span sec:authentication="name">
+                                        username
+                                    </span>
+
+                                </h2>
+
+                                <p class="cf-muted mb-0">
+
+                                    Your matchmaking games can be
+                                    associated with your account
+                                    instead of using a temporary guest identity.
+
+                                </p>
+
+                            </div>
+
+
+                            <div class="cf-feature-icon">
+                                ♞
+                            </div>
+
+
+                        </div>
+
+
+                        <hr class="my-4">
+
+
+                        <div class="row g-3 mb-4">
+
+
+                            <div class="col-md-6">
+
+                                <div class="cf-card p-3 h-100">
+
+                                    <div class="d-flex
+                                                justify-content-between
+                                                align-items-center
+                                                gap-3">
+
+                                        <div>
+
+                                            <strong>
+                                                Casual
+                                            </strong>
+
+                                            <div class="small cf-muted">
+                                                Play without affecting rating.
+                                            </div>
+
+                                        </div>
+
+                                        <span class="badge text-bg-secondary">
+                                            Planned
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="col-md-6">
+
+                                <div class="cf-card p-3 h-100">
+
+                                    <div class="d-flex
+                                                justify-content-between
+                                                align-items-center
+                                                gap-3">
+
+                                        <div>
+
+                                            <strong>
+                                                Rated
+                                            </strong>
+
+                                            <div class="small cf-muted">
+                                                Competitive matchmaking using your rating.
+                                            </div>
+
+                                        </div>
+
+                                        <span class="badge text-bg-secondary">
+                                            Planned
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                        </div>
+
+
+                        <div class="text-center">
+
+                            <button type="button"
+                                    class="btn cf-btn-primary btn-lg"
+                                    disabled>
+
+                                Find an Opponent
+
+                            </button>
+
+                            <p class="small cf-muted mt-3 mb-0">
+                                Matchmaking is coming soon.
+                            </p>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section class="cf-section">
+
+            <div class="row g-4">
+
+
+                <div class="col-md-4">
+
+                    <div class="cf-card cf-feature-card">
+
+                        <div class="cf-feature-icon">
+                            ⚔
+                        </div>
+
+                        <h3 class="cf-feature-title">
+                            Quick matchmaking
+                        </h3>
+
+                        <p class="cf-feature-description">
+
+                            Find another player without
+                            manually creating a challenge.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <div class="cf-card cf-feature-card">
+
+                        <div class="cf-feature-icon">
+                            ♟
+                        </div>
+
+                        <h3 class="cf-feature-title">
+                            Account games
+                        </h3>
+
+                        <p class="cf-feature-description">
+
+                            Games played while signed in
+                            can remain connected to your profile
+                            and game history.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <div class="cf-card cf-feature-card">
+
+                        <div class="cf-feature-icon">
+                            ◷
+                        </div>
+
+                        <h3 class="cf-feature-title">
+                            Multiple time controls
+                        </h3>
+
+                        <p class="cf-feature-description">
+
+                            Matchmaking can later support
+                            Bullet, Blitz, Rapid
+                            and Classical chess.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+        <section class="cf-section">
+
+            <div class="cf-card text-center p-4">
+
+                <h2 class="h5 fw-bold">
+                    Looking for structured competition?
+                </h2>
+
+                <p class="cf-muted">
+
+                    Browse Checkspire tournaments
+                    and compete in Swiss, Round Robin
+                    or Single Elimination events.
+
+                </p>
+
+                <a th:href="@{/tournaments}"
+                   class="btn cf-btn-ghost">
+
+                    Browse Tournaments
+
+                </a>
+
+            </div>
+
+        </section>
+
+
+    </div>
+
+
+</main>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js">
+</script>
+
+
+</body>
+
+</html>

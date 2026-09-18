@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      data-bs-theme="dark">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>
+        About Checkspire | Online Chess Tournaments & Competitive Chess
+    </title>
+
+    <meta name="description"
+          content="Learn about Checkspire, an online chess platform focused on Swiss, Round Robin and Single Elimination tournaments, ratings, live games and competitive chess.">
+
+    <meta name="robots"
+          content="index, follow">
+
+    <meta property="og:title"
+          content="Checkspire – Online Chess Tournaments">
+
+    <meta property="og:description"
+          content="Create and join online chess tournaments, compete across multiple formats and time controls, and track your progress on Checkspire.">
+
+    <meta property="og:type"
+          content="website">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+          crossorigin="anonymous">
+
+    <link th:href="@{/css/app.css}"
+          rel="stylesheet">
+
+</head>
+
+
+<body>
+
+
+<div th:replace="~{fragments/navbar :: navbar}">
+</div>
+
+
+<main class="container cf-container cf-page">
+
+
+    <section class="cf-hero mb-5">
+
+        <span class="cf-eyebrow">
+            About Checkspire
+        </span>
+
+        <h1 class="cf-hero-title">
+
+            Online chess built
+            <br>
+
+            around
+            <span class="cf-brand-accent">
+                competition.
+            </span>
+
+        </h1>
+
+        <p class="cf-hero-text">
+
+            Checkspire is an online chess platform focused on
+            competitive play and chess tournaments.
+
+            Create or join events, compete across multiple tournament
+            formats, follow live rounds and build separate ratings
+            across different time controls.
+
+        </p>
+
+        <div class="d-flex flex-wrap gap-2">
+
+            <a th:href="@{/tournaments}"
+               class="btn cf-btn-primary btn-lg">
+
+                Browse Tournaments
+
+            </a>
+
+            <a th:href="@{/register}"
+               class="btn cf-btn-ghost btn-lg">
+
+                Create Account
+
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <section class="cf-section">
+
+        <span class="cf-eyebrow">
+            Tournament formats
+        </span>
+
+        <h2 class="h3 fw-bold mb-2">
+            Different formats. One competitive platform.
+        </h2>
+
+        <p class="cf-section-description mb-4">
+
+            Checkspire supports several tournament structures
+            so players and organizers can choose how they want
+            an event to be played.
+
+        </p>
+
+
+        <div class="row g-4">
+
+            <div class="col-md-4">
+
+                <article class="cf-card cf-card-hover cf-feature-card">
+
+                    <div class="cf-feature-icon">
+                        ♞
+                    </div>
+
+                    <h3 class="cf-feature-title">
+                        Swiss Tournaments
+                    </h3>
+
+                    <p class="cf-feature-description">
+
+                        Compete over multiple rounds against players
+                        with comparable tournament scores without
+                        requiring every participant to face everyone.
+
+                    </p>
+
+                </article>
+
+            </div>
+
+
+            <div class="col-md-4">
+
+                <article class="cf-card cf-card-hover cf-feature-card">
+
+                    <div class="cf-feature-icon">
+                        ♜
+                    </div>
+
+                    <h3 class="cf-feature-title">
+                        Round Robin
+                    </h3>
+
+                    <p class="cf-feature-description">
+
+                        Every player faces the other participants,
+                        creating a complete competition where
+                        consistency across all games matters.
+
+                    </p>
+
+                </article>
+
+            </div>
+
+
+            <div class="col-md-4">
+
+                <article class="cf-card cf-card-hover cf-feature-card">
+
+                    <div class="cf-feature-icon">
+                        ♛
+                    </div>
+
+                    <h3 class="cf-feature-title">
+                        Single Elimination
+                    </h3>
+
+                    <p class="cf-feature-description">
+
+                        Advance through a knockout bracket where
+                        every match matters and the final remaining
+                        player wins the tournament.
+
+                    </p>
+
+                </article>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section class="cf-section">
+
+        <span class="cf-eyebrow">
+            Tournament lifecycle
+        </span>
+
+        <h2 class="h3 fw-bold mb-4">
+            From registration to the final round
+        </h2>
+
+
+        <div class="row g-4">
+
+            <div class="col-md-6 col-xl-3">
+
+                <div class="cf-card cf-feature-card">
+
+                    <div class="cf-feature-icon">
+                        1
+                    </div>
+
+                    <h3 class="cf-feature-title">
+                        Join
+                    </h3>
+
+                    <p class="cf-feature-description">
+
+                        Players register for an upcoming tournament
+                        before the event begins.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-6 col-xl-3">
+
+                <div class="cf-card cf-feature-card">
+
+                    <div class="cf-feature-icon">
+                        2
+                    </div>
+
+                    <h3 class="cf-feature-title">
+                        Pairings
+                    </h3>
+
+                    <p class="cf-feature-description">
+
+                        Checkspire generates the appropriate pairings
+                        according to the tournament format.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-6 col-xl-3">
+
+                <div class="cf-card cf-feature-card">
+
+                    <div class="cf-feature-icon">
+                        3
+                    </div>
+
+                    <h3 class="cf-feature-title">
+                        Play
+                    </h3>
+
+                    <p class="cf-feature-description">
+
+                        Tournament games are played live in the browser
+                        with chess clocks and server-side move validation.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-6 col-xl-3">
+
+                <div class="cf-card cf-feature-card">
+
+                    <div class="cf-feature-icon">
+                        4
+                    </div>
+
+                    <h3 class="cf-feature-title">
+                        Advance
+                    </h3>
+
+                    <p class="cf-feature-description">
+
+                        Results update standings and determine
+                        the next round until the event is complete.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section class="cf-section">
+
+        <span class="cf-eyebrow">
+            Competitive chess
+        </span>
+
+        <h2 class="h3 fw-bold mb-2">
+            More than tournament brackets
+        </h2>
+
+        <p class="cf-section-description mb-4">
+
+            Checkspire combines tournament management with the tools
+            needed to play competitive online chess.
+
+        </p>
+
+
+        <div class="row g-4">
+
+            <div class="col-md-6">
+
+                <article class="cf-card cf-feature-card">
+
+                    <h3 class="h5 fw-bold mb-3">
+                        Ratings & Time Controls
+                    </h3>
+
+                    <p class="cf-muted mb-0">
+
+                        Players maintain separate Bullet, Blitz,
+                        Rapid and Classical ratings.
+
+                        Games and tournaments can use multiple
+                        time controls and can be Rated or Casual.
+
+                    </p>
+
+                </article>
+
+            </div>
+
+
+            <div class="col-md-6">
+
+                <article class="cf-card cf-feature-card">
+
+                    <h3 class="h5 fw-bold mb-3">
+                        Live Games & Spectating
+                    </h3>
+
+                    <p class="cf-muted mb-0">
+
+                        Games run in real time with live chess clocks,
+                        move history and automatic timeout handling.
+
+                        Tournament games can also be followed
+                        while they are being played.
+
+                    </p>
+
+                </article>
+
+            </div>
+
+
+            <div class="col-md-6">
+
+                <article class="cf-card cf-feature-card">
+
+                    <h3 class="h5 fw-bold mb-3">
+                        Tournament Standings
+                    </h3>
+
+                    <p class="cf-muted mb-0">
+
+                        Follow tournament rounds, boards,
+                        player scores, standings and match results
+                        throughout an event.
+
+                    </p>
+
+                </article>
+
+            </div>
+
+
+            <div class="col-md-6">
+
+                <article class="cf-card cf-feature-card">
+
+                    <h3 class="h5 fw-bold mb-3">
+                        Direct Challenges
+                    </h3>
+
+                    <p class="cf-muted mb-0">
+
+                        Players can challenge each other directly,
+                        choose a time control and color preference,
+                        and play Rated or Casual games.
+
+                    </p>
+
+                </article>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <section class="cf-section">
+
+        <div class="cf-card text-center p-4 p-md-5">
+
+            <span class="cf-eyebrow">
+                Enter the competition
+            </span>
+
+            <h2 class="h3 fw-bold">
+                Find your next tournament.
+            </h2>
+
+            <p class="cf-muted mx-auto mb-4"
+               style="max-width: 650px;">
+
+                Browse online chess tournaments,
+                create an account and start competing on Checkspire.
+
+            </p>
+
+            <div class="d-flex justify-content-center flex-wrap gap-2">
+
+                <a th:href="@{/tournaments}"
+                   class="btn cf-btn-primary">
+
+                    Browse Tournaments
+
+                </a>
+
+                <a th:href="@{/register}"
+                   class="btn cf-btn-ghost">
+
+                    Create Account
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+</main>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous">
+</script>
+
+
+</body>
+
+</html>

@@ -15,10 +15,10 @@
     </parent>
 
     <groupId>com.example</groupId>
-    <artifactId>ChessForge</artifactId>
+    <artifactId>checkspire</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
-    <name>ChessForge</name>
+    <name>Checkspire</name>
     <description>Web-based multiplayer and competitive chess platform</description>
 
     <properties>
