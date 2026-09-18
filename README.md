@@ -6,103 +6,41 @@
 ![WebSocket](https://img.shields.io/badge/WebSocket-STOMP-purple)
 ![Thymeleaf](https://img.shields.io/badge/Thymeleaf-Server--Side%20UI-green)
 
-**Checkspire** is a full-stack web chess platform built with Spring Boot.
+**Checkspire** is a full-stack online chess platform built with Spring Boot, focused on competitive play and tournament management.
 
-It supports real-time chess games, separate ratings for different time controls, player challenges, tournament management, spectating, game history, and responsive desktop/mobile gameplay.
+The platform supports real-time chess games, independent ratings for different time controls, player challenges, tournament management, spectating, game history, and responsive desktop/mobile gameplay.
 
-The project was built as a complete multiplayer chess application rather than a simple chess board, with focus on backend domain logic, real-time communication, tournament systems, persistence, security, and a responsive frontend.
+Checkspire is designed as a complete multiplayer chess application rather than a simple chess board, with emphasis on backend domain logic, real-time communication, tournament systems, persistence, security, and a responsive frontend.
 
 ---
 
 ## 🌐 Live Demo
 
 **Checkspire:**  
-https://Checkspire-production.up.railway.app
+https://chessforge-production.up.railway.app
+
+> The current Railway deployment URL still uses the project's previous ChessForge name.
 
 ---
 
-## ✨ Features
+## 🏆 Tournament Platform
 
-### ♟ Real-Time Chess
+Tournament play is one of the main focuses of Checkspire.
 
-- Real-time games using WebSocket and STOMP
-- Interactive chess board
-- Click-to-move and drag-and-drop movement
-- White and Black board orientation
-- Live chess clocks
-- Increment-based time controls
-- Move validation on the backend
-- Last-move highlighting
-- Pawn promotion with an interactive piece selector
-- Draw offers
-- Resignation
-- Game abortion
-- Automatic timeout handling
-- PGN generation
-- Move history
-- Position review using previous game states
-- Spectating of live and completed games
+Supported tournament formats include:
 
-Only one game can be `IN_PROGRESS` for a player at a time.
+- **Swiss**
+- **Round Robin**
+- **Single Elimination**
 
----
+Tournaments support:
 
-### ⏱ Time Controls & Ratings
-
-Checkspire maintains independent ratings for:
-
-- Bullet
-- Blitz
-- Rapid
-- Classical
-
-Supported time controls include examples such as:
-
-- `1 + 0`
-- `2 + 1`
-- `3 + 0`
-- `3 + 2`
-- `5 + 0`
-- `10 + 0`
-- `10 + 5`
-- `15 + 10`
-- `30 + 0`
-
-Games can be either **Rated** or **Casual**.
-
-Player ratings are updated according to the corresponding time-control category.
-
----
-
-### ⚔ Challenges
-
-Players can:
-
-- Send challenges to other users
-- Select a time control
-- Choose a preferred color
-- Create Rated or Casual games
-- Accept incoming challenges
-- Decline challenges
-- Cancel outgoing challenges
-
-When a challenge is accepted, Checkspire creates the game and redirects both players to the game board.
-
----
-
-### 🏆 Tournaments
-
-Checkspire includes a complete tournament system with support for:
-
-- Swiss tournaments
-- Round Robin tournaments
-- Single Elimination tournaments
-- Rated and Casual tournaments
+- Rated and Casual events
 - Maximum player limits
-- Scheduled tournament start
-- Automatic tournament start
-- Manual tournament start
-- Configurable break between rounds
+- Scheduled tournament starts
+- Automatic tournament starts
+- Manual tournament starts
+- Configurable breaks between rounds
 - Scheduled round activation
 - Manual early round start by the tournament creator
 - Player joining and withdrawal
@@ -114,7 +52,7 @@ Checkspire includes a complete tournament system with support for:
 - Board numbers
 - Match results
 - Live tournament games
-- Spectating tournament games
+- Spectating
 
 Tournament rounds have their own lifecycle:
 
@@ -126,27 +64,136 @@ IN_PROGRESS
 COMPLETED
 ```
 
-The next round is prepared after the previous round completes and starts according to the configured round break.
+After a round is completed, Checkspire prepares the next round according to the tournament format and configured round break.
 
 ---
 
-### 👤 Users & Authentication
+## ♟ Real-Time Chess
+
+Checkspire includes a complete browser-based chess game system:
+
+- Real-time games using WebSocket and STOMP
+- Interactive chess board
+- Click-to-move
+- Drag-and-drop movement
+- White and Black board orientation
+- Live chess clocks
+- Increment-based time controls
+- Server-side move validation
+- Last-move highlighting
+- Pawn promotion
+- Draw offers
+- Resignation
+- Game abortion
+- Automatic timeout handling
+- PGN generation
+- Move history
+- Previous-position review
+- Spectating live games
+- Spectating completed games
+
+The server remains authoritative for game state and move validation.
+
+A player can have only one game with status `IN_PROGRESS` at a time.
+
+---
+
+## ⏱ Time Controls & Ratings
+
+Checkspire maintains independent ratings for:
+
+- Bullet
+- Blitz
+- Rapid
+- Classical
+
+Supported time controls currently include:
+
+```text
+1 + 0
+2 + 1
+3 + 0
+3 + 2
+5 + 0
+10 + 0
+10 + 5
+15 + 10
+30 + 0
+```
+
+Games can be either **Rated** or **Casual**.
+
+When a rated game finishes, the appropriate rating category is updated according to the game's time control.
+
+---
+
+## ⚔ Player Challenges
+
+Registered players can:
+
+- Send challenges to other users
+- Select a time control
+- Choose a preferred color
+- Choose between Rated and Casual play
+- Accept incoming challenges
+- Decline challenges
+- Cancel outgoing challenges
+
+When a challenge is accepted, Checkspire creates the game and both players can enter the live game board.
+
+---
+
+## 🔎 Matchmaking Lobby
+
+Checkspire includes a public `/play` lobby designed as the entry point for future matchmaking.
+
+The lobby supports separate interfaces for:
+
+- Guest players
+- Authenticated players
+
+The planned matchmaking system will allow guests to play Casual games without creating an account, while authenticated players will be able to use account-based matchmaking.
+
+Guest matchmaking itself is currently under development.
+
+---
+
+## 👤 Users & Authentication
+
+The account system includes:
 
 - User registration
 - Spring Security authentication
 - BCrypt password hashing
 - Automatic authentication after registration
 - Session-based authentication
-- User account status
 - User roles
+- User account status
 - Separate chess ratings
-- Responsive login and registration pages
 
 Passwords are never stored as plain text.
 
 ---
 
-### 📱 Responsive Interface
+## 👁 Spectating & Game History
+
+Users can follow live and completed games without participating in them.
+
+Spectators can view:
+
+- The chess board
+- Player information
+- Chess clocks
+- Move history
+- Previous board positions
+- Game result
+- Tournament context
+
+Spectators cannot make moves or perform player-only actions.
+
+---
+
+## 📱 Responsive Interface
 
 The frontend is built with:
 
@@ -155,17 +202,20 @@ The frontend is built with:
 - Custom CSS
 - Vanilla JavaScript
 
-The interface is designed for both desktop and mobile devices.
+The interface uses a dark competitive chess design with graphite surfaces and amber accents.
 
 It includes:
 
 - Responsive navigation
+- Responsive chess board
 - Compact game lists
-- Mobile-friendly chess board
-- Responsive tournament pages
-- Scrollable challenge sections
+- Tournament pages
+- Challenge management
 - Player rating overview
-- Dark Checkspire visual theme
+- Public About page
+- Public tournament discovery
+- Matchmaking lobby
+- Mobile-friendly layouts
 
 ---
 
@@ -218,7 +268,7 @@ Repositories
 MySQL
 ```
 
-The project separates:
+The application separates web concerns, business logic, and persistence responsibilities.
 
 ```text
 Controller
@@ -232,8 +282,6 @@ Repository
 Database
 ```
 
-This keeps web concerns, business logic, and persistence responsibilities separated.
-
 ---
 
 ## 📁 Project Structure
@@ -241,14 +289,15 @@ This keeps web concerns, business logic, and persistence responsibilities separa
 ```text
 src/
 ├── main/
-│   ├── java/com/example/Checkspire/
-│   │   ├── config/
-│   │   ├── controller/
-│   │   ├── model/
-│   │   │   ├── entity/
-│   │   │   └── enums/
-│   │   ├── repository/
-│   │   └── service/
+│   ├── java/
+│   │   └── com/example/chessforge/
+│   │       ├── config/
+│   │       ├── controller/
+│   │       ├── model/
+│   │       │   ├── entity/
+│   │       │   └── enums/
+│   │       ├── repository/
+│   │       └── service/
 │   │
 │   └── resources/
 │       ├── static/
@@ -275,15 +324,13 @@ src/
 
 ### Requirements
 
-Make sure you have:
+You need:
 
 - Java 17+
 - MySQL 8+
 - Git
 
-Maven installation is not required because the project includes the Maven Wrapper.
-
----
+A separate Maven installation is not required because the repository includes the Maven Wrapper.
 
 ### 1. Clone the repository
 
@@ -292,19 +339,17 @@ git clone https://github.com/gmihalev404/Checkspire.git
 cd Checkspire
 ```
 
----
-
 ### 2. Configure MySQL
 
-Checkspire uses a local MySQL database named:
+The local application uses a MySQL database named:
 
 ```text
-Checkspire
+checkspire
 ```
 
-The application can create the database automatically if it does not already exist.
+The database can be created automatically when the application starts.
 
-Set your MySQL password as an environment variable.
+Set the MySQL password through the `DB_PASSWORD` environment variable.
 
 #### Windows PowerShell
 
@@ -324,10 +369,8 @@ The default local configuration expects:
 Host: localhost
 Port: 3306
 Username: root
-Database: Checkspire
+Database: checkspire
 ```
-
----
 
 ### 3. Start Checkspire
 
@@ -353,29 +396,27 @@ http://localhost:8080
 
 ## 🧪 Running Tests
 
-Checkspire contains unit and integration tests for the main application logic.
+The project contains unit and integration tests for the main application and domain logic.
 
-#### Windows
+### Windows
 
 ```powershell
 .\mvnw.cmd clean test
 ```
 
-#### Linux / macOS
+### Linux / macOS
 
 ```bash
 ./mvnw clean test
 ```
 
-Tests use an H2 in-memory database and do not modify the development MySQL database.
+Tests use an H2 in-memory database and do not modify the local MySQL development database.
 
 ---
 
 ## 🌍 Production
 
 Checkspire is deployed on **Railway**.
-
-Production consists of:
 
 ```text
 Internet
@@ -390,7 +431,7 @@ Spring Boot
 Railway MySQL
 ```
 
-The production Spring profile reads its configuration from environment variables:
+The production Spring profile reads configuration from environment variables:
 
 ```text
 SPRING_PROFILES_ACTIVE=prod
@@ -403,13 +444,11 @@ DB_PASSWORD
 PORT
 ```
 
-Sensitive database credentials are not stored in the repository.
+Sensitive production credentials are not stored in the repository.
 
 ---
 
 ## 🔄 Real-Time Game Flow
-
-A typical game flow is:
 
 ```text
 Player A sends challenge
@@ -434,8 +473,6 @@ Updated state broadcast
           ↓
 Both clients update instantly
 ```
-
-The server remains authoritative for game state and move validation.
 
 ---
 
@@ -465,7 +502,7 @@ Final Round Completed
 Tournament Finished
 ```
 
-Depending on the tournament format, Checkspire generates the appropriate pairings and determines progression between rounds.
+Pairing and progression behavior depends on whether the tournament uses Swiss, Round Robin, or Single Elimination format.
 
 ---
 
@@ -474,15 +511,14 @@ Depending on the tournament format, Checkspire generates the appropriate pairing
 Checkspire uses Spring Security and includes:
 
 - BCrypt password hashing
-- Authenticated game routes
-- Authenticated tournament routes
-- Authenticated challenge routes
+- Protected authenticated functionality
 - Server-side authorization checks
 - Session-based authentication
 - WebSocket authentication
 - CSRF protection for web forms
+- Environment-based production configuration
 
-Sensitive production configuration is supplied through environment variables.
+Public pages such as the homepage, About page, matchmaking lobby, and tournament discovery can be accessed without authentication.
 
 ---
 
@@ -497,6 +533,7 @@ Checkspire was built to practice and demonstrate:
 - Spring Security
 - Real-time WebSocket communication
 - Multiplayer state synchronization
+- Chess game logic
 - Tournament algorithms
 - Server-side rendering with Thymeleaf
 - Responsive web design
@@ -505,13 +542,14 @@ Checkspire was built to practice and demonstrate:
 
 ---
 
-## 📌 Possible Future Improvements
+## 📌 Planned Improvements
 
-Potential future additions include:
+Future additions may include:
 
+- Guest matchmaking
+- Account-based matchmaking
 - Player profiles
 - Friend system UI
-- Matchmaking queue
 - Leaderboards
 - Rating history graphs
 - Opening statistics
@@ -529,4 +567,4 @@ Potential future additions include:
 
 ## ♞ Checkspire
 
-> **Your board. Your rating. Your forge.**
+> **Play. Compete. Rise.**
