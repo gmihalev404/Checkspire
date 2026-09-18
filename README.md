@@ -17,7 +17,7 @@ Checkspire is designed as a complete multiplayer chess application rather than a
 ## 🌐 Live Demo
 
 **Checkspire:**  
-https://chessforge-production.up.railway.app
+[Checkspire](https://checkspire-production.up.railway.app/)
 
 > The current Railway deployment URL still uses the project's previous ChessForge name.
 
