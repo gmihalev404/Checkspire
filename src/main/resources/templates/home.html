@@ -59,53 +59,59 @@
       class="container cf-container cf-page">
 
 
-    <section class="cf-hero mb-5">
+    <div class="d-flex flex-column flex-lg-row
+                justify-content-between align-items-lg-end
+                gap-3 mb-4">
 
-        <span class="cf-eyebrow">
-            Competitive online chess
-        </span>
+        <div>
 
-        <h1 class="cf-hero-title">
-
-            Your next tournament
-            <br>
-
-            starts
-            <span class="cf-brand-accent">
-                here.
+            <span class="cf-eyebrow mb-2">
+                Dashboard
             </span>
 
-        </h1>
+            <h1 class="h2 fw-bold mb-2">
 
+                Welcome back,
+                <span class="cf-brand-accent"
+                      th:text="${username}">
+                    player
+                </span>
 
-        <p class="cf-hero-text">
+            </h1>
 
-            Play competitive chess, challenge other players
-            and compete in Swiss, Round Robin and
-            Single Elimination tournaments.
+            <p class="cf-section-description mb-0">
+                Jump back into a game or find your next competition.
+            </p>
 
-        </p>
+        </div>
 
 
         <div class="d-flex flex-wrap gap-2">
 
-            <a th:href="@{/tournaments}"
-               class="btn cf-btn-primary btn-lg">
+            <a th:href="@{/play}"
+               class="btn cf-btn-primary">
 
-                Browse Tournaments
+                Play
+
+            </a>
+
+            <a th:href="@{/tournaments}"
+               class="btn cf-btn-ghost">
+
+                Tournaments
 
             </a>
 
             <a th:href="@{/games}"
-               class="btn cf-btn-ghost btn-lg">
+               class="btn cf-btn-ghost">
 
-                Your Games
+                Games
 
             </a>
 
         </div>
 
-    </section>
+    </div>
 
 
     <section th:if="${currentUser != null}"
@@ -130,10 +136,8 @@
             <div class="cf-rating-card">
 
                 <div class="cf-rating-icon">
-
                     <span class="cf-bullet-icon">
                     </span>
-
                 </div>
 
                 <div>
@@ -224,16 +228,44 @@
 
     <section class="cf-section">
 
-        <h2 class="h4 cf-section-title">
-            Checkspire
-        </h2>
-
-        <p class="cf-section-description">
-            Everything you need to play and compete.
-        </p>
-
-
         <div class="row g-4">
+
+
+            <div class="col-md-6 col-xl-4">
+
+                <div class="cf-card
+                            cf-card-hover
+                            cf-feature-card">
+
+                    <div class="cf-feature-icon">
+                        ♞
+                    </div>
+
+                    <h3 class="cf-feature-title">
+                        Play
+                    </h3>
+
+                    <p class="cf-feature-description">
+
+                        Find an opponent and start
+                        your next game.
+
+                    </p>
+
+                    <div>
+
+                        <a th:href="@{/play}"
+                           class="btn cf-btn-primary">
+
+                            Play
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
 
 
             <div class="col-md-6 col-xl-4">
@@ -252,55 +284,17 @@
 
                     <p class="cf-feature-description">
 
-                        Compete in Swiss,
-                        Round Robin and
-                        Single Elimination events.
+                        Join Swiss, Round Robin
+                        and Single Elimination events.
 
                     </p>
 
                     <div>
 
                         <a th:href="@{/tournaments}"
-                           class="btn cf-btn-primary">
-
-                            Browse Tournaments
-
-                        </a>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="col-md-6 col-xl-4">
-
-                <div class="cf-card
-                            cf-card-hover
-                            cf-feature-card">
-
-                    <div class="cf-feature-icon">
-                        ♟
-                    </div>
-
-                    <h3 class="cf-feature-title">
-                        Games
-                    </h3>
-
-                    <p class="cf-feature-description">
-
-                        Continue active games
-                        and review your completed matches.
-
-                    </p>
-
-                    <div>
-
-                        <a th:href="@{/games}"
                            class="btn cf-btn-ghost">
 
-                            View Games
+                            Browse Tournaments
 
                         </a>
 
@@ -327,8 +321,8 @@
 
                     <p class="cf-feature-description">
 
-                        Challenge other players
-                        and manage incoming invitations.
+                        Challenge another player
+                        directly to a game.
 
                     </p>
 
@@ -350,6 +344,7 @@
         </div>
 
     </section>
+
 
 </main>
 
@@ -392,21 +387,28 @@
 
         </p>
 
+
         <div class="d-flex flex-wrap gap-2">
 
             <a th:href="@{/play}"
                class="btn cf-btn-primary btn-lg">
+
                 Play as Guest
+
             </a>
 
             <a th:href="@{/tournaments}"
                class="btn cf-btn-ghost btn-lg">
+
                 Browse Tournaments
+
             </a>
 
             <a th:href="@{/register}"
                class="btn cf-btn-ghost btn-lg">
+
                 Create Account
+
             </a>
 
         </div>
@@ -447,7 +449,7 @@
                         Swiss
                     </h3>
 
-                    <p class="cf-feature-description">
+                    <p class="cf-feature-description mb-0">
 
                         Play several rounds with pairings based
                         on tournament performance.
@@ -471,7 +473,7 @@
                         Round Robin
                     </h3>
 
-                    <p class="cf-feature-description">
+                    <p class="cf-feature-description mb-0">
 
                         Face every participant and compete
                         for the strongest overall result.
@@ -495,7 +497,7 @@
                         Single Elimination
                     </h3>
 
-                    <p class="cf-feature-description">
+                    <p class="cf-feature-description mb-0">
 
                         Win each matchup and advance
                         through the knockout bracket.
@@ -546,8 +548,7 @@
                     <p class="cf-muted mb-0">
 
                         Follow pairings, standings and tournament games
-                        as each event progresses from registration
-                        to the final round.
+                        as each event progresses.
 
                     </p>
 
@@ -562,17 +563,17 @@
 
     <section class="cf-section">
 
-        <div class="cf-card text-center p-4 p-md-5">
+        <div class="cf-card text-center p-4">
 
-            <h2 class="h3 fw-bold">
-                Discover Checkspire
+            <h2 class="h4 fw-bold">
+                Learn more about Checkspire
             </h2>
 
-            <p class="cf-muted mx-auto mb-4"
+            <p class="cf-muted mx-auto mb-3"
                style="max-width: 620px;">
 
-                Learn more about the platform,
-                tournament formats and competitive chess features.
+                Explore tournament formats,
+                ratings and competitive features.
 
             </p>
 

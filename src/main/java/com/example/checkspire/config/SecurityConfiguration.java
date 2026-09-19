@@ -63,8 +63,14 @@ public class SecurityConfiguration {
                                 )
                                 .permitAll()
                 )
-                .logout(
-                        Customizer.withDefaults()
+                .logout(logout ->
+                        logout
+                                .logoutUrl("/logout")
+                                .logoutSuccessUrl("/")
+                                .invalidateHttpSession(true)
+                                .clearAuthentication(true)
+                                .deleteCookies("JSESSIONID")
+                                .permitAll()
                 );
 
         return http.build();

@@ -42,34 +42,21 @@
     <div sec:authorize="isAnonymous()">
 
 
-        <section class="cf-hero mb-5">
+        <div class="mb-4">
 
-            <span class="cf-eyebrow">
-                Play online chess
+            <span class="cf-eyebrow mb-2">
+                Guest matchmaking
             </span>
 
-            <h1 class="cf-hero-title">
-
-                Find a player.
-                <br>
-
-                <span class="cf-brand-accent">
-                    Start a game.
-                </span>
-
+            <h1 class="h2 fw-bold mb-2">
+                Play chess online
             </h1>
 
-            <p class="cf-hero-text">
-
-                Play casual online chess without creating an account.
-
-                Guest matchmaking will connect you with another
-                available player and start a game directly
-                in your browser.
-
+            <p class="cf-section-description mb-0">
+                Find another guest and start a casual game without creating an account.
             </p>
 
-        </section>
+        </div>
 
 
         <section class="cf-section">
@@ -86,19 +73,15 @@
                                 ♞
                             </div>
 
-                            <span class="cf-eyebrow">
-                                Guest matchmaking
-                            </span>
-
                             <h2 class="h3 fw-bold mb-3">
-                                Play without an account
+                                Find an opponent
                             </h2>
 
                             <p class="cf-muted mb-4">
 
                                 Enter the matchmaking queue and
-                                Checkspire will pair you with
-                                another guest looking for a casual game.
+                                Checkspire will pair you with another
+                                guest looking for a casual game.
 
                             </p>
 
@@ -141,12 +124,12 @@
                         </div>
 
                         <h3 class="cf-feature-title">
-                            Enter the lobby
+                            Join the queue
                         </h3>
 
-                        <p class="cf-feature-description">
+                        <p class="cf-feature-description mb-0">
 
-                            No registration will be required
+                            No account is required
                             for casual guest games.
 
                         </p>
@@ -165,13 +148,13 @@
                         </div>
 
                         <h3 class="cf-feature-title">
-                            Find an opponent
+                            Get matched
                         </h3>
 
-                        <p class="cf-feature-description">
+                        <p class="cf-feature-description mb-0">
 
-                            Match with another available
-                            guest player.
+                            Checkspire will connect you
+                            with another available player.
 
                         </p>
 
@@ -189,13 +172,13 @@
                         </div>
 
                         <h3 class="cf-feature-title">
-                            Play instantly
+                            Start playing
                         </h3>
 
-                        <p class="cf-feature-description">
+                        <p class="cf-feature-description mb-0">
 
-                            Start a live casual chess game
-                            directly in the browser.
+                            Enter a live chess game
+                            directly in your browser.
 
                         </p>
 
@@ -214,13 +197,13 @@
             <div class="cf-card text-center p-4">
 
                 <h2 class="h5 fw-bold">
-                    Want the full Checkspire experience?
+                    Want ratings and tournaments?
                 </h2>
 
-                <p class="cf-muted">
+                <p class="cf-muted mb-3">
 
                     Create an account to track ratings,
-                    challenge players, keep your game history
+                    keep game history, challenge players
                     and compete in tournaments.
 
                 </p>
@@ -247,35 +230,43 @@
     <div sec:authorize="isAuthenticated()">
 
 
-        <section class="cf-hero mb-5">
+        <div class="d-flex flex-column flex-md-row
+                    justify-content-between align-items-md-end
+                    gap-3 mb-4">
 
-            <span class="cf-eyebrow">
-                Matchmaking
-            </span>
+            <div>
 
-            <h1 class="cf-hero-title">
-
-                Ready for
-                <br>
-
-                <span class="cf-brand-accent">
-                    your next game?
+                <span class="cf-eyebrow mb-2">
+                    Matchmaking
                 </span>
 
-            </h1>
+                <h1 class="h2 fw-bold mb-2">
+                    Play
+                </h1>
 
-            <p class="cf-hero-text">
+                <p class="cf-section-description mb-0">
 
-                Find another Checkspire player
-                and start a game directly from the lobby.
+                    Find an opponent and start your next game.
 
-                Matchmaking will use your account,
-                allowing your games to become part
-                of your Checkspire profile.
+                </p>
 
-            </p>
+            </div>
 
-        </section>
+
+            <div class="cf-user-chip">
+
+                <span class="cf-user-avatar">
+                    ♟
+                </span>
+
+                <span sec:authentication="name"
+                      class="cf-user-name">
+                    username
+                </span>
+
+            </div>
+
+        </div>
 
 
         <section class="cf-section">
@@ -284,51 +275,33 @@
 
                 <div class="col-lg-8">
 
-                    <div class="cf-card p-4 p-md-5">
+                    <div class="cf-card p-4">
 
 
                         <div class="d-flex
-                                    flex-column
-                                    flex-md-row
                                     justify-content-between
-                                    align-items-md-center
-                                    gap-4">
-
+                                    align-items-center
+                                    gap-3
+                                    mb-4">
 
                             <div>
 
-                                <span class="cf-eyebrow">
-                                    Signed in
-                                </span>
-
-                                <h2 class="h3 fw-bold mb-2">
-
-                                    <span sec:authentication="name">
-                                        username
-                                    </span>
-
+                                <h2 class="h4 fw-bold mb-1">
+                                    Find an Opponent
                                 </h2>
 
                                 <p class="cf-muted mb-0">
-
-                                    Your matchmaking games can be
-                                    associated with your account
-                                    instead of using a temporary guest identity.
-
+                                    Choose how you want to play.
                                 </p>
 
                             </div>
 
 
-                            <div class="cf-feature-icon">
+                            <div class="cf-feature-icon mb-0">
                                 ♞
                             </div>
 
-
                         </div>
-
-
-                        <hr class="my-4">
 
 
                         <div class="row g-3 mb-4">
@@ -350,7 +323,7 @@
                                             </strong>
 
                                             <div class="small cf-muted">
-                                                Play without affecting rating.
+                                                Play without affecting your rating.
                                             </div>
 
                                         </div>
@@ -441,13 +414,13 @@
                         </div>
 
                         <h3 class="cf-feature-title">
-                            Quick matchmaking
+                            Quick Matchmaking
                         </h3>
 
-                        <p class="cf-feature-description">
+                        <p class="cf-feature-description mb-0">
 
                             Find another player without
-                            manually creating a challenge.
+                            creating a direct challenge.
 
                         </p>
 
@@ -465,14 +438,13 @@
                         </div>
 
                         <h3 class="cf-feature-title">
-                            Account games
+                            Account Games
                         </h3>
 
-                        <p class="cf-feature-description">
+                        <p class="cf-feature-description mb-0">
 
-                            Games played while signed in
-                            can remain connected to your profile
-                            and game history.
+                            Matchmaking games remain
+                            connected to your profile.
 
                         </p>
 
@@ -490,14 +462,13 @@
                         </div>
 
                         <h3 class="cf-feature-title">
-                            Multiple time controls
+                            Time Controls
                         </h3>
 
-                        <p class="cf-feature-description">
+                        <p class="cf-feature-description mb-0">
 
-                            Matchmaking can later support
-                            Bullet, Blitz, Rapid
-                            and Classical chess.
+                            Play Bullet, Blitz,
+                            Rapid or Classical chess.
 
                         </p>
 
@@ -516,15 +487,11 @@
             <div class="cf-card text-center p-4">
 
                 <h2 class="h5 fw-bold">
-                    Looking for structured competition?
+                    Looking for tournament play?
                 </h2>
 
-                <p class="cf-muted">
-
-                    Browse Checkspire tournaments
-                    and compete in Swiss, Round Robin
-                    or Single Elimination events.
-
+                <p class="cf-muted mb-3">
+                    Browse available Checkspire tournaments.
                 </p>
 
                 <a th:href="@{/tournaments}"

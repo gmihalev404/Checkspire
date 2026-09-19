@@ -51,46 +51,40 @@
 <main class="container cf-container cf-page">
 
 
-    <section class="cf-hero mb-5">
+    <div class="mb-5">
 
-        <span class="cf-eyebrow">
+        <span class="cf-eyebrow mb-2">
             About Checkspire
         </span>
 
-        <h1 class="cf-hero-title">
-
-            Online chess built
-            <br>
-
-            around
-            <span class="cf-brand-accent">
-                competition.
-            </span>
-
+        <h1 class="h2 fw-bold mb-3">
+            Competitive online chess built around tournaments.
         </h1>
 
-        <p class="cf-hero-text">
+        <p class="cf-section-description mb-3"
+           style="max-width: 760px;">
 
             Checkspire is an online chess platform focused on
-            competitive play and chess tournaments.
+            competitive play, live games and tournament competition.
 
             Create or join events, compete across multiple tournament
-            formats, follow live rounds and build separate ratings
-            across different time controls.
+            formats and build separate ratings across different
+            chess time controls.
 
         </p>
+
 
         <div class="d-flex flex-wrap gap-2">
 
             <a th:href="@{/tournaments}"
-               class="btn cf-btn-primary btn-lg">
+               class="btn cf-btn-primary">
 
                 Browse Tournaments
 
             </a>
 
             <a th:href="@{/register}"
-               class="btn cf-btn-ghost btn-lg">
+               class="btn cf-btn-ghost">
 
                 Create Account
 
@@ -98,7 +92,7 @@
 
         </div>
 
-    </section>
+    </div>
 
 
     <section class="cf-section">
@@ -107,15 +101,14 @@
             Tournament formats
         </span>
 
-        <h2 class="h3 fw-bold mb-2">
-            Different formats. One competitive platform.
+        <h2 class="h4 fw-bold mb-2">
+            Choose how you want to compete
         </h2>
 
         <p class="cf-section-description mb-4">
 
             Checkspire supports several tournament structures
-            so players and organizers can choose how they want
-            an event to be played.
+            for different styles of competition.
 
         </p>
 
@@ -131,14 +124,14 @@
                     </div>
 
                     <h3 class="cf-feature-title">
-                        Swiss Tournaments
+                        Swiss
                     </h3>
 
-                    <p class="cf-feature-description">
+                    <p class="cf-feature-description mb-0">
 
-                        Compete over multiple rounds against players
-                        with comparable tournament scores without
-                        requiring every participant to face everyone.
+                        Compete across multiple rounds
+                        against players with comparable
+                        tournament scores.
 
                     </p>
 
@@ -159,11 +152,10 @@
                         Round Robin
                     </h3>
 
-                    <p class="cf-feature-description">
+                    <p class="cf-feature-description mb-0">
 
-                        Every player faces the other participants,
-                        creating a complete competition where
-                        consistency across all games matters.
+                        Every participant faces
+                        every other player in the event.
 
                     </p>
 
@@ -184,11 +176,10 @@
                         Single Elimination
                     </h3>
 
-                    <p class="cf-feature-description">
+                    <p class="cf-feature-description mb-0">
 
-                        Advance through a knockout bracket where
-                        every match matters and the final remaining
-                        player wins the tournament.
+                        Win your match and advance
+                        through the knockout bracket.
 
                     </p>
 
@@ -204,10 +195,10 @@
     <section class="cf-section">
 
         <span class="cf-eyebrow">
-            Tournament lifecycle
+            Tournament flow
         </span>
 
-        <h2 class="h3 fw-bold mb-4">
+        <h2 class="h4 fw-bold mb-4">
             From registration to the final round
         </h2>
 
@@ -226,10 +217,10 @@
                         Join
                     </h3>
 
-                    <p class="cf-feature-description">
+                    <p class="cf-feature-description mb-0">
 
-                        Players register for an upcoming tournament
-                        before the event begins.
+                        Enter an upcoming tournament
+                        before registration closes.
 
                     </p>
 
@@ -250,9 +241,9 @@
                         Pairings
                     </h3>
 
-                    <p class="cf-feature-description">
+                    <p class="cf-feature-description mb-0">
 
-                        Checkspire generates the appropriate pairings
+                        Checkspire generates pairings
                         according to the tournament format.
 
                     </p>
@@ -274,10 +265,10 @@
                         Play
                     </h3>
 
-                    <p class="cf-feature-description">
+                    <p class="cf-feature-description mb-0">
 
-                        Tournament games are played live in the browser
-                        with chess clocks and server-side move validation.
+                        Tournament games are played
+                        live directly in the browser.
 
                     </p>
 
@@ -298,10 +289,10 @@
                         Advance
                     </h3>
 
-                    <p class="cf-feature-description">
+                    <p class="cf-feature-description mb-0">
 
-                        Results update standings and determine
-                        the next round until the event is complete.
+                        Results update standings
+                        and determine the next round.
 
                     </p>
 
@@ -320,16 +311,9 @@
             Competitive chess
         </span>
 
-        <h2 class="h3 fw-bold mb-2">
+        <h2 class="h4 fw-bold mb-4">
             More than tournament brackets
         </h2>
-
-        <p class="cf-section-description mb-4">
-
-            Checkspire combines tournament management with the tools
-            needed to play competitive online chess.
-
-        </p>
 
 
         <div class="row g-4">
@@ -344,11 +328,11 @@
 
                     <p class="cf-muted mb-0">
 
-                        Players maintain separate Bullet, Blitz,
-                        Rapid and Classical ratings.
+                        Players maintain separate Bullet,
+                        Blitz, Rapid and Classical ratings.
 
-                        Games and tournaments can use multiple
-                        time controls and can be Rated or Casual.
+                        Games and tournaments can be
+                        Rated or Casual.
 
                     </p>
 
@@ -367,11 +351,10 @@
 
                     <p class="cf-muted mb-0">
 
-                        Games run in real time with live chess clocks,
+                        Games run in real time with chess clocks,
                         move history and automatic timeout handling.
 
-                        Tournament games can also be followed
-                        while they are being played.
+                        Tournament games can also be spectated live.
 
                     </p>
 
@@ -390,9 +373,9 @@
 
                     <p class="cf-muted mb-0">
 
-                        Follow tournament rounds, boards,
-                        player scores, standings and match results
-                        throughout an event.
+                        Follow rounds, boards,
+                        player scores, standings
+                        and match results.
 
                     </p>
 
@@ -411,7 +394,7 @@
 
                     <p class="cf-muted mb-0">
 
-                        Players can challenge each other directly,
+                        Challenge another player,
                         choose a time control and color preference,
                         and play Rated or Casual games.
 
@@ -428,21 +411,17 @@
 
     <section class="cf-section">
 
-        <div class="cf-card text-center p-4 p-md-5">
+        <div class="cf-card text-center p-4">
 
-            <span class="cf-eyebrow">
-                Enter the competition
-            </span>
-
-            <h2 class="h3 fw-bold">
-                Find your next tournament.
+            <h2 class="h4 fw-bold">
+                Ready to compete?
             </h2>
 
-            <p class="cf-muted mx-auto mb-4"
+            <p class="cf-muted mx-auto mb-3"
                style="max-width: 650px;">
 
-                Browse online chess tournaments,
-                create an account and start competing on Checkspire.
+                Browse Checkspire tournaments
+                or create an account and start playing.
 
             </p>
 
