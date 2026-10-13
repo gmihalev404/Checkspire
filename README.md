@@ -17,7 +17,7 @@ Checkspire is designed as a complete multiplayer chess application rather than a
 ## 🌐 Live Demo
 
 **Checkspire:**  
-[Checkspire](https://checkspire-production.up.railway.app/)
+[Checkspire](https://checkspire.dns.army)
 
 ---
 
